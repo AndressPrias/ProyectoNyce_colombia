@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="636.0" prefWidth="808.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.CrudMuestraController">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c3c3c3" height="270.0" layoutX="29.0" layoutY="87.0" stroke="TRANSPARENT" strokeType="INSIDE" width="438.0" />
+      <Label layoutX="325.0" layoutY="14.0" prefHeight="31.0" prefWidth="181.0" text="Registro de Muestras" textFill="#e4090f">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Label>
+      <Label layoutX="34.0" layoutY="126.0" text="Descripción de la muestra" />
+      <Label layoutX="95.0" layoutY="163.0" text="Rotulo Cliente" />
+      <Label layoutX="118.0" layoutY="198.0" prefHeight="17.0" prefWidth="51.0" text="Cantidad" />
+      <Label layoutX="132.0" layoutY="236.0" prefHeight="17.0" prefWidth="39.0" text="Estado" />
+      <Label layoutX="115.0" layoutY="310.0" prefHeight="17.0" prefWidth="57.0" text="Ubicación" />
+      <Label layoutX="59.0" layoutY="263.0" prefHeight="37.0" prefWidth="113.0" text=" Fecha de Recepción" />
+      <TextField fx:id="txtDescripción" layoutX="180.0" layoutY="122.0" prefHeight="25.0" prefWidth="264.0" />
+      <TextField fx:id="txtRotuloCliente" layoutX="180.0" layoutY="159.0" prefHeight="25.0" prefWidth="264.0" />
+      <TextField fx:id="txtCantidad" layoutX="180.0" layoutY="194.0" prefHeight="25.0" prefWidth="264.0" />
+      <TextField fx:id="txtEstado" layoutX="180.0" layoutY="232.0" prefHeight="25.0" prefWidth="264.0" />
+      <TextField fx:id="txtFechaRecepción" layoutX="180.0" layoutY="269.0" prefHeight="25.0" prefWidth="264.0" />
+      <TextField fx:id="txtUbicación" layoutX="180.0" layoutY="306.0" prefHeight="25.0" prefWidth="264.0" />
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff11" height="270.0" layoutX="476.0" layoutY="89.0" stroke="TRANSPARENT" strokeType="INSIDE" width="314.0" />
+      <ImageView fitHeight="243.0" fitWidth="302.0" layoutX="483.0" layoutY="111.0" pickOnBounds="true" preserveRatio="true" />
+      <Button layoutX="103.0" layoutY="365.0" mnemonicParsing="false" onAction="#registrarMuestra" prefHeight="25.0" prefWidth="302.0" style="-fx-background-color: #009180;" text="Registrar" textFill="WHITE" />
+      <Button fx:id="btnSubirimagen" layoutX="597.0" layoutY="367.0" mnemonicParsing="false" onAction="#SubirImagen" style="-fx-background-color: #009180;" text="Subir imagen" textFill="WHITE">
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Button>
+      <TableView fx:id="tblMuestras" layoutX="34.0" layoutY="408.0" prefHeight="165.0" prefWidth="740.0">
+        <columns>
+          <TableColumn fx:id="colId" prefWidth="75.0" text="Id" />
+          <TableColumn fx:id="colDescripción" prefWidth="264.0" text="Descripción" />
+            <TableColumn fx:id="colRotulo" minWidth="3.0" prefWidth="91.0" text="Rotulo cliente" />
+            <TableColumn fx:id="colCantidad" prefWidth="61.0" text="Cantidad" />
+            <TableColumn fx:id="colEstado" prefWidth="73.0" text="Estado" />
+            <TableColumn fx:id="colFechaIngreso" prefWidth="83.0" text="Fecha ingreso" />
+            <TableColumn fx:id="colUbicación" prefWidth="92.0" text="Ubicación" />
+        </columns>
+      </TableView>
+      <Button layoutX="248.0" layoutY="586.0" mnemonicParsing="false" onAction="#eliminarMuestra" style="-fx-background-color: #009180;" text="Eliminar" textFill="WHITE" />
+      <Button layoutX="522.0" layoutY="586.0" mnemonicParsing="false" onAction="#actualizarMuestra" style="-fx-background-color: #009180;" text="Actualizar" textFill="WHITE" />
+   </children>
+</AnchorPane>
