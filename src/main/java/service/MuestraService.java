@@ -2,6 +2,7 @@ package service;
 
 
 import domain.Estado;
+import domain.Muestra;
 import domain.Usuario;
 import db.Database;
 
@@ -9,6 +10,8 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MuestraService {
 
@@ -95,5 +98,50 @@ public class MuestraService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Muestra> obtenerTodasMuestras() {
+        List<Muestra> lista = new ArrayList<>();
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM muestras");
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Muestra m = new Muestra();
+                m.setCodigoInterno(rs.getString("codigoInterno"));
+                m.setRotuloCliente(rs.getString("rotuloCliente"));
+                m.setDescripcion(rs.getString("descripcion"));
+                m.setCantidad(rs.getInt("cantidad"));
+
+                // Convertir String a Enum Estado
+                String estadoStr = rs.getString("estado");
+                if (estadoStr != null) {
+                    try {
+                        m.setEstado(Estado.valueOf(estadoStr));
+                    } catch (IllegalArgumentException e) {
+                        m.setEstado(Estado.RECIBIDA); // valor por defecto si es inválido
+                    }
+                } else {
+                    m.setEstado(Estado.RECIBIDA); // valor por defecto
+                }
+
+                m.setUbicacion(rs.getString("ubicacion"));
+
+                // Fecha segura
+                java.sql.Date sqlDate = rs.getDate("fechaRecepcion");
+                if (sqlDate != null) {
+                    m.setFechaRecepcion(sqlDate.toLocalDate());
+                } else {
+                    m.setFechaRecepcion(null); // o LocalDate.now() si prefieres
+                }
+
+                m.setRutaFoto(rs.getString("rutaFoto"));
+                lista.add(m);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
     }
 }

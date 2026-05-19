@@ -1,5 +1,6 @@
 package controllers;
 
+import db.Database;
 import domain.Rol;
 import domain.Usuario;
 import javafx.event.ActionEvent;
@@ -11,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import utilities.Paths;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -20,48 +22,44 @@ import java.sql.SQLException;
 
 public class loginController {
 
-    @FXML
-    private Label lblMensaje;
+    @FXML private TextField txtUsuario;
+    @FXML private PasswordField txtPassword;
+    @FXML private Label lblMensaje; // oculto por defecto en FXML
 
     @FXML
-    void click(ActionEvent event) {
-
+    public void initialize() {
+        lblMensaje.setVisible(false); // Label no visible al inicio
     }
 
     @FXML
-    private PasswordField txtPassword;
-
-    @FXML
-    private TextField txtUsuario;
-
-    @FXML
     void iniciarSesion(ActionEvent event) {
-
         String nombre = txtUsuario.getText();
-        String password = txtPassword.getText(); // si tu BD tuviera password
+        String password = txtPassword.getText(); // opcional si quieres validar
 
         if (nombre.isEmpty() || password.isEmpty()) {
             lblMensaje.setText("Debe completar todos los campos");
+            lblMensaje.setVisible(true);
             return;
         }
 
-        // Consultar usuario en la BD
         Usuario usuarioLogueado = consultarUsuario(nombre);
 
         if (usuarioLogueado != null) {
             lblMensaje.setText("Inicio de sesión correcto");
+            lblMensaje.setVisible(true);
 
-            // Abrir ventana de registro de muestras
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/CrudMuestra.fxml"));
+                // Cargar Menu Principal
+                FXMLLoader loader = new FXMLLoader(getClass().getResource(Paths.MENU_PRINCIPAL));
                 Parent root = loader.load();
 
-                // Pasar usuario logueado al controlador de registro
-                controllers.CrudMuestraController controller = loader.getController();
+                // Pasar usuario al menú
+                controllers.MenuPrincipalController controller = loader.getController();
+
                 controller.setUsuario(usuarioLogueado);
 
                 Stage stage = new Stage();
-                stage.setTitle("Registro de Muestras");
+                stage.setTitle("Menú Principal");
                 stage.setScene(new Scene(root));
                 stage.show();
 
@@ -74,12 +72,13 @@ public class loginController {
 
         } else {
             lblMensaje.setText("Usuario o contraseña incorrectos");
+            lblMensaje.setVisible(true);
         }
     }
 
     // Método para buscar usuario en H2
     private Usuario consultarUsuario(String nombre) {
-        try (Connection conn = db.Database.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
                      "SELECT id, nombre, rol FROM usuarios WHERE nombre = ?")) {
 

@@ -1,6 +1,0 @@
-2026-05-10 20:14:40 jdbc[3]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIOS" not found (this database is empty); SQL statement:
-SELECT id, nombre, rol FROM usuarios WHERE nombre = ? [42104-214]
-2026-05-10 20:18:47 jdbc[3]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USUARIOS" not found (this database is empty); SQL statement:
-SELECT id, nombre, rol FROM usuarios WHERE nombre = ? [42104-214]

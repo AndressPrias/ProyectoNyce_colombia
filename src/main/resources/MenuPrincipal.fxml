@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane prefHeight="541.0" prefWidth="803.0" stylesheets="@css/dashboard.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MenuPrincipalController">
+
+    <children>
+        <!-- Bienvenida -->
+        <Text fill="#456372" layoutX="177.0" layoutY="76.0" text="Bienvenido al Sistema">
+            <font><Font name="System Bold" size="28.0" /></font>
+        </Text>
+        <Text fill="#456372" layoutX="177.0" layoutY="96.0" text="Selecciona una opción para continuar" />
+        <Label fx:id="lblBienvenida" layoutX="474.0" layoutY="46.0" textFill="#456372">
+            <font><Font name="System Bold" size="28.0" /></font>
+        </Label>
+
+        <!-- Avatar circular -->
+        <Circle fx:id="imgfotoPerfil" layoutX="125.0" layoutY="76.0" radius="43.0" />
+
+        <!-- Dashboard con tarjetas -->
+        <HBox layoutX="50.0" layoutY="141.0" spacing="20">
+            <children>
+
+                <!-- Registrar Muestra -->
+                <VBox fx:id="cardRegistrarMuestra" alignment="CENTER" prefHeight="241.0" prefWidth="160" spacing="10" styleClass="card" >
+                    <ImageView fx:id="iconRegistrarMuestra" fitHeight="50.0" fitWidth="50.0">
+                  <image>
+                     <Image url="@icons/iconMuestra.png" />
+                  </image></ImageView>
+                    <Label text="Registrar Muestra">
+                  <font>
+                     <Font name="System Bold" size="14.0" />
+                  </font></Label>
+                    <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Registra una nueva muestra en el sistema" textAlignment="CENTER" />
+                </VBox>
+
+                <!-- Registrar Usuario -->
+                <VBox fx:id="cardRegistrarUsuario" alignment="CENTER" onMouseClicked="#abrirRegistrarUsuario" prefHeight="180" prefWidth="160" spacing="10" styleClass="card">
+                    <ImageView fx:id="iconRegistrarUsuario" fitHeight="50" fitWidth="50">
+                  <image>
+                     <Image url="@icons/iconUsuario.png" />
+                  </image></ImageView>
+                    <Label text="Registrar Usuario">
+                  <font>
+                     <Font name="System Bold" size="14.0" />
+                  </font></Label>
+                    <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Crea un nuevo usuario del sistema" textAlignment="CENTER" />
+                </VBox>
+
+                <!-- Ver Muestras -->
+                <VBox fx:id="cardVerMuestras" alignment="CENTER" prefHeight="180" prefWidth="160" spacing="10" styleClass="card">
+                    <ImageView fx:id="iconVerMuestras" fitHeight="50" fitWidth="50">
+                  <image>
+                     <Image url="@icons/iconBuscar.png" />
+                  </image></ImageView>
+                    <Label text="Ver Muestras">
+                  <font>
+                     <Font name="System Bold" size="14.0" />
+                  </font></Label>
+                    <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Busca y consulta muestras registradas" textAlignment="CENTER" />
+                </VBox>
+
+                <!-- Cerrar sesión -->
+                <VBox fx:id="cardCerrarSesion" alignment="CENTER" prefHeight="180" prefWidth="160" spacing="10" styleClass="card-logout">
+                    <ImageView fx:id="iconCerrarSesion" fitHeight="50" fitWidth="50">
+                  <image>
+                     <Image url="@icons/iconCerrar.png" />
+                  </image></ImageView>
+                    <Label text="Cerrar sesión">
+                  <font>
+                     <Font name="System Bold" size="14.0" />
+                  </font></Label>
+                    <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Salir del sistema de forma segura" textAlignment="CENTER" />
+                </VBox>
+
+            </children>
+        </HBox>
+      <AnchorPane layoutX="-3.0" layoutY="455.0" prefHeight="86.0" prefWidth="806.0" style="-fx-background-color: #E6E6E6;">
+         <children>
+            <Text fx:id="imgFooter" fill="#456372" layoutX="33.0" layoutY="49.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Sistema Control Muestras Laboratorio" wrappingWidth="301.873046875">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+            </Text>
+            <ImageView fx:id="logoEmpresa" fitHeight="23.0" fitWidth="120.0" layoutX="313.0" layoutY="32.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@icons/logoQima.png" />
+               </image>
+            </ImageView>
+             <Label fx:id="lblFechaHora" layoutX="607.0" layoutY="31.0" prefHeight="23.0" prefWidth="185.0" style="-fx-font-size: 14;" textFill="#456372" />
+            <ImageView fx:id="imgFechaHora" fitHeight="15.0" fitWidth="15.0" layoutX="580.0" layoutY="36.0" pickOnBounds="true" preserveRatio="true" styleClass="lblFechaHora">
+               <image>
+                  <Image url="@icons/iconFechaHora.png" />
+               </image>
+            </ImageView>
+         </children>
+      </AnchorPane>
+    </children>
+</AnchorPane>

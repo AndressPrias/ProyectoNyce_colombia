@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefWidth="800" prefHeight="600" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.VerMuestrasController">
+    <children>
+        <TableView fx:id="tblMuestras" layoutX="20" layoutY="20" prefWidth="760" prefHeight="550">
+            <columns>
+                <TableColumn fx:id="colCodigo" text="Código"/>
+                <TableColumn fx:id="colCliente" text="Cliente"/>
+                <TableColumn fx:id="colDescripcion" text="Descripción"/>
+                <TableColumn fx:id="colCantidad" text="Cantidad"/>
+                <TableColumn fx:id="colEstado" text="Estado"/>
+                <TableColumn fx:id="colUbicacion" text="Ubicación"/>
+                <TableColumn fx:id="colFecha" text="Fecha Recepción"/>
+                <TableColumn fx:id="colFoto" text="Foto"/>
+            </columns>
+        </TableView>
+    </children>
+</AnchorPane>

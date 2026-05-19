@@ -15,7 +15,7 @@ import service.MuestraService;
 import java.io.File;
 import java.time.LocalDate;
 
-public class CrudMuestraController {
+public class RegistrarMuestraController {
 
     @FXML
     private TableColumn<Muestra, Integer> colCantidad;
@@ -134,5 +134,35 @@ public class CrudMuestraController {
     public void setUsuario(Usuario usuarioLogueado) {
 
         this.usuario = usuarioLogueado;
+    }
+
+    public TextField getTxtEstado() {
+        return txtEstado;
+    }
+
+    public void setTxtEstado(TextField txtEstado) {
+        this.txtEstado = txtEstado;
+    }
+
+    public TextField getTxtFecha() {
+        return txtFecha;
+    }
+
+    public void setTxtFecha(TextField txtFecha) {
+        this.txtFecha = txtFecha;
+    }
+
+    public TextField getTxtId() {
+        return txtId;
+    }
+
+    public void setTxtId(TextField txtId) {
+        this.txtId = txtId;
+    }
+
+    public void limpiarCampos(ActionEvent actionEvent) {
+    }
+
+    public void cerrarVentana(ActionEvent actionEvent) {
     }
 }
