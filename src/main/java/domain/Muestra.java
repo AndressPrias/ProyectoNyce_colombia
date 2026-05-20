@@ -1,5 +1,8 @@
 package domain;
 
+import javafx.beans.binding.BooleanExpression;
+import javafx.beans.value.ObservableValue;
+
 import java.time.LocalDate;
 
 public class Muestra {
@@ -87,6 +90,7 @@ public class Muestra {
     public void setEstado(Estado estado) { this.estado = estado; }
     public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
     public void setCustodio(Usuario custodio) { this.custodio = custodio; }
+
 
 
 }

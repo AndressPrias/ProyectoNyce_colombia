@@ -30,7 +30,7 @@
             <children>
 
                 <!-- Registrar Muestra -->
-                <VBox fx:id="cardRegistrarMuestra" alignment="CENTER" prefHeight="241.0" prefWidth="160" spacing="10" styleClass="card" >
+                <VBox fx:id="cardRegistrarMuestra" alignment="CENTER" onMouseClicked="#abrirRegistroMuestra" prefHeight="241.0" prefWidth="160" spacing="10" styleClass="card">
                     <ImageView fx:id="iconRegistrarMuestra" fitHeight="50.0" fitWidth="50.0">
                   <image>
                      <Image url="@icons/iconMuestra.png" />
@@ -55,13 +55,13 @@
                     <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Crea un nuevo usuario del sistema" textAlignment="CENTER" />
                 </VBox>
 
-                <!-- Ver Muestras -->
-                <VBox fx:id="cardVerMuestras" alignment="CENTER" prefHeight="180" prefWidth="160" spacing="10" styleClass="card">
+                <!-- Buscar Muestras -->
+                <VBox fx:id="cardBuscarMuestras" alignment="CENTER" prefHeight="180" prefWidth="160" spacing="10" styleClass="card" onMouseClicked="#abrirBuscarMuestras">
                     <ImageView fx:id="iconVerMuestras" fitHeight="50" fitWidth="50">
                   <image>
                      <Image url="@icons/iconBuscar.png" />
                   </image></ImageView>
-                    <Label text="Ver Muestras">
+                    <Label text="Buscar Muestras">
                   <font>
                      <Font name="System Bold" size="14.0" />
                   </font></Label>
@@ -69,7 +69,7 @@
                 </VBox>
 
                 <!-- Cerrar sesión -->
-                <VBox fx:id="cardCerrarSesion" alignment="CENTER" prefHeight="180" prefWidth="160" spacing="10" styleClass="card-logout">
+                <VBox fx:id="cardCerrarSesion" alignment="CENTER" onMouseClicked="#cerrarSesion" prefHeight="180" prefWidth="160" spacing="10" styleClass="card-logout">
                     <ImageView fx:id="iconCerrarSesion" fitHeight="50" fitWidth="50">
                   <image>
                      <Image url="@icons/iconCerrar.png" />

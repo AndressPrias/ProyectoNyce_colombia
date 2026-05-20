@@ -98,15 +98,54 @@ public class MenuPrincipalController {
         }
     }
 
+    @FXML
+    void abrirBuscarMuestras() {
+        try {
+            // Cargar el FXML de Buscar Muestras
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Paths.BUSCAR_MUESTRA));
+            Parent root = loader.load();
+
+            // Pasar usuario logueado al controlador
+            BuscarMuestrasController controller = loader.getController();
+            controller.setUsuario(usuario); // 'usuario' es el logueado en el dashboard
+
+            // Crear y mostrar la nueva ventana
+            Stage stage = new Stage();
+            stage.setTitle("Buscar Muestras");
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error al abrir la ventana de Buscar Muestras");
+        }
+    }
+
     // Abrir ventana de Ver Muestras
     @FXML
     void abrirVerMuestras() { abrirVentana("/VerMuestras.fxml", "Ver Muestras"); }
 
     // Cerrar sesión
     @FXML
-    void cerrarSesion() {
-        Stage stage = (Stage) Stage.getWindows().filtered(w -> w.isShowing()).get(0);
-        stage.close();
+    void cerrarSesion(javafx.scene.input.MouseEvent event) {
+        try {
+            // Obtener Stage desde la tarjeta clickeada
+            Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+            stage.close();
+
+            // Opcional: abrir login nuevamente
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/login.fxml"));
+            Parent root = loader.load();
+
+            Stage loginStage = new Stage();
+            loginStage.setTitle("Login");
+            loginStage.setScene(new Scene(root));
+            loginStage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error cerrando sesión");
+        }
     }
 
     // Método genérico para abrir ventanas desde el dashboard
@@ -123,8 +162,8 @@ public class MenuPrincipalController {
             // También puedes pasar usuario a otras ventanas si quieres
             else if (controller instanceof RegistrarMuestraController) {
                 ((RegistrarMuestraController) controller).setUsuario(usuario);
-            } else if (controller instanceof VerMuestrasController) {
-                ((VerMuestrasController) controller).setUsuario(usuario);
+            } else if (controller instanceof BuscarMuestrasController) {
+                ((BuscarMuestrasController) controller).setUsuario(usuario);
             }
 
             Stage stage = new Stage();
@@ -136,4 +175,6 @@ public class MenuPrincipalController {
             e.printStackTrace();
         }
     }
+
+
 }
