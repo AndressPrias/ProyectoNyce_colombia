@@ -102,7 +102,7 @@ public class MenuPrincipalController {
     void abrirBuscarMuestras() {
         try {
             // Cargar el FXML de Buscar Muestras
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(Paths.BUSCAR_MUESTRA));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Paths.BUSCAR_MUESTRAS));
             Parent root = loader.load();
 
             // Pasar usuario logueado al controlador
