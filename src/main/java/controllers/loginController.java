@@ -58,7 +58,9 @@ public class loginController {
                 Stage stage = (Stage) txtUsuario.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("Sistema NYCE");
-                stage.setMaximized(true);
+                stage.setMaximized(false);
+                stage.sizeToScene();
+                stage.centerOnScreen();
 
             } catch (IOException e) {
                 e.printStackTrace();

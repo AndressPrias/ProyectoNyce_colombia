@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -41,10 +42,7 @@ public class AppShellController {
                 configurador.configurar(controller);
             }
 
-            if (vista instanceof Region region) {
-                region.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            }
-            StackPane.setAlignment(vista, Pos.TOP_LEFT);
+            ajustarVistaAlContenedor(vista, fxmlPath);
             areaContenido.getChildren().setAll(vista);
             actualizarVisibilidadMenuLateral(fxmlPath);
 
@@ -63,5 +61,28 @@ public class AppShellController {
         boolean mostrarMenuLateral = !Paths.MENU_PRINCIPAL.equals(fxmlPath);
         menuLateral.setVisible(mostrarMenuLateral);
         menuLateral.setManaged(mostrarMenuLateral);
+    }
+
+    private void ajustarVistaAlContenedor(Parent vista, String fxmlPath) {
+        if (!(vista instanceof Region region)) {
+            StackPane.setAlignment(vista, Pos.TOP_LEFT);
+            return;
+        }
+
+        if (Paths.MENU_PRINCIPAL.equals(fxmlPath)) {
+            region.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            StackPane.setAlignment(vista, Pos.TOP_LEFT);
+            return;
+        }
+
+        boolean vistaConPosicionesFijas = vista instanceof AnchorPane;
+        if (vistaConPosicionesFijas) {
+            region.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            StackPane.setAlignment(vista, Pos.CENTER);
+            return;
+        }
+
+        region.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        StackPane.setAlignment(vista, Pos.TOP_LEFT);
     }
 }
