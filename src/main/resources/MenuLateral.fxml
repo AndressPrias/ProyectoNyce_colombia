@@ -6,90 +6,85 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane stylesheets="@css/menuHover.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MenuLateralController">
+<VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" prefHeight="831.0" prefWidth="194.0" spacing="30.0" style="-fx-background-color: #009180;" stylesheets="@css/menuHover.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MenuLateralController">
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
    <children>
-      <VBox alignment="TOP_CENTER" prefHeight="746.0" prefWidth="194.0" spacing="35.0" style="-fx-background-color: #009180;">
-         <children>
-            <Label alignment="TOP_CENTER" contentDisplay="CENTER" prefHeight="64.0" prefWidth="121.0" style="-fx-text-fill: white;" text="Sistema Control Muestras Laboratorio" textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-            <Button fx:id="btnInicio" graphicTextGap="8.0" onAction="#inicio" prefHeight="40.0" prefWidth="170.0" styleClass="button-menu" text="Inicio">
-               <graphic>
-                  <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@icons/iconInicio.png" />
-                     </image>
-                  </ImageView>
-               </graphic>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
-            </Button>
-            <Button fx:id="btnRegistrarMuestra" graphicTextGap="8.0" onAction="#abrirRegistrarMuestra" prefHeight="40.0" prefWidth="173.0" styleClass="button-menu" text="Registrar Muestra">
-               <graphic>
-                  <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@icons/iconMuestraWhite.png" />
-                     </image>
-                  </ImageView>
-               </graphic>
-            </Button>
-            <Button fx:id="btnRegistrarUsuario" graphicTextGap="8.0" onAction="#abrirRegistrarUsuario" prefHeight="40.0" prefWidth="166.0" styleClass="button-menu" text="Registrar Usuario">
-               <graphic>
-                  <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@icons/iconRegistraUsuarioWhite.png" />
-                     </image>
-                  </ImageView>
-               </graphic>
-            </Button>
-            <Button fx:id="btnBuscarMuestra" graphicTextGap="8.0" onAction="#abrirBuscarMuestra" prefHeight="40.0" prefWidth="174.0" styleClass="button-menu" text="Buscar Muestra">
-               <graphic>
-                  <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@icons/iconBuscarWhite.png" />
-                     </image>
-                  </ImageView>
-               </graphic>
-            </Button>
-            <Line endX="24.5" startX="-100.0" stroke="#f8f8f8" />
-            <Button fx:id="btnCerrarSesion" graphicTextGap="8.0" onAction="#cerrarSesion" prefHeight="40.0" prefWidth="141.0" styleClass="button-menu" text="Cerrar sesión">
-               <graphic>
-                  <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@icons/iconCerrarWhite.png" />
-                     </image>
-                  </ImageView>
-               </graphic>
-            </Button>
-            <ImageView fitHeight="90.0" fitWidth="116.0" pickOnBounds="true" preserveRatio="true">
+      <Label alignment="TOP_CENTER" contentDisplay="CENTER" prefHeight="64.0" prefWidth="121.0" style="-fx-text-fill: white;" text="Sistema Control Muestras Laboratorio" textAlignment="CENTER" wrapText="true">
+         <font>
+            <Font name="System Bold" size="13.0" />
+         </font>
+      </Label>
+      <Button fx:id="btnInicio" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#inicio" prefHeight="40.0" styleClass="button-menu" text="Inicio">
+         <graphic>
+            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@icons/logoNyce.png" />
+                  <Image url="@icons/iconInicio.png" />
                </image>
             </ImageView>
-         </children>
-         <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </padding>
-      </VBox>
-      <AnchorPane layoutY="745.0" prefHeight="86.0" prefWidth="194.0" style="-fx-background-color: #009180;">
+         </graphic>
+      </Button>
+      <Button fx:id="btnRegistrarMuestra" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#abrirRegistrarMuestra" prefHeight="40.0" styleClass="button-menu" text="Registrar Muestra">
+         <graphic>
+            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@icons/iconMuestraWhite.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
+      <Button fx:id="btnRegistrarUsuario" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#abrirRegistrarUsuario" prefHeight="40.0" styleClass="button-menu" text="Registrar Usuario">
+         <graphic>
+            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@icons/iconRegistraUsuarioWhite.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
+      <Button fx:id="btnBuscarMuestra" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#abrirBuscarMuestra" prefHeight="40.0" styleClass="button-menu" text="Buscar Muestra">
+         <graphic>
+            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@icons/iconBuscarWhite.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
+      <Line endX="70.0" startX="-70.0" stroke="#f8f8f8" />
+      <Button fx:id="btnCerrarSesion" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#cerrarSesion" prefHeight="40.0" styleClass="button-menu" text="Cerrar sesion">
+         <graphic>
+            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@icons/iconCerrarWhite.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
+      <ImageView fitHeight="90.0" fitWidth="116.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@icons/logoNyce.png" />
+         </image>
+      </ImageView>
+      <Region VBox.vgrow="ALWAYS" />
+      <AnchorPane maxWidth="1.7976931348623157E308" prefHeight="86.0" style="-fx-background-color: #009180;">
          <children>
-            <Rectangle arcHeight="5.0" arcWidth="8.0" fill="#05ad97" height="54.0" layoutX="20.0" layoutY="22.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="142.0" />
-            <Text fill="WHITE" layoutX="25.0" layoutY="46.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Sistema de laboratorio " textAlignment="CENTER" wrappingWidth="131.5">
+            <Rectangle arcHeight="5.0" arcWidth="8.0" fill="#05ad97" height="54.0" layoutX="16.0" layoutY="18.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="142.0" />
+            <Text fill="WHITE" layoutX="21.0" layoutY="42.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Sistema de laboratorio " textAlignment="CENTER" wrappingWidth="131.5">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
             </Text>
-            <Text fill="WHITE" layoutX="28.0" layoutY="63.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Versión 1.0" textAlignment="CENTER" wrappingWidth="125.5" />
+            <Text fill="WHITE" layoutX="24.0" layoutY="59.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Version 1.0" textAlignment="CENTER" wrappingWidth="125.5" />
          </children>
       </AnchorPane>
    </children>
-</AnchorPane>
+</VBox>
