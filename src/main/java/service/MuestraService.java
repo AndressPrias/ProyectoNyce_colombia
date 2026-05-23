@@ -38,10 +38,16 @@ public class MuestraService {
 
     public void registrarMuestra(String rotuloCliente, String descripcion, int cantidad,
                                  String ubicacion, Usuario custodio, String rutaFoto) {
+        registrarMuestra(rotuloCliente, descripcion, cantidad, ubicacion, custodio, rutaFoto, null, null);
+    }
+
+    public void registrarMuestra(String rotuloCliente, String descripcion, int cantidad,
+                                 String ubicacion, Usuario custodio, String rutaFoto,
+                                 Estado estadoUI, LocalDate fechaRecepcionUI) {
 
         String codigo = generarCodigoInterno();
-        Estado estado = Estado.RECIBIDA;
-        LocalDate fecha = LocalDate.now();
+        Estado estado = estadoUI != null ? estadoUI : Estado.RECIBIDA;
+        LocalDate fecha = fechaRecepcionUI != null ? fechaRecepcionUI : LocalDate.now();
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(

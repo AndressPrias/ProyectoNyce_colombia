@@ -14,7 +14,7 @@
    <children>
       <ImageView fitHeight="339.0" fitWidth="336.0" layoutX="29.0" layoutY="208.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@icons/logoNyce.png" />
+            <Image url="@icons/logoNycePng.png" />
          </image>
       </ImageView>
       <AnchorPane layoutX="394.0" layoutY="50.0" prefHeight="530.0" prefWidth="344.0" style="-fx-background-color: #c3c3c3; -fx-background-radius: 10;">

@@ -14,78 +14,58 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<HBox alignment="TOP_CENTER" prefHeight="731.0" prefWidth="997.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RegistrarMuestraController">
+<AnchorPane prefHeight="709.0" prefWidth="852.0" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RegistrarMuestraController">
 
-   <!-- Menú lateral -->
-   <VBox prefHeight="656.0" prefWidth="161.0" spacing="20" style="-fx-background-color: #009180; -fx-padding: 20;">
-      <Label alignment="TOP_CENTER" contentDisplay="CENTER" prefHeight="64.0" prefWidth="121.0" style="-fx-text-fill: white;" text="Sistema Control Muestras Laboratorio" wrapText="true">
-         <font>
-            <Font name="System Bold" size="13.0" />
-         </font></Label>
-      <Button prefHeight="40.0" prefWidth="120.0" style="-fx-background-color: transparent; -fx-text-fill: white;" text="Inicio" />
-      <Button prefHeight="40.0" prefWidth="120.0" style="-fx-background-color: #016B5E; -fx-text-fill: white;" text="Registrar Muestra" />
-      <Button prefHeight="40.0" prefWidth="120.0" style="-fx-background-color: transparent; -fx-text-fill: white;" text="Registrar Usuario" />
-      <Button prefHeight="40.0" prefWidth="120.0" style="-fx-background-color: transparent; -fx-text-fill: white;" text="Buscar Muestra" />
-      <Button prefHeight="40.0" prefWidth="120.0" style="-fx-background-color: #F57D7D; -fx-text-fill: white;" text="Cerrar sesión" />
-   </VBox>
+   <Text layoutX="30.0" layoutY="67.0" text="Registrar Nueva Muestra">
+      <font><Font name="System Bold" size="24.0" /></font>
+   </Text>
+   <Text layoutX="30.0" layoutY="89.0" text="Complete la información de la muestra y cargue la imagen del producto.">
+      <font><Font size="14" /></font>
+   </Text>
 
-   <!-- Contenido principal -->
-   <AnchorPane prefHeight="709.0" prefWidth="852.0" style="-fx-background-color: #f5f5f5;">
-      <!-- Título -->
-      <Text layoutX="30.0" layoutY="67.0" text="Registrar Nueva Muestra">
-         <font><Font size="24" /></font>
-      </Text>
-      <Text layoutX="30.0" layoutY="89.0" text="Complete la información de la muestra y cargue la imagen del producto.">
-         <font><Font size="14" /></font>
-      </Text>
+   <HBox layoutX="30" layoutY="120" prefHeight="653.0" prefWidth="732.0" spacing="20">
 
-      <HBox layoutX="30" layoutY="120" spacing="20">
-
-         <!-- Datos de la muestra -->
-         <VBox prefHeight="481.0" prefWidth="378.0" spacing="14.0" style="-fx-background-color: white; -fx-border-radius: 5; -fx-padding: 10; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
-            <Label text="Datos de la Muestra" />
-            <Label text="Descripción" />
-            <TextArea fx:id="txtDescripcion" prefHeight="100" promptText="Ingrese la descripción de la muestra..." />
-            <Label text="Rótulo Cliente" />
-            <TextField fx:id="txtRotuloCliente" promptText="Rótulo Cliente" />
-            <Label text="Cantidad" />
-            <TextField fx:id="txtCantidad" promptText="Cantidad" />
-            <Label text="Estado" />
-            <ComboBox fx:id="comboEstado" promptText="Seleccione un estado..." />
-            <Label text="Fecha de Recepción" />
-            <DatePicker fx:id="fechaRecepcion" />
-            <Label text="Ubicación / Estante" />
-            <TextField fx:id="txtUbicacion" promptText="Ubicación / Estante" />
-            <padding>
-               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-            </padding>
-         </VBox>
-
-         <!-- Imagen del producto -->
-         <VBox prefHeight="531.0" prefWidth="319.0" spacing="14.0" style="-fx-background-color: #ffffff; -fx-padding: 10; -fx-border-radius: 5; -fx-background-radius: 5;">
-            <Label text="Imagen del Producto" />
-            <ImageView fx:id="imgProducto" fitHeight="391.0" fitWidth="304.0" style="-fx-border-color: #cccccc; -fx-border-width: 2; -fx-border-style: dashed" />
-            <Button fx:id="btnSubirImagen" onAction="#SubirImagen" text="Seleccionar imagen" />
-            <Label style="-fx-font-size: 10" text="Formatos permitidos: JPG, PNG, JPEG" />
-            <Label style="-fx-font-size: 10" text="Tamaño máximo: 5MB" />
-         </VBox>
+      <VBox prefHeight="481.0" prefWidth="378.0" spacing="20.0" style="-fx-background-color: white; -fx-border-radius: 5; -fx-padding: 10; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
+         <Label text="Datos de la Muestra" style="-fx-font-weight: bold;" />
+         <Label text="Descripción" style="-fx-font-weight: bold;" />
+         <TextArea fx:id="txtDescripcion" prefHeight="100" promptText="Ingrese la descripción de la muestra..." />
+         <Label text="Rótulo Cliente" style="-fx-font-weight: bold;" />
+         <TextField fx:id="txtRotuloCliente" promptText="Rótulo Cliente" />
+         <Label text="Cantidad" style="-fx-font-weight: bold;"/>
+         <TextField fx:id="txtCantidad" promptText="Cantidad" />
+         <Label text="Estado" style="-fx-font-weight: bold;"/>
+         <ComboBox fx:id="comboEstado" promptText="Seleccione un estado..." />
+         <Label text="Fecha de Recepción" style="-fx-font-weight: bold;"/>
+         <DatePicker fx:id="fechaRecepcion" />
+         <Label text="Ubicación / Estante" style="-fx-font-weight: bold;" />
+         <TextField fx:id="txtUbicacion" promptText="Ubicación / Estante" />
          <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>
-      </HBox>
+      </VBox>
 
-                  <!-- Botones inferiores -->
-      <HBox alignment="CENTER" layoutX="429.0" layoutY="671.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="46.0" prefWidth="319.0" spacing="20" style="-fx-padding: 5; -fx-spacing: 30;">
-         <children>
-            <Button fx:id="btnCancelar" onAction="#cerrarVentana" prefHeight="36.0" prefWidth="79.0" text="Cancelar" />
-            <Button fx:id="btnGuardarMuestra" onAction="#registrarMuestra" prefHeight="36.0" prefWidth="113.0" style="-fx-background-color: #009180; -fx-text-fill: white;" text="Guardar Muestra" />
-         </children>
-      </HBox>
-      <HBox alignment="CENTER_LEFT" layoutX="47.0" layoutY="671.0" prefHeight="46.0" prefWidth="319.0">
-         <children>
-            <Button fx:id="btnLimpiar" onAction="#limpiarCampos" prefHeight="36.0" prefWidth="79.0" text="Limpiar" />
-         </children>
-      </HBox>
+      <VBox prefHeight="520.0" prefWidth="313.0" spacing="20.0" style="-fx-background-color: #ffffff; -fx-padding: 10; -fx-border-radius: 5; -fx-background-radius: 5;">
+         <Label text="Imagen del Producto" />
+         <ImageView fx:id="imgProducto" fitHeight="391.0" fitWidth="304.0" style="-fx-border-color: #cccccc; -fx-border-width: 2; -fx-border-style: dashed" />
+         <Button fx:id="btnSubirImagen" onAction="#SubirImagen" text="Seleccionar imagen" />
+         <Label style="-fx-font-size: 10" text="Formatos permitidos: JPG, PNG, JPEG" />
+         <Label style="-fx-font-size: 10" text="Tamaño máximo: 5MB" />
+      </VBox>
+      <padding>
+         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+      </padding>
+   </HBox>
 
-   </AnchorPane>
-</HBox>
+   <HBox alignment="CENTER" layoutX="423.0" layoutY="777.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="46.0" prefWidth="319.0" spacing="20" style="-fx-padding: 5; -fx-spacing: 30;">
+      <children>
+         <Button fx:id="btnCancelar" onAction="#cerrarVentana" prefHeight="36.0" prefWidth="79.0" text="Cancelar" />
+         <Button fx:id="btnGuardarMuestra" onAction="#registrarMuestra" prefHeight="36.0" prefWidth="113.0" style="-fx-background-color: #009180; -fx-text-fill: white;" text="Guardar Muestra" />
+      </children>
+   </HBox>
+   <HBox alignment="CENTER_LEFT" layoutX="36.0" layoutY="777.0" prefHeight="46.0" prefWidth="319.0">
+      <children>
+         <Button fx:id="btnLimpiar" onAction="#limpiarCampos" prefHeight="36.0" prefWidth="79.0" text="Limpiar" />
+      </children>
+   </HBox>
+
+</AnchorPane>

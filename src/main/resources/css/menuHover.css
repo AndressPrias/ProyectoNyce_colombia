@@ -1,0 +1,29 @@
+/* Botones del menú lateral */
+.button-menu {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-padding: 10 20 10 20;
+    -fx-cursor: hand;
+    -fx-scale-x: 1;
+    -fx-scale-y: 1;
+}
+
+.button-menu:hover {
+    -fx-background-color: #007a64;
+}
+
+/* Sección actualmente visible */
+.button-menu.menu-activo {
+    -fx-background-color: #016B5E;
+}
+
+.button-menu.menu-activo:hover {
+    -fx-background-color: #018f7d;
+}
+
+/* Cerrar sesión: sin estado activo */
+.button-menu.menu-cerrar:hover {
+    -fx-background-color: #b33a3a;
+}

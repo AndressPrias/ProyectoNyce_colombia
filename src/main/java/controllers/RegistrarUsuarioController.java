@@ -6,7 +6,8 @@ import domain.Usuario;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.stage.Stage;
+import utilities.Navegacion;
+import utilities.UsuarioSesion;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -68,6 +69,8 @@ public class RegistrarUsuarioController {
     }
 
     public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+        UsuarioSesion.setUsuario(usuario);
     }
 
     @FXML
@@ -75,8 +78,6 @@ public class RegistrarUsuarioController {
 
     @FXML
     void salir() {
-        // Cierra la ventana actual
-        Stage stage = (Stage) txtNombre.getScene().getWindow(); // cualquier componente que esté en la ventana
-        stage.close();
+        Navegacion.irInicio();
     }
 }

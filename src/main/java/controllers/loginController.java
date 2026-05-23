@@ -24,17 +24,17 @@ public class loginController {
 
     @FXML private TextField txtUsuario;
     @FXML private PasswordField txtPassword;
-    @FXML private Label lblMensaje; // oculto por defecto en FXML
+    @FXML private Label lblMensaje;
 
     @FXML
     public void initialize() {
-        lblMensaje.setVisible(false); // Label no visible al inicio
+        lblMensaje.setVisible(false);
     }
 
     @FXML
     void iniciarSesion(ActionEvent event) {
         String nombre = txtUsuario.getText();
-        String password = txtPassword.getText(); // opcional si quieres validar
+        String password = txtPassword.getText();
 
         if (nombre.isEmpty() || password.isEmpty()) {
             lblMensaje.setText("Debe completar todos los campos");
@@ -49,22 +49,16 @@ public class loginController {
             lblMensaje.setVisible(true);
 
             try {
-                // Cargar Menu Principal
-                FXMLLoader loader = new FXMLLoader(getClass().getResource(Paths.MENU_PRINCIPAL));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource(Paths.APP_SHELL));
                 Parent root = loader.load();
 
-                // Pasar usuario al menú
-                controllers.MenuPrincipalController controller = loader.getController();
+                AppShellController shell = loader.getController();
+                shell.iniciarSesion(usuarioLogueado);
 
-                controller.setUsuario(usuarioLogueado);
-
-                Stage stage = new Stage();
-                stage.setTitle("Menú Principal");
+                Stage stage = (Stage) txtUsuario.getScene().getWindow();
                 stage.setScene(new Scene(root));
-                stage.show();
-
-                // Cerrar ventana de login
-                ((Stage) txtUsuario.getScene().getWindow()).close();
+                stage.setTitle("Sistema NYCE");
+                stage.setMaximized(true);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -76,7 +70,6 @@ public class loginController {
         }
     }
 
-    // Método para buscar usuario en H2
     private Usuario consultarUsuario(String nombre) {
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(

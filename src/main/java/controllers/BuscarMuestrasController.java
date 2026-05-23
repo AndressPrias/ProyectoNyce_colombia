@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import utilities.UsuarioSesion;
 
 public class BuscarMuestrasController {
 
@@ -45,6 +46,8 @@ public class BuscarMuestrasController {
     @FXML private Label lblDetalleUbicacion;
 
     private ObservableList<Muestra> listaMuestras = FXCollections.observableArrayList();
+
+    private Usuario usuario;
 
     @FXML
     public void initialize() {
@@ -127,5 +130,7 @@ public class BuscarMuestrasController {
     }
 
     public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+        UsuarioSesion.setUsuario(usuario);
     }
 }
