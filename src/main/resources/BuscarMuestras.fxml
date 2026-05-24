@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
@@ -20,79 +15,43 @@
     <Text style="-fx-font-size: 24; -fx-font-weight: bold" text="Buscar Muestra" />
     <Text style="-fx-font-size: 14" text="Consulta y visualiza las muestras registradas en el sistema." />
 
-    <GridPane hgap="10" vgap="10">
-        <Label style="-fx-font-weight: bold;" text="Descripción" />
-        <TextField fx:id="txtDescripcion" GridPane.columnIndex="1" />
+    <VBox spacing="8.0" style="-fx-background-color: #ffffff; -fx-padding: 14; -fx-background-radius: 5;">
+        <Label style="-fx-font-weight: bold;" text="Busqueda general" />
+        <HBox spacing="10.0">
+            <TextField fx:id="txtBusquedaGeneral" onAction="#buscarMuestras" promptText="Buscar por codigo, descripcion, estado, ubicacion, fecha o cualquier valor..." HBox.hgrow="ALWAYS" />
+            <Button fx:id="btnBuscar" onAction="#buscarMuestras" text="Buscar" />
+            <Button fx:id="btnLimpiar" onAction="#limpiarFiltros" text="Limpiar" />
+        </HBox>
+    </VBox>
 
-        <Label style="-fx-font-weight: bold;" text="Rótulo Cliente" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-        <TextField fx:id="txtRotuloCliente" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-
-        <Label style="-fx-font-weight: bold;" text="Cantidad" GridPane.rowIndex="1" />
-        <TextField fx:id="txtCantidadDesde" promptText="Desde" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-        <TextField fx:id="txtCantidadHasta" promptText="Hasta" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-
-        <Label style="-fx-font-weight: bold;" text="Estado" GridPane.rowIndex="2" />
-        <ComboBox fx:id="comboEstado" promptText="Seleccione estado..." GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-        <Label style="-fx-font-weight: bold;" text="Fecha de recepción" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-        <DatePicker fx:id="fechaDesde" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-        <DatePicker fx:id="fechaHasta" GridPane.columnIndex="4" GridPane.rowIndex="2" />
-
-        <Label style="-fx-font-weight: bold;" text="Ubicación / Estante" GridPane.rowIndex="3" />
-        <ComboBox fx:id="comboUbicacion" promptText="Seleccione ubicación..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
-
-        <Button fx:id="btnAnterior" text="&amp;lt;&amp;lt;" GridPane.columnIndex="3" GridPane.rowIndex="3" />
-        <Button fx:id="btnPagina1" text="1" GridPane.columnIndex="4" GridPane.rowIndex="3" />
-        <Button fx:id="btnPagina2" text="2" GridPane.columnIndex="5" GridPane.rowIndex="3" />
-        <Button fx:id="btnSiguiente" text="&amp;gt;&amp;gt;" GridPane.columnIndex="6" GridPane.rowIndex="3" />
-
-        <Button fx:id="btnLimpiar" onAction="#limpiarFiltros" text="Limpiar" GridPane.columnIndex="3" GridPane.rowIndex="4" />
-        <Button fx:id="btnBuscar" onAction="#buscarMuestras" text="Buscar" GridPane.columnIndex="4" GridPane.rowIndex="4" />
-     <columnConstraints>
-        <ColumnConstraints />
-        <ColumnConstraints />
-        <ColumnConstraints />
-        <ColumnConstraints />
-        <ColumnConstraints />
-        <ColumnConstraints />
-        <ColumnConstraints />
-     </columnConstraints>
-     <rowConstraints>
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-     </rowConstraints>
-    </GridPane>
-
+    //tabla visualización muestras
     <HBox spacing="20" VBox.vgrow="ALWAYS">
         <TableView fx:id="tblResultados" prefHeight="514.0" prefWidth="828.0" HBox.hgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colDescripcion" prefWidth="216.0" text="Descripción" />
-                <TableColumn fx:id="colRotulo" prefWidth="91.0" text="Rótulo Cliente" />
+                <TableColumn fx:id="colDescripcion" prefWidth="216.0" text="Descripcion" />
+                <TableColumn fx:id="colRotulo" prefWidth="91.0" text="Rotulo Cliente" />
                 <TableColumn fx:id="colCantidad" prefWidth="69.0" text="Cantidad" />
                 <TableColumn fx:id="colEstado" prefWidth="97.0" text="Estado" />
-                <TableColumn fx:id="colFecha" prefWidth="123.0" text="Fecha de recepción" />
-                <TableColumn fx:id="colUbicacion" prefWidth="142.0" text="Ubicación / Estante" />
+                <TableColumn fx:id="colFecha" prefWidth="123.0" text="Fecha de recepcion" />
+                <TableColumn fx:id="colUbicacion" prefWidth="142.0" text="Ubicacion / Estante" />
             </columns>
         </TableView>
 
         <VBox prefHeight="491.0" prefWidth="409.0" spacing="5.0" style="-fx-background-color: #ffffff; -fx-padding: 10; -fx-border-radius: 5; -fx-background-radius: 5;">
-            <ImageView fx:id="imgDetalle" fitHeight="200" fitWidth="200" />
-            <Label text="Descripción:" />
+            <ImageView fx:id="imgDetalle" fitHeight="200" fitWidth="200" preserveRatio="true" />
+            <Label text="Descripcion:" />
             <Label fx:id="lblDetalleDescripcion" />
-            <Label text="Rótulo Cliente:" />
+            <Label text="Rotulo Cliente:" />
             <Label fx:id="lblDetalleRotulo" />
             <Label text="Cantidad:" />
             <Label fx:id="lblDetalleCantidad" />
             <Label text="Estado:" />
             <Label fx:id="lblDetalleEstado" />
-            <Label text="Fecha de recepción:" />
+            <Label text="Fecha de recepcion:" />
             <Label fx:id="lblDetalleFecha" />
-            <Label text="Ubicación / Estante:" />
+            <Label text="Ubicacion / Estante:" />
             <Label fx:id="lblDetalleUbicacion" />
-            <Button fx:id="btnVerImagen" text="Ver imagen completa" />
+            <Button fx:id="btnVerImagen" text="Editar Muestra" />
         </VBox>
     </HBox>
 </VBox>

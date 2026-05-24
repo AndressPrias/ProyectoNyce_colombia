@@ -15,6 +15,9 @@ import javafx.util.Duration;
 import utilities.Navegacion;
 import utilities.UsuarioSesion;
 
+import java.net.URL;
+import java.io.File;
+
 public class MenuPrincipalController {
 
     @FXML private Circle imgfotoPerfil;
@@ -49,13 +52,30 @@ public class MenuPrincipalController {
         }
 
         try {
-            Image imagen = new Image(new java.io.File(usuarioLogueado.getRutaFoto()).toURI().toString(), false);
-            if (!imagen.isError()) {
+            Image imagen = cargarImagen(usuarioLogueado.getRutaFoto());
+            if (imagen != null && !imagen.isError()) {
                 imgfotoPerfil.setFill(new ImagePattern(imagen));
             }
         } catch (Exception e) {
             imgfotoPerfil.setFill(Color.web("#d9d9d9"));
         }
+    }
+
+    private Image cargarImagen(String rutaFoto) {
+        if (rutaFoto.startsWith("/")) {
+            URL recurso = getClass().getResource(rutaFoto);
+            if (recurso != null) {
+                return new Image(recurso.toExternalForm(), false);
+            }
+
+            File archivoRecurso = new File("src/main/resources" + rutaFoto);
+            if (archivoRecurso.exists()) {
+                return new Image(archivoRecurso.toURI().toString(), false);
+            }
+
+            return null;
+        }
+        return new Image(new java.io.File(rutaFoto).toURI().toString(), false);
     }
 
     private void actualizarFechaHora() {

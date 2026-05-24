@@ -29,11 +29,18 @@ public class Database {
                             "id INT AUTO_INCREMENT PRIMARY KEY," +
                             "nombre VARCHAR(100) NOT NULL," +
                             "rol VARCHAR(20) NOT NULL," +
+                            "password VARCHAR(100)," +
                             "rutaFoto VARCHAR(255)" +
                             ");"
             );
             conn.createStatement().execute(
+                    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS password VARCHAR(100);"
+            );
+            conn.createStatement().execute(
                     "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS rutaFoto VARCHAR(255);"
+            );
+            conn.createStatement().execute(
+                    "UPDATE usuarios SET password = nombre WHERE password IS NULL;"
             );
 
             conn.createStatement().execute(
@@ -68,13 +75,14 @@ public class Database {
                             ");"
             );
 
-            // Usuarios de prueba
-            try (PreparedStatement ps = conn.prepareStatement("INSERT INTO usuarios (nombre, rol) VALUES (?, ?)")) {
-                ps.setString(1, "Admin"); ps.setString(2, "ADMIN"); ps.executeUpdate();
-                ps.setString(1, "carlos"); ps.setString(2, "TECNICO"); ps.executeUpdate();
-                ps.setString(1, "Miguel Orozco"); ps.setString(2, "SUPERVISOR"); ps.executeUpdate();
-            } catch (SQLException e) {
-                System.out.println("Usuarios de prueba ya existen.");
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "INSERT INTO usuarios (nombre, rol, password) " +
+                            "SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE LOWER(nombre) = LOWER(?))")) {
+                ps.setString(1, "admin");
+                ps.setString(2, "ADMIN");
+                ps.setString(3, "admin");
+                ps.setString(4, "admin");
+                ps.executeUpdate();
             }
 
             System.out.println("Base de datos inicializada con usuarios de prueba.");

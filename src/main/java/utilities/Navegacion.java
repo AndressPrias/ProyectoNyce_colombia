@@ -2,10 +2,10 @@ package utilities;
 
 import controllers.AppShellController;
 import controllers.BuscarMuestrasController;
+import controllers.GestionarUsuariosController;
 import controllers.MenuLateralController;
 import controllers.MenuPrincipalController;
 import controllers.RegistrarMuestraController;
-import controllers.RegistrarUsuarioController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -53,12 +53,12 @@ public final class Navegacion {
     }
 
     public static void irRegistrarUsuario() {
-        cargar(Paths.REGISTRAR_USUARIO, "Registrar Usuario", controller -> {
-            if (controller instanceof RegistrarUsuarioController c) {
+        cargar(Paths.GESTIONAR_USUARIOS, "Gestionar Usuarios", controller -> {
+            if (controller instanceof GestionarUsuariosController c) {
                 c.setUsuario(UsuarioSesion.getUsuario());
             }
         });
-        marcarSeccionActiva(SeccionApp.REGISTRAR_USUARIO);
+        marcarSeccionActiva(SeccionApp.GESTIONAR_USUARIOS);
     }
 
     public static void irBuscarMuestras() {

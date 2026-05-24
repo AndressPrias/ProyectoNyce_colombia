@@ -3,6 +3,6 @@ package utilities;
 public enum SeccionApp {
     INICIO,
     REGISTRAR_MUESTRA,
-    REGISTRAR_USUARIO,
+    GESTIONAR_USUARIOS,
     BUSCAR_MUESTRAS
 }

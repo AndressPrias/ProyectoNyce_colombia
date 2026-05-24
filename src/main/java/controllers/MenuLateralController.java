@@ -48,7 +48,7 @@ public class MenuLateralController {
         Button activo = switch (seccion) {
             case INICIO -> btnInicio;
             case REGISTRAR_MUESTRA -> btnRegistrarMuestra;
-            case REGISTRAR_USUARIO -> btnRegistrarUsuario;
+            case GESTIONAR_USUARIOS -> btnRegistrarUsuario;
             case BUSCAR_MUESTRAS -> btnBuscarMuestra;
         };
 

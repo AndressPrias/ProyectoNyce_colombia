@@ -41,7 +41,7 @@
             </ImageView>
          </graphic>
       </Button>
-      <Button fx:id="btnRegistrarUsuario" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#abrirRegistrarUsuario" prefHeight="40.0" styleClass="button-menu" text="Registrar Usuario">
+      <Button fx:id="btnRegistrarUsuario" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#abrirRegistrarUsuario" prefHeight="40.0" styleClass="button-menu" text="Gestionar Usuarios">
          <graphic>
             <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                <image>

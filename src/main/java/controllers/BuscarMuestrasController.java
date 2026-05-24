@@ -16,18 +16,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.io.File;
 import utilities.UsuarioSesion;
 
 public class BuscarMuestrasController {
 
-    @FXML private TextField txtDescripcion;
-    @FXML private TextField txtRotuloCliente;
-    @FXML private TextField txtCantidadDesde;
-    @FXML private TextField txtCantidadHasta;
-    @FXML private ComboBox<String> comboEstado;
-    @FXML private DatePicker fechaDesde;
-    @FXML private DatePicker fechaHasta;
-    @FXML private ComboBox<String> comboUbicacion;
+    @FXML private TextField txtBusquedaGeneral;
 
     @FXML private TableView<Muestra> tblResultados;
     @FXML private TableColumn<Muestra, String> colDescripcion;
@@ -77,10 +71,19 @@ public class BuscarMuestrasController {
         listaMuestras.clear();
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
-                     "SELECT * FROM muestras WHERE descripcion LIKE ? AND rotuloCliente LIKE ?")) {
+                     "SELECT * FROM muestras WHERE " +
+                             "LOWER(COALESCE(codigoInterno, '')) LIKE ? OR " +
+                             "LOWER(COALESCE(descripcion, '')) LIKE ? OR " +
+                             "LOWER(COALESCE(rotuloCliente, '')) LIKE ? OR " +
+                             "LOWER(COALESCE(estado, '')) LIKE ? OR " +
+                             "LOWER(COALESCE(ubicacion, '')) LIKE ? OR " +
+                             "CAST(cantidad AS VARCHAR) LIKE ? OR " +
+                             "CAST(fechaRecepcion AS VARCHAR) LIKE ?")) {
 
-            ps.setString(1, "%" + txtDescripcion.getText() + "%");
-            ps.setString(2, "%" + txtRotuloCliente.getText() + "%");
+            String busqueda = "%" + txtBusquedaGeneral.getText().trim().toLowerCase() + "%";
+            for (int i = 1; i <= 7; i++) {
+                ps.setString(i, busqueda);
+            }
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -89,8 +92,10 @@ public class BuscarMuestrasController {
                 m.setRotuloCliente(rs.getString("rotuloCliente"));
                 m.setCantidad(rs.getInt("cantidad"));
                 m.setEstado(Estado.valueOf(rs.getString("estado")));
-                m.setFechaRecepcion(rs.getDate("fechaRecepcion").toLocalDate());
+                java.sql.Date fecha = rs.getDate("fechaRecepcion");
+                m.setFechaRecepcion(fecha == null ? null : fecha.toLocalDate());
                 m.setUbicacion(rs.getString("ubicacion"));
+                m.setRutaFoto(rs.getString("rutaFoto"));
                 listaMuestras.add(m);
             }
 
@@ -104,13 +109,25 @@ public class BuscarMuestrasController {
         lblDetalleRotulo.setText(muestra.getRotuloCliente());
         lblDetalleCantidad.setText(String.valueOf(muestra.getCantidad()));
         lblDetalleEstado.setText(muestra.getEstado().name());
-        lblDetalleFecha.setText(muestra.getFechaRecepcion().toString());
+        lblDetalleFecha.setText(muestra.getFechaRecepcion() == null ? "" : muestra.getFechaRecepcion().toString());
         lblDetalleUbicacion.setText(muestra.getUbicacion());
 
-        // Cargar imagen si existe
+        cargarImagenDetalle(muestra.getRutaFoto());
+    }
+
+    private void cargarImagenDetalle(String rutaFoto) {
+        if (rutaFoto == null || rutaFoto.isBlank()) {
+            imgDetalle.setImage(null);
+            return;
+        }
+
         try {
-            Image img = new Image("file:" + muestra.getRutaFoto());
-            imgDetalle.setImage(img);
+            File archivo = new File(rutaFoto);
+            Image img = archivo.exists()
+                    ? new Image(archivo.toURI().toString())
+                    : new Image(rutaFoto);
+
+            imgDetalle.setImage(img.isError() ? null : img);
         } catch (Exception e) {
             imgDetalle.setImage(null);
         }
@@ -118,14 +135,7 @@ public class BuscarMuestrasController {
 
     @FXML
     void limpiarFiltros() {
-        txtDescripcion.clear();
-        txtRotuloCliente.clear();
-        txtCantidadDesde.clear();
-        txtCantidadHasta.clear();
-        comboEstado.getSelectionModel().clearSelection();
-        comboUbicacion.getSelectionModel().clearSelection();
-        fechaDesde.setValue(null);
-        fechaHasta.setValue(null);
+        txtBusquedaGeneral.clear();
         buscarMuestras();
     }
 

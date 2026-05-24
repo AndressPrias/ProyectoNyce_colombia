@@ -8,7 +8,7 @@ public class Paths {
 
     public static final String MENU_PRINCIPAL = "/MenuPrincipal.fxml";
 
-    public static final String REGISTRAR_USUARIO = "/RegistrarUsuario.fxml";
+    public static final String GESTIONAR_USUARIOS = "/GestionarUsuarios.fxml";
 
     public static final String REGISTRAR_MUESTRA = "/RegistrarMuestra.fxml";
 

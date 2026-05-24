@@ -42,7 +42,7 @@ public class loginController {
             return;
         }
 
-        Usuario usuarioLogueado = consultarUsuario(nombre);
+        Usuario usuarioLogueado = consultarUsuario(nombre, password);
 
         if (usuarioLogueado != null) {
             lblMensaje.setText("Inicio de sesión correcto");
@@ -72,12 +72,13 @@ public class loginController {
         }
     }
 
-    private Usuario consultarUsuario(String nombre) {
+    private Usuario consultarUsuario(String nombre, String password) {
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
-                     "SELECT id, nombre, rol, rutaFoto FROM usuarios WHERE nombre = ?")) {
+                     "SELECT id, nombre, rol, rutaFoto FROM usuarios WHERE nombre = ? AND password = ?")) {
 
             ps.setString(1, nombre);
+            ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {

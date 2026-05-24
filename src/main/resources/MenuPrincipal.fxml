@@ -20,22 +20,26 @@
       
               <!-- Avatar circular -->
               <Circle fx:id="imgfotoPerfil" radius="43.0" />
-            <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+            <HBox prefHeight="86.0" prefWidth="671.0" spacing="5.0">
                <children>
-                    <!-- Bienvenida -->
-                    <Text fill="#456372" text="Bienvenido al Sistema">
+                  <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                     <children>
+                          <!-- Bienvenida -->
+                          <Text fill="#456372" text="Bienvenido al Sistema">
+                              <font>
+                              <Font name="System Bold" size="28.0" />
+                           </font>
+                          </Text>
+                          <Text fill="#456372" text="Selecciona una opción para continuar" />
+                     </children>
+                  </VBox>
+                    <Label fx:id="lblBienvenida" textFill="#456372">
                         <font>
                         <Font name="System Bold" size="28.0" />
                      </font>
-                    </Text>
-                    <Text fill="#456372" text="Selecciona una opción para continuar" />
+                    </Label>
                </children>
-            </VBox>
-              <Label fx:id="lblBienvenida" textFill="#456372">
-                  <font>
-                  <Font name="System Bold" size="28.0" />
-               </font>
-              </Label>
+            </HBox>
          </children>
          <padding>
             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
@@ -59,17 +63,17 @@
                     <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Registra una nueva muestra en el sistema" textAlignment="CENTER" />
                 </VBox>
 
-                <!-- Registrar Usuario -->
+                <!-- Gestionar Usuarios -->
                 <VBox fx:id="cardRegistrarUsuario" alignment="CENTER" onMouseClicked="#abrirRegistrarUsuario" prefHeight="180" prefWidth="160" spacing="40.0" styleClass="card">
                     <ImageView fx:id="iconRegistrarUsuario" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                   <image>
                      <Image url="@icons/iconRUsuario-inicio.png" />
                   </image></ImageView>
-                    <Label text="Registrar Usuario">
+                    <Label text="Gestionar Usuarios">
                   <font>
                      <Font name="System Bold" size="14.0" />
                   </font></Label>
-                    <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Crea un nuevo usuario del sistema" textAlignment="CENTER" />
+                    <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Administra los usuarios del sistema" textAlignment="CENTER" />
                 </VBox>
 
                 <!-- Buscar Muestras -->
