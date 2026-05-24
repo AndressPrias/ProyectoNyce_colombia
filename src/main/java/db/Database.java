@@ -70,7 +70,7 @@ public class Database {
 
             // Usuarios de prueba
             try (PreparedStatement ps = conn.prepareStatement("INSERT INTO usuarios (nombre, rol) VALUES (?, ?)")) {
-                ps.setString(1, "Admin"); ps.setString(2, "Admin"); ps.executeUpdate();
+                ps.setString(1, "Admin"); ps.setString(2, "ADMIN"); ps.executeUpdate();
                 ps.setString(1, "carlos"); ps.setString(2, "TECNICO"); ps.executeUpdate();
                 ps.setString(1, "Miguel Orozco"); ps.setString(2, "SUPERVISOR"); ps.executeUpdate();
             } catch (SQLException e) {

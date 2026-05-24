@@ -27,6 +27,12 @@
               </Text>
             <HBox alignment="CENTER" prefHeight="40.0" prefWidth="251.0" spacing="15.0">
                <children>
+                  <Label text="Editar" textFill="WHITE" />
+                  <ComboBox fx:id="comboUsuarioEditar" prefWidth="200.0" promptText="Selecionar usuario" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="40.0" prefWidth="251.0" spacing="15.0">
+               <children>
                   <ImageView fx:id="imgRegistrarUsuarioNom" cache="true" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" smooth="true">
                      <image>
                         <Image url="@icons/iconRUsuario-inicio.png" />
@@ -63,9 +69,9 @@
             <HBox alignment="CENTER" prefHeight="40.0" prefWidth="251.0" spacing="15.0">
                <children>
                   <Button fx:id="btnSalir" onAction="#salir" prefHeight="25.0" prefWidth="64.0" text="Salir" />
-                  <Region prefHeight="40.0" prefWidth="60.0" />
-            
-                          <Button fx:id="btnRegistrar" onAction="#registrarUsuario" text="Registrar" />
+                  <Button onAction="#nuevoUsuario" text="Nuevo" />
+                  <Button fx:id="btnRegistrar" onAction="#registrarUsuario" text="Registrar" />
+                  <Button onAction="#eliminarUsuario" style="-fx-background-color: #E4002B; -fx-text-fill: white;" text="Eliminar" />
                </children>
             </HBox>
             <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="15.0" stylesheets="@css/dashboard.css">

@@ -84,7 +84,7 @@ public class loginController {
                 int id = rs.getInt("id");
                 String rolStr = rs.getString("rol");
                 String rutaFoto = rs.getString("rutaFoto");
-                Rol rol = Rol.valueOf(rolStr);
+                Rol rol = Rol.valueOf(rolStr.toUpperCase());
                 return new Usuario(id, nombre, rol, rutaFoto);
             }
 

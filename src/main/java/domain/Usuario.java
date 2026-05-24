@@ -26,4 +26,9 @@ public class Usuario {
     public void setNombre(String nombre) { this.nombre = nombre; }
     public void setRol(Rol rol) { this.rol = rol; }
     public void setRutaFoto(String rutaFoto) { this.rutaFoto = rutaFoto; }
+
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }
