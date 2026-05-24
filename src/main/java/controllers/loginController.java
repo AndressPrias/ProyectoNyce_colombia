@@ -75,7 +75,7 @@ public class loginController {
     private Usuario consultarUsuario(String nombre) {
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
-                     "SELECT id, nombre, rol FROM usuarios WHERE nombre = ?")) {
+                     "SELECT id, nombre, rol, rutaFoto FROM usuarios WHERE nombre = ?")) {
 
             ps.setString(1, nombre);
             ResultSet rs = ps.executeQuery();
@@ -83,8 +83,9 @@ public class loginController {
             if (rs.next()) {
                 int id = rs.getInt("id");
                 String rolStr = rs.getString("rol");
+                String rutaFoto = rs.getString("rutaFoto");
                 Rol rol = Rol.valueOf(rolStr);
-                return new Usuario(id, nombre, rol);
+                return new Usuario(id, nombre, rol, rutaFoto);
             }
 
         } catch (SQLException e) {

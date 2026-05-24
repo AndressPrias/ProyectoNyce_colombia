@@ -28,8 +28,12 @@ public class Database {
                     "CREATE TABLE IF NOT EXISTS usuarios (" +
                             "id INT AUTO_INCREMENT PRIMARY KEY," +
                             "nombre VARCHAR(100) NOT NULL," +
-                            "rol VARCHAR(20) NOT NULL" +
+                            "rol VARCHAR(20) NOT NULL," +
+                            "rutaFoto VARCHAR(255)" +
                             ");"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS rutaFoto VARCHAR(255);"
             );
 
             conn.createStatement().execute(

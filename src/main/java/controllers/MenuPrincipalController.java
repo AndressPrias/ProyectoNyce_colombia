@@ -5,7 +5,10 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -31,6 +34,27 @@ public class MenuPrincipalController {
         UsuarioSesion.setUsuario(usuarioLogueado);
         if (lblBienvenida != null && usuarioLogueado != null) {
             lblBienvenida.setText(usuarioLogueado.getNombre());
+        }
+        cargarFotoPerfil(usuarioLogueado);
+    }
+
+    private void cargarFotoPerfil(Usuario usuarioLogueado) {
+        if (imgfotoPerfil == null) {
+            return;
+        }
+
+        imgfotoPerfil.setFill(Color.web("#d9d9d9"));
+        if (usuarioLogueado == null || usuarioLogueado.getRutaFoto() == null || usuarioLogueado.getRutaFoto().isBlank()) {
+            return;
+        }
+
+        try {
+            Image imagen = new Image(new java.io.File(usuarioLogueado.getRutaFoto()).toURI().toString(), false);
+            if (!imagen.isError()) {
+                imgfotoPerfil.setFill(new ImagePattern(imagen));
+            }
+        } catch (Exception e) {
+            imgfotoPerfil.setFill(Color.web("#d9d9d9"));
         }
     }
 

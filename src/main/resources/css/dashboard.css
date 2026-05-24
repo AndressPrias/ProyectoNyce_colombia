@@ -63,3 +63,10 @@
     -fx-background-radius: 5;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);
 }
+.Borde-image{
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 2, 0, 0, 0);
+    -fx-background-color: white;
+    -fx-border-color: white;
+    -fx-border-width: 3px;
+    -fx-border-style: solid;
+}
