@@ -1,6 +1,6 @@
 package utilities;
 
-import controllers.AppShellController;
+import controllers.ControladorBaseController;
 import controllers.BuscarMuestrasController;
 import controllers.GestionarUsuariosController;
 import controllers.MenuLateralController;
@@ -15,12 +15,12 @@ import java.io.IOException;
 
 public final class Navegacion {
 
-    private static AppShellController shell;
+    private static ControladorBaseController shell;
     private static MenuLateralController menuLateral;
 
     private Navegacion() {}
 
-    public static void registrarShell(AppShellController controlador) {
+    public static void registrarShell(ControladorBaseController controlador) {
         shell = controlador;
     }
 

@@ -15,6 +15,12 @@ import java.util.List;
 
 public class MuestraService {
 
+    public static void actualizarMuestra(int id, String descripcion, String rotulo, int cantidad, Estado estado, LocalDate fecha, String ubicacion, String rutaFotoSeleccionada) {
+    }
+
+    public static void registrarMuestra(String descripcion, String rotulo, int cantidad, Estado estado, LocalDate fecha, String ubicacion, String rutaFotoSeleccionada) {
+    }
+
     public String generarCodigoInterno() {
         String fecha = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         int consecutivo = 1;
@@ -149,5 +155,8 @@ public class MuestraService {
             e.printStackTrace();
         }
         return lista;
+    }
+
+    public void actualizarMuestra(Muestra muestraEditando) {
     }
 }

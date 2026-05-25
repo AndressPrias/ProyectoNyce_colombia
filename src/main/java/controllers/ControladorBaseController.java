@@ -14,7 +14,7 @@ import utilities.Paths;
 import utilities.UsuarioSesion;
 import domain.Usuario;
 
-public class AppShellController {
+public class ControladorBaseController {
 
     @FXML
     private StackPane areaContenido;

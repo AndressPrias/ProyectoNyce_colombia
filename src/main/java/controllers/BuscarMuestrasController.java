@@ -7,6 +7,9 @@ import domain.Usuario;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
@@ -17,6 +20,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.io.File;
+
+import javafx.stage.Stage;
 import utilities.UsuarioSesion;
 
 public class BuscarMuestrasController {
@@ -142,5 +147,32 @@ public class BuscarMuestrasController {
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
         UsuarioSesion.setUsuario(usuario);
+    }
+
+    @FXML
+    void editarMuestra() {
+        Muestra muestraSeleccionada = tblResultados.getSelectionModel().getSelectedItem();
+        if (muestraSeleccionada == null) {
+            System.out.println("No hay muestra seleccionada");
+            return;
+        }
+
+        // Abrir ventana de registro de muestra
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/RegistrarMuestra.fxml"));
+            Parent root = loader.load();
+
+            // Pasar la muestra seleccionada al controlador de RegistrarMuestra
+            RegistrarMuestraController controller = loader.getController();
+            controller.setMuestraEditando(muestraSeleccionada);
+
+            Stage stage = new Stage();
+            stage.setTitle("Editar Muestra");
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

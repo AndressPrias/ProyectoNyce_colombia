@@ -49,7 +49,7 @@
                   <Label style="-fx-font-weight: bold;" text="Estado" />
                   <ComboBox fx:id="comboEstado" maxWidth="1.7976931348623157E308" promptText="Seleccione un estado..." />
                   <Label style="-fx-font-weight: bold;" text="Fecha de Recepcion" />
-                  <DatePicker fx:id="fechaRecepcion" maxWidth="1.7976931348623157E308" />
+                  <DatePicker fx:id="fechaRecepcionPicker" maxWidth="1.7976931348623157E308" />
                   <Label style="-fx-font-weight: bold;" text="Ubicacion / Estante" />
                   <TextField fx:id="txtUbicacion" maxWidth="1.7976931348623157E308" promptText="Ubicacion / Estante" />
                </children>

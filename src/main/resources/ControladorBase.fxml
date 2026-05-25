@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 
-<HBox prefHeight="831.0" prefWidth="1312.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AppShellController">
+<HBox prefHeight="831.0" prefWidth="1312.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ControladorBaseController">
 
     <fx:include fx:id="menuLateral" source="MenuLateral.fxml" />
 

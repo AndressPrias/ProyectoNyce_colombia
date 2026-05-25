@@ -8,6 +8,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
 <VBox spacing="20" style="-fx-background-color: #f5f5f5; -fx-padding: 20;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BuscarMuestrasController">
@@ -23,8 +24,7 @@
             <Button fx:id="btnLimpiar" onAction="#limpiarFiltros" text="Limpiar" />
         </HBox>
     </VBox>
-
-    //tabla visualización muestras
+    
     <HBox spacing="20" VBox.vgrow="ALWAYS">
         <TableView fx:id="tblResultados" prefHeight="514.0" prefWidth="828.0" HBox.hgrow="ALWAYS">
             <columns>
@@ -37,21 +37,24 @@
             </columns>
         </TableView>
 
-        <VBox prefHeight="491.0" prefWidth="409.0" spacing="5.0" style="-fx-background-color: #ffffff; -fx-padding: 10; -fx-border-radius: 5; -fx-background-radius: 5;">
+        <VBox fx:id="vboxVistaMuestra" prefHeight="491.0" prefWidth="409.0" spacing="5.0" style="-fx-background-color: #ffffff; -fx-padding: 10; -fx-border-radius: 5; -fx-background-radius: 5;">
             <ImageView fx:id="imgDetalle" fitHeight="200" fitWidth="200" preserveRatio="true" />
-            <Label text="Descripcion:" />
+            <Label text="Descripcion:">
+            <font>
+               <Font name="System Bold" size="12.0" />
+            </font></Label>
             <Label fx:id="lblDetalleDescripcion" />
-            <Label text="Rotulo Cliente:" />
+            <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Rotulo Cliente:" />
             <Label fx:id="lblDetalleRotulo" />
-            <Label text="Cantidad:" />
+            <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Cantidad:" />
             <Label fx:id="lblDetalleCantidad" />
-            <Label text="Estado:" />
+            <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Estado:" />
             <Label fx:id="lblDetalleEstado" />
-            <Label text="Fecha de recepcion:" />
+            <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Fecha de recepcion:" />
             <Label fx:id="lblDetalleFecha" />
-            <Label text="Ubicacion / Estante:" />
+            <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Ubicacion / Estante:" />
             <Label fx:id="lblDetalleUbicacion" />
-            <Button fx:id="btnVerImagen" text="Editar Muestra" />
+            <Button fx:id="btnEditarMuestra" onAction="#editarMuestra" text="Editar Muestra" />
         </VBox>
     </HBox>
 </VBox>

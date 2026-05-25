@@ -20,7 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class loginController {
+public class LoginController {
 
     @FXML private TextField txtUsuario;
     @FXML private PasswordField txtPassword;
@@ -52,7 +52,7 @@ public class loginController {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource(Paths.APP_SHELL));
                 Parent root = loader.load();
 
-                AppShellController shell = loader.getController();
+                ControladorBaseController shell = loader.getController();
                 shell.iniciarSesion(usuarioLogueado);
 
                 Stage stage = (Stage) txtUsuario.getScene().getWindow();
