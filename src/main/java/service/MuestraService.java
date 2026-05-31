@@ -157,6 +157,25 @@ public class MuestraService {
         return lista;
     }
 
-    public void actualizarMuestra(Muestra muestraEditando) {
+    public void actualizarMuestra(Muestra muestra) {
+        String sql = "UPDATE muestras SET descripcion=?, rotuloCliente=?, cantidad=?, estado=?, fechaRecepcion=?, ubicacion=?, rutaFoto=? WHERE id=?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, muestra.getDescripcion());
+            ps.setString(2, muestra.getRotuloCliente());
+            ps.setInt(3, muestra.getCantidad());
+            ps.setString(4, muestra.getEstado().name());
+            ps.setObject(5, muestra.getFechaRecepcion()); // LocalDate compatible
+            ps.setString(6, muestra.getUbicacion());
+            ps.setString(7, muestra.getRutaFoto());
+            ps.setInt(8, muestra.getId());
+
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -13,7 +13,7 @@
 
 <VBox spacing="20" style="-fx-background-color: #f5f5f5; -fx-padding: 20;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BuscarMuestrasController">
 
-    <Text style="-fx-font-size: 24; -fx-font-weight: bold" text="Buscar Muestra" />
+    <Text style="-fx-font-size: 24; -fx-font-weight: bold" text="Buscar y Gestionar Muestras" />
     <Text style="-fx-font-size: 14" text="Consulta y visualiza las muestras registradas en el sistema." />
 
     <VBox spacing="8.0" style="-fx-background-color: #ffffff; -fx-padding: 14; -fx-background-radius: 5;">
@@ -55,6 +55,8 @@
             <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Ubicacion / Estante:" />
             <Label fx:id="lblDetalleUbicacion" />
             <Button fx:id="btnEditarMuestra" onAction="#editarMuestra" text="Editar Muestra" />
+         <Button fx:id="btnEditarMuestra1" onAction="#editarMuestra" text="Asignar Técnico" />
+         <Button fx:id="btnEditarMuestra11" onAction="#editarMuestra" text="Almacenar Muestra" />
         </VBox>
     </HBox>
 </VBox>

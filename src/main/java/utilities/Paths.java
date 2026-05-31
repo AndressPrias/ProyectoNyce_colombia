@@ -2,7 +2,7 @@ package utilities;
 
 public class Paths {
 
-    public static final String LOGIN = "/login.fxml";
+    public static final String LOGIN = "/Login.fxml";
 
     public static final String APP_SHELL = "/ControladorBase.fxml";
 

@@ -159,12 +159,12 @@ public class BuscarMuestrasController {
 
         // Abrir ventana de registro de muestra
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/RegistrarMuestra.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/EditarMuestra.fxml"));
             Parent root = loader.load();
 
-            // Pasar la muestra seleccionada al controlador de RegistrarMuestra
-            RegistrarMuestraController controller = loader.getController();
-            controller.setMuestraEditando(muestraSeleccionada);
+            // Pasar la muestra seleccionada al controlador de EditarMuestra
+            EditarMuestraController controller = loader.getController();
+            controller.editarMuestra(muestraSeleccionada);
 
             Stage stage = new Stage();
             stage.setTitle("Editar Muestra");

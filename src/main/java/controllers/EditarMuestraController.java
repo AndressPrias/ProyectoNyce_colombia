@@ -15,7 +15,7 @@ import service.MuestraService;
 import java.io.File;
 import java.time.LocalDate;
 
-public class RegistrarMuestraController {
+public class EditarMuestraController {
 
     @FXML private TextArea txtDescripcion;
     @FXML private TextField txtRotuloCliente;
@@ -25,12 +25,14 @@ public class RegistrarMuestraController {
     @FXML private DatePicker fechaRecepcionPicker;
     @FXML private Label lblMensaje;
     @FXML private Button btnSubirImagen;
-    @FXML private ImageView imgProducto; // para mostrar la imagen seleccionada
+    @FXML private ImageView imgProducto;
 
     private Muestra muestraEditando = null;
     private String rutaFotoSeleccionada = "";
+    private Usuario usuario;
 
-    public void setMuestraEditando(Muestra muestra) {
+    /** Establecer la muestra que se va a editar */
+    public void editarMuestra(Muestra muestra) {
         this.muestraEditando = muestra;
         if (muestra != null) {
             txtDescripcion.setText(muestra.getDescripcion());
@@ -40,19 +42,27 @@ public class RegistrarMuestraController {
             txtUbicacion.setText(muestra.getUbicacion());
             fechaRecepcionPicker.setValue(muestra.getFechaRecepcion());
             rutaFotoSeleccionada = muestra.getRutaFoto();
+
             if (rutaFotoSeleccionada != null && !rutaFotoSeleccionada.isEmpty()) {
-                imgProducto.setImage(new Image(new File(rutaFotoSeleccionada).toURI().toString()));
+                File archivo = new File(rutaFotoSeleccionada);
+                if (archivo.exists()) {
+                    imgProducto.setImage(new Image(archivo.toURI().toString()));
+                }
             }
         }
     }
 
+    /** Seleccionar imagen de la muestra */
     @FXML
-    void seleccionarImagen(ActionEvent event) {
+    public void seleccionarImagen(ActionEvent actionEvent) {
+        if (btnSubirImagen == null || btnSubirImagen.getScene() == null) return;
+
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Seleccionar imagen");
-        fileChooser.getExtensionFilters().add(
+        fileChooser.setTitle("Seleccionar foto de la muestra");
+        fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Imagenes", "*.png", "*.jpg", "*.jpeg")
         );
+
         File selectedFile = fileChooser.showOpenDialog(btnSubirImagen.getScene().getWindow());
         if (selectedFile != null) {
             rutaFotoSeleccionada = selectedFile.getAbsolutePath();
@@ -61,30 +71,25 @@ public class RegistrarMuestraController {
         }
     }
 
+    /** Actualizar la muestra existente */
     @FXML
-    void guardarMuestra(ActionEvent event) {
-        if (txtDescripcion.getText().isEmpty() || txtRotuloCliente.getText().isEmpty() || txtCantidad.getText().isEmpty() || comboEstado.getValue() == null) {
+    void actualizarMuestra(ActionEvent event) {
+        // Validaciones
+        if (txtDescripcion.getText().isEmpty() || txtRotuloCliente.getText().isEmpty()
+                || txtCantidad.getText().isEmpty() || comboEstado.getValue() == null
+                || fechaRecepcionPicker.getValue() == null) {
+
             lblMensaje.setText("Complete todos los campos obligatorios");
             lblMensaje.setVisible(true);
             return;
         }
 
-        MuestraService service = new MuestraService();
-        Estado estado = Estado.valueOf(comboEstado.getValue());
-        LocalDate fecha = fechaRecepcionPicker.getValue();
-
         try {
             int cantidad = Integer.parseInt(txtCantidad.getText());
-            if (muestraEditando == null) {
-                service.registrarMuestra(txtRotuloCliente.getText(),
-                        txtDescripcion.getText(),
-                        cantidad,
-                        txtUbicacion.getText(),
-                        null,
-                        rutaFotoSeleccionada
-                );
-                lblMensaje.setText("Muestra registrada correctamente");
-            } else {
+            Estado estado = Estado.valueOf(comboEstado.getSelectionModel().getSelectedItem());
+            LocalDate fecha = fechaRecepcionPicker.getValue();
+
+            if (muestraEditando != null) {
                 muestraEditando.setDescripcion(txtDescripcion.getText());
                 muestraEditando.setRotuloCliente(txtRotuloCliente.getText());
                 muestraEditando.setCantidad(cantidad);
@@ -92,25 +97,36 @@ public class RegistrarMuestraController {
                 muestraEditando.setUbicacion(txtUbicacion.getText());
                 muestraEditando.setFechaRecepcion(fecha);
                 muestraEditando.setRutaFoto(rutaFotoSeleccionada);
-                service.actualizarMuestra(muestraEditando);
-                lblMensaje.setText("Muestra actualizada correctamente");
-            }
 
-            lblMensaje.setVisible(true);
-            limpiarCampos();
+                MuestraService service = new MuestraService();
+                service.actualizarMuestra(muestraEditando);
+
+                // Mostrar alerta de éxito
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Actualización de Muestra");
+                alert.setHeaderText(null);
+                alert.setContentText("La muestra se ha actualizado correctamente.");
+                alert.showAndWait();
+
+                limpiarCampos();
+
+                // Cerrar la ventana después de actualizar
+                Stage stage = (Stage) txtDescripcion.getScene().getWindow();
+                stage.close();
+
+            }
 
         } catch (NumberFormatException e) {
             lblMensaje.setText("La cantidad debe ser un número entero");
             lblMensaje.setVisible(true);
+        } catch (Exception e) {
+            lblMensaje.setText("Error al actualizar la muestra");
+            lblMensaje.setVisible(true);
+            e.printStackTrace();
         }
     }
 
-    @FXML
-    void cerrarVentana(ActionEvent event) {
-        Stage stage = (Stage) txtDescripcion.getScene().getWindow();
-        stage.close();
-    }
-
+    /** Limpiar campos */
     @FXML
     private void limpiarCampos() {
         txtDescripcion.clear();
@@ -121,10 +137,19 @@ public class RegistrarMuestraController {
         fechaRecepcionPicker.setValue(null);
         rutaFotoSeleccionada = "";
         imgProducto.setImage(null);
+        lblMensaje.setVisible(false);
     }
 
+    /** Cancelar y cerrar ventana */
+    @FXML
+    void cerrarVentana(ActionEvent event) {
+        Stage stage = (Stage) txtDescripcion.getScene().getWindow();
+        stage.close();
+    }
+
+    /** Establecer usuario logueado */
     public void setUsuario(Usuario usuario) {
-        // opcional: guardar info del usuario logueado
+        this.usuario = usuario;
     }
 
 
