@@ -87,6 +87,9 @@ public final class Navegacion {
             Parent root = loader.load();
             stage.setScene(new Scene(root));
             stage.setTitle("Login NYCE");
+            stage.setMaximized(false);
+            stage.sizeToScene();
+            stage.centerOnScreen();
         } catch (IOException e) {
             e.printStackTrace();
         }

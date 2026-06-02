@@ -10,12 +10,19 @@ public class Muestra {
     private String codigoInterno;
     private String rotuloCliente;
     private String descripcion;
+    private String marca;
+    private String referencia;
     private int cantidad;
     private Estado estado;
-    private String ubicacion; // A1, B2, etc.
+    private String ubicacion;
+    private String estante;
+    private String observacionAlmacenamiento;
     private Usuario custodio;
+    private Usuario tecnico;
     private LocalDate fechaRecepcion;
     private String rutaFoto;
+    private String numeroInforme;
+    private String numeroCotizacion;
 
     public Muestra() {
         this.id = id;
@@ -56,6 +63,22 @@ public class Muestra {
         this.descripcion = descripcion;
     }
 
+    public String getMarca() {
+        return marca;
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
+    }
+
+    public String getReferencia() {
+        return referencia;
+    }
+
+    public void setReferencia(String referencia) {
+        this.referencia = referencia;
+    }
+
     public int getCantidad() {
         return cantidad;
     }
@@ -85,11 +108,21 @@ public class Muestra {
     public String getCodigoInterno() { return codigoInterno; }
     public Estado getEstado() { return estado; }
     public String getUbicacion() { return ubicacion; }
+    public String getEstante() { return estante; }
+    public String getObservacionAlmacenamiento() { return observacionAlmacenamiento; }
     public Usuario getCustodio() { return custodio; }
+    public Usuario getTecnico() { return tecnico; }
+    public String getNumeroInforme() { return numeroInforme; }
+    public String getNumeroCotizacion() { return numeroCotizacion; }
 
     public void setEstado(Estado estado) { this.estado = estado; }
     public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
+    public void setEstante(String estante) { this.estante = estante; }
+    public void setObservacionAlmacenamiento(String observacionAlmacenamiento) { this.observacionAlmacenamiento = observacionAlmacenamiento; }
     public void setCustodio(Usuario custodio) { this.custodio = custodio; }
+    public void setTecnico(Usuario tecnico) { this.tecnico = tecnico; }
+    public void setNumeroInforme(String numeroInforme) { this.numeroInforme = numeroInforme; }
+    public void setNumeroCotizacion(String numeroCotizacion) { this.numeroCotizacion = numeroCotizacion; }
 
 
 
