@@ -44,12 +44,17 @@ public class MuestraService {
 
     public void registrarMuestra(String rotuloCliente, String descripcion, int cantidad,
                                  String ubicacion, Usuario custodio, String rutaFoto) {
-        registrarMuestra(rotuloCliente, descripcion, cantidad, ubicacion, custodio, rutaFoto, null, null);
+        registrarMuestra(rotuloCliente, descripcion, null, null, cantidad, ubicacion, custodio, rutaFoto, null, null);
     }
 
-    public void registrarMuestra(String rotuloCliente, String descripcion, int cantidad,
+    public void registrarMuestra(String rotuloCliente, String descripcion, String marca,
+                                 String referencia, int cantidad,
                                  String ubicacion, Usuario custodio, String rutaFoto,
                                  Estado estadoUI, LocalDate fechaRecepcionUI) {
+
+        if (custodio == null) {
+            throw new IllegalArgumentException("No hay un usuario autenticado para registrar la muestra");
+        }
 
         String codigo = generarCodigoInterno();
         Estado estado = estadoUI != null ? estadoUI : Estado.RECIBIDA;
@@ -57,18 +62,20 @@ public class MuestraService {
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
-                     "INSERT INTO muestras (codigoInterno, rotuloCliente, descripcion, cantidad, estado, ubicacion, custodioId, fechaRecepcion, rutaFoto) " +
-                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+                     "INSERT INTO muestras (codigoInterno, rotuloCliente, descripcion, marca, referencia, cantidad, estado, ubicacion, custodioId, fechaRecepcion, rutaFoto) " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, codigo);
             ps.setString(2, rotuloCliente);
             ps.setString(3, descripcion);
-            ps.setInt(4, cantidad);
-            ps.setString(5, estado.name());
-            ps.setString(6, ubicacion);
-            ps.setInt(7, custodio.getId());
-            ps.setObject(8, fecha);
-            ps.setString(9, rutaFoto);
+            ps.setString(4, marca);
+            ps.setString(5, referencia);
+            ps.setInt(6, cantidad);
+            ps.setString(7, estado.name());
+            ps.setString(8, ubicacion);
+            ps.setInt(9, custodio.getId());
+            ps.setObject(10, fecha);
+            ps.setString(11, rutaFoto);
 
             ps.executeUpdate();
 
@@ -120,9 +127,12 @@ public class MuestraService {
 
             while (rs.next()) {
                 Muestra m = new Muestra();
+                m.setId(rs.getInt("id"));
                 m.setCodigoInterno(rs.getString("codigoInterno"));
                 m.setRotuloCliente(rs.getString("rotuloCliente"));
                 m.setDescripcion(rs.getString("descripcion"));
+                m.setMarca(rs.getString("marca"));
+                m.setReferencia(rs.getString("referencia"));
                 m.setCantidad(rs.getInt("cantidad"));
 
                 // Convertir String a Enum Estado
@@ -138,6 +148,10 @@ public class MuestraService {
                 }
 
                 m.setUbicacion(rs.getString("ubicacion"));
+                m.setEstante(rs.getString("estante"));
+                m.setObservacionAlmacenamiento(rs.getString("observacionAlmacenamiento"));
+                m.setNumeroInforme(rs.getString("numeroInforme"));
+                m.setNumeroCotizacion(rs.getString("numeroCotizacion"));
 
                 // Fecha segura
                 java.sql.Date sqlDate = rs.getDate("fechaRecepcion");
@@ -157,6 +171,128 @@ public class MuestraService {
         return lista;
     }
 
-    public void actualizarMuestra(Muestra muestraEditando) {
+    public boolean actualizarMuestra(Muestra muestra) {
+        String sql = "UPDATE muestras SET descripcion=?, rotuloCliente=?, marca=?, referencia=?, cantidad=?, estado=?, " +
+                "fechaRecepcion=?, ubicacion=?, estante=?, tecnicoId=?, rutaFoto=?, numeroInforme=?, numeroCotizacion=? WHERE id=?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, muestra.getDescripcion());
+            ps.setString(2, muestra.getRotuloCliente());
+            ps.setString(3, muestra.getMarca());
+            ps.setString(4, muestra.getReferencia());
+            ps.setInt(5, muestra.getCantidad());
+            ps.setString(6, muestra.getEstado().name());
+            ps.setObject(7, muestra.getFechaRecepcion()); // LocalDate compatible
+            ps.setString(8, muestra.getUbicacion());
+            ps.setString(9, muestra.getEstante());
+            setUsuarioIdNullable(ps, 10, muestra.getTecnico());
+            ps.setString(11, muestra.getRutaFoto());
+            ps.setString(12, muestra.getNumeroInforme());
+            ps.setString(13, muestra.getNumeroCotizacion());
+            ps.setInt(14, muestra.getId());
+
+            return ps.executeUpdate() == 1;
+
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar muestra " + muestra.getId() + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean asignarTecnico(int muestraId, Usuario tecnico) {
+        if (tecnico == null || tecnico.getRol() == domain.Rol.ADMIN) {
+            return false;
+        }
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement("UPDATE muestras SET tecnicoId=? WHERE id=?")) {
+
+            ps.setInt(1, tecnico.getId());
+            ps.setInt(2, muestraId);
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            System.err.println("Error al asignar tecnico a muestra " + muestraId + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean almacenarMuestra(int muestraId, String ubicacion, String estante,
+                                    String observacion, Usuario usuario) {
+        if (usuario == null || ubicacion == null || ubicacion.isBlank()
+                || estante == null || estante.isBlank()) {
+            return false;
+        }
+
+        try (Connection conn = Database.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                String ubicacionAnterior = null;
+                Estado estadoAnterior = null;
+                try (PreparedStatement consulta = conn.prepareStatement(
+                        "SELECT ubicacion, estado FROM muestras WHERE id=?")) {
+                    consulta.setInt(1, muestraId);
+                    ResultSet rs = consulta.executeQuery();
+                    if (!rs.next()) {
+                        conn.rollback();
+                        return false;
+                    }
+                    ubicacionAnterior = rs.getString("ubicacion");
+                    estadoAnterior = Estado.valueOf(rs.getString("estado"));
+                }
+
+                try (PreparedStatement actualizacion = conn.prepareStatement(
+                        "UPDATE muestras SET ubicacion=?, estante=?, observacionAlmacenamiento=?, estado=? WHERE id=?")) {
+                    actualizacion.setString(1, ubicacion.trim());
+                    actualizacion.setString(2, estante.trim());
+                    actualizacion.setString(3, normalizarOpcional(observacion));
+                    actualizacion.setString(4, Estado.EN_ALMACENAMIENTO.name());
+                    actualizacion.setInt(5, muestraId);
+                    if (actualizacion.executeUpdate() != 1) {
+                        conn.rollback();
+                        return false;
+                    }
+                }
+
+                try (PreparedStatement movimiento = conn.prepareStatement(
+                        "INSERT INTO movimientos (muestraId, usuarioId, estadoAnterior, estadoNuevo, ubicacionAnterior, ubicacionNueva, fechaHora, observacion) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    movimiento.setInt(1, muestraId);
+                    movimiento.setInt(2, usuario.getId());
+                    movimiento.setString(3, estadoAnterior.name());
+                    movimiento.setString(4, Estado.EN_ALMACENAMIENTO.name());
+                    movimiento.setString(5, ubicacionAnterior);
+                    movimiento.setString(6, ubicacion.trim() + " / " + estante.trim());
+                    movimiento.setObject(7, LocalDateTime.now());
+                    movimiento.setString(8, normalizarOpcional(observacion));
+                    movimiento.executeUpdate();
+                }
+
+                conn.commit();
+                return true;
+            } catch (Exception e) {
+                conn.rollback();
+                System.err.println("Error al almacenar muestra " + muestraId + ": " + e.getMessage());
+                return false;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error de conexion al almacenar muestra " + muestraId + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void setUsuarioIdNullable(PreparedStatement ps, int indice, Usuario usuario) throws SQLException {
+        if (usuario == null) {
+            ps.setNull(indice, Types.INTEGER);
+        } else {
+            ps.setInt(indice, usuario.getId());
+        }
+    }
+
+    private String normalizarOpcional(String valor) {
+        return valor == null || valor.isBlank() ? null : valor.trim();
     }
 }

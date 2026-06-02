@@ -5,7 +5,6 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
@@ -14,7 +13,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="831.0" prefWidth="852.0" spacing="20.0" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RegistrarMuestraController">
+<VBox prefHeight="796.0" prefWidth="1184.0" spacing="20.0" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RegistrarMuestraController">
    <padding>
       <Insets bottom="24.0" left="30.0" right="30.0" top="30.0" />
    </padding>
@@ -39,11 +38,18 @@
          <children>
             <VBox maxWidth="1.7976931348623157E308" prefWidth="430.0" spacing="14.0" style="-fx-background-color: white; -fx-border-radius: 5; -fx-padding: 15; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
                <children>
-                  <Label style="-fx-font-weight: bold;" text="Datos de la Muestra" />
+                  <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="400.0" style="-fx-font-weight: bold;" text="Datos de la Muestra" textAlignment="CENTER">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin></Label>
                   <Label style="-fx-font-weight: bold;" text="Descripcion" />
-                  <TextArea fx:id="txtDescripcion" maxWidth="1.7976931348623157E308" prefHeight="120.0" promptText="Ingrese la descripcion de la muestra..." VBox.vgrow="ALWAYS" />
-                  <Label style="-fx-font-weight: bold;" text="Rotulo Cliente" />
-                  <TextField fx:id="txtRotuloCliente" maxWidth="1.7976931348623157E308" promptText="Rotulo Cliente" />
+                  <TextField fx:id="txtDescripcion" promptText="Ingrese la descripción de la muestra..." />
+                  <Label style="-fx-font-weight: bold;" text="ID Rotulo Cliente" />
+                  <TextField fx:id="txtRotuloCliente" maxWidth="1.7976931348623157E308" promptText="Identificación Rotulo Cliente" />
+                  <Label style="-fx-font-weight: bold;" text="Marca" />
+                  <TextField fx:id="txtMarca" promptText="Marca de la muestra" />
+                  <Label style="-fx-font-weight: bold;" text="Referencia" />
+                  <TextField fx:id="txtReferencia" promptText="Referencia del producto" />
                   <Label style="-fx-font-weight: bold;" text="Cantidad" />
                   <TextField fx:id="txtCantidad" maxWidth="1.7976931348623157E308" promptText="Cantidad" />
                   <Label style="-fx-font-weight: bold;" text="Estado" />
@@ -59,9 +65,10 @@
                <children>
                   <Label text="Imagen del Producto" />
                   <ImageView fx:id="imgProducto" fitHeight="420.0" fitWidth="310.0" preserveRatio="true" style="-fx-border-color: #cccccc; -fx-border-width: 2; -fx-border-style: dashed" VBox.vgrow="ALWAYS" />
-                  <Button fx:id="btnSubirImagen" maxWidth="1.7976931348623157E308" onAction="#SubirImagen" text="Seleccionar imagen" />
+                  <Button fx:id="btnSubirImagen" maxWidth="1.7976931348623157E308" onAction="#seleccionarImagen" text="Seleccionar imagen" />
                   <Label style="-fx-font-size: 10" text="Formatos permitidos: JPG, PNG, JPEG" />
                   <Label style="-fx-font-size: 10" text="Tamano maximo: 5MB" />
+                  <Label fx:id="txtInformativos" alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="308.0" textAlignment="CENTER" textFill="#f80202" />
                </children>
             </VBox>
          </children>
@@ -72,7 +79,7 @@
             <Button fx:id="btnLimpiar" onAction="#limpiarCampos" prefHeight="36.0" prefWidth="79.0" text="Limpiar" />
             <Region HBox.hgrow="ALWAYS" />
             <Button fx:id="btnCancelar" onAction="#cerrarVentana" prefHeight="36.0" prefWidth="79.0" text="Cancelar" />
-            <Button fx:id="btnGuardarMuestra" onAction="#registrarMuestra" prefHeight="36.0" prefWidth="130.0" style="-fx-background-color: #009180; -fx-text-fill: white;" text="Guardar Muestra" />
+            <Button fx:id="btnGuardarMuestra" onAction="#guardarMuestra" prefHeight="36.0" prefWidth="130.0" style="-fx-background-color: #009180; -fx-text-fill: white;" text="Guardar Muestra" />
          </children>
       </HBox>
    </children>

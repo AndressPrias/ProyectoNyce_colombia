@@ -49,14 +49,43 @@ public class Database {
                             "codigoInterno VARCHAR(20) NOT NULL," +
                             "rotuloCliente VARCHAR(100)," +
                             "descripcion VARCHAR(255)," +
+                            "marca VARCHAR(100)," +
+                            "referencia VARCHAR(100)," +
                             "cantidad INT," +
                             "estado VARCHAR(20) NOT NULL," +
                             "ubicacion VARCHAR(10)," +
+                            "estante VARCHAR(50)," +
+                            "observacionAlmacenamiento VARCHAR(255)," +
                             "custodioId INT," +
+                            "tecnicoId INT," +
                             "fechaRecepcion DATE," +
                             "rutaFoto VARCHAR(255)," +
-                            "FOREIGN KEY (custodioId) REFERENCES usuarios(id)" +
+                            "numeroInforme VARCHAR(100)," +
+                            "numeroCotizacion VARCHAR(100)," +
+                            "FOREIGN KEY (custodioId) REFERENCES usuarios(id)," +
+                            "FOREIGN KEY (tecnicoId) REFERENCES usuarios(id)" +
                             ");"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS marca VARCHAR(100);"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS referencia VARCHAR(100);"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS estante VARCHAR(50);"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS observacionAlmacenamiento VARCHAR(255);"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS tecnicoId INT;"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS numeroInforme VARCHAR(100);"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS numeroCotizacion VARCHAR(100);"
             );
 
             conn.createStatement().execute(
