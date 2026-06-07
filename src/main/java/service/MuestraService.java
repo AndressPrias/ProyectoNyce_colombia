@@ -42,12 +42,12 @@ public class MuestraService {
         return String.format("%s-%02d", fecha, consecutivo);
     }
 
-    public void registrarMuestra(String rotuloCliente, String descripcion, int cantidad,
+    public boolean registrarMuestra(String rotuloCliente, String descripcion, int cantidad,
                                  String ubicacion, Usuario custodio, String rutaFoto) {
-        registrarMuestra(rotuloCliente, descripcion, null, null, cantidad, ubicacion, custodio, rutaFoto, null, null);
+        return registrarMuestra(rotuloCliente, descripcion, null, null, cantidad, ubicacion, custodio, rutaFoto, null, null);
     }
 
-    public void registrarMuestra(String rotuloCliente, String descripcion, String marca,
+    public boolean registrarMuestra(String rotuloCliente, String descripcion, String marca,
                                  String referencia, int cantidad,
                                  String ubicacion, Usuario custodio, String rutaFoto,
                                  Estado estadoUI, LocalDate fechaRecepcionUI) {
@@ -90,9 +90,11 @@ public class MuestraService {
             if (muestraId != -1) {
                 registrarMovimientoInicial(muestraId, custodio, estado, ubicacion);
             }
+            return true;
 
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -218,6 +220,39 @@ public class MuestraService {
         }
     }
 
+    public boolean eliminarMuestra(int muestraId) {
+        try (Connection conn = Database.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement borrarMovimientos = conn.prepareStatement(
+                    "DELETE FROM movimientos WHERE muestraId=?");
+                 PreparedStatement borrarMuestra = conn.prepareStatement(
+                         "DELETE FROM muestras WHERE id=?")) {
+
+                borrarMovimientos.setInt(1, muestraId);
+                borrarMovimientos.executeUpdate();
+
+                borrarMuestra.setInt(1, muestraId);
+                boolean eliminada = borrarMuestra.executeUpdate() == 1;
+                if (!eliminada) {
+                    conn.rollback();
+                    return false;
+                }
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                System.err.println("Error al eliminar muestra " + muestraId + ": " + e.getMessage());
+                return false;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error de conexion al eliminar muestra " + muestraId + ": " + e.getMessage());
+            return false;
+        }
+    }
+
     public boolean almacenarMuestra(int muestraId, String ubicacion, String estante,
                                     String observacion, Usuario usuario) {
         if (usuario == null || ubicacion == null || ubicacion.isBlank()
@@ -294,5 +329,9 @@ public class MuestraService {
 
     private String normalizarOpcional(String valor) {
         return valor == null || valor.isBlank() ? null : valor.trim();
+    }
+
+    public boolean almacenarMuestra(int id, String text, String text1, Usuario usuario) {
+        return false;
     }
 }

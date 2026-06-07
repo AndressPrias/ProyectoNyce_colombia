@@ -1,0 +1,87 @@
+
+.tarjeta-login {
+    -fx-fill: white;
+    -fx-arc-width: 30;
+    -fx-arc-height: 30;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15),15,0,0,5);
+}
+
+.text-field{
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-color: #C9E5E3;
+}
+
+.text-field,
+.password-field{
+
+    -fx-background-radius: 15;
+
+    -fx-border-radius: 15;
+
+    -fx-border-color: #D5E6E4;
+
+    -fx-focus-color: transparent;
+
+    -fx-faint-focus-color: transparent;
+
+}
+
+.text-field:focused,
+.password-field:focused{
+
+    -fx-border-color: #008C84;
+
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(0,140,132,0.18),
+            8,
+            0,
+            0,
+            0
+    );
+
+}
+
+.btn-login{
+
+    -fx-background-color: #008C84;
+
+    -fx-text-fill: white;
+
+    -fx-font-size: 15;
+
+    -fx-font-weight: bold;
+
+    -fx-background-radius: 25;
+
+    -fx-cursor: hand;
+
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(0,0,0,0.15),
+            8,
+            0,
+            0,
+            3
+    );
+
+}
+
+.btn-login:hover{
+
+    -fx-background-color: #00A195;
+
+    -fx-scale-x: 1.02;
+
+    -fx-scale-y: 1.02;
+
+}
+
+.btn-login:pressed{
+
+    -fx-scale-x: 0.98;
+
+    -fx-scale-y: 0.98;
+
+}

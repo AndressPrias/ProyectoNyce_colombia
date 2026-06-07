@@ -11,6 +11,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import utilities.Paths;
 
@@ -25,10 +28,23 @@ public class LoginController {
     @FXML private TextField txtUsuario;
     @FXML private PasswordField txtPassword;
     @FXML private Label lblMensaje;
+    /*@FXML private Circle circuloLogoIniciarSesion; // esto es un ejemplo de como importar un circulo*/
 
     @FXML
     public void initialize() {
         lblMensaje.setVisible(false);
+
+        //ejemplo de como iniciar una imagen dentro de un circulo
+        /*
+        Image img = new Image(
+                getClass().getResource("/icons/cerrar.png")
+                        .toExternalForm()
+                );
+        circuloLogoIniciarSesion.setFill(
+                new ImagePattern(img)
+        );
+         */
+
     }
 
     @FXML

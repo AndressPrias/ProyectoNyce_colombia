@@ -61,7 +61,6 @@ public class EditarMuestraController {
             txtCantidad.setText(String.valueOf(muestra.getCantidad()));
             comboEstado.setValue(muestra.getEstado().name());
             txtUbicacion.setText(muestra.getUbicacion());
-            txtEstante.setText(muestra.getEstante());
             seleccionarTecnico(muestra.getTecnico());
             fechaRecepcionPicker.setValue(muestra.getFechaRecepcion());
             txtNumeroInforme.setText(muestra.getNumeroInforme());
@@ -128,7 +127,6 @@ public class EditarMuestraController {
                 muestraEditando.setCantidad(cantidad);
                 muestraEditando.setEstado(estado);
                 muestraEditando.setUbicacion(txtUbicacion.getText());
-                muestraEditando.setEstante(txtEstante.getText());
                 muestraEditando.setTecnico(comboTecnico.getValue());
                 muestraEditando.setFechaRecepcion(fecha);
                 muestraEditando.setRutaFoto(rutaFotoSeleccionada);

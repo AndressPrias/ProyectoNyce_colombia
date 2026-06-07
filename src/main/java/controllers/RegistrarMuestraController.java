@@ -14,9 +14,12 @@ import javafx.stage.Stage;
 import service.MuestraService;
 
 import java.io.File;
+import java.net.URL;
 import java.time.LocalDate;
 
 public class RegistrarMuestraController {
+
+    private static final String IMAGEN_PRODUCTO_DEFECTO = "/images/default_image.png";
 
     @FXML private TextField txtDescripcion;
     @FXML private TextField txtRotuloCliente;
@@ -34,6 +37,26 @@ public class RegistrarMuestraController {
     private String rutaFotoSeleccionada = "";
     private Usuario usuario;
 
+
+
+    @FXML
+    private void cargarImagenProducto() {
+        Image imagen;
+        if (rutaFotoSeleccionada == null || rutaFotoSeleccionada.isBlank()) {
+            // Si no hay imagen seleccionada, carga la imagen por defecto
+            imagen = new Image(getClass().getResourceAsStream(IMAGEN_PRODUCTO_DEFECTO));
+        } else {
+            File archivo = new File(rutaFotoSeleccionada);
+            if (archivo.exists()) {
+                imagen = new Image(archivo.toURI().toString());
+            } else {
+                // si el archivo no existe, también carga la imagen por defecto
+                imagen = new Image(getClass().getResourceAsStream(IMAGEN_PRODUCTO_DEFECTO));
+            }
+        }
+        imgProducto.setImage(imagen);
+    }
+
     @FXML
     public void initialize() {
         comboEstado.setItems(FXCollections.observableArrayList(
@@ -41,6 +64,7 @@ public class RegistrarMuestraController {
                         .map(Enum::name)
                         .toList()
         ));
+        cargarImagenProducto();
     }
 
     public void setMuestraEditando(Muestra muestra) {
@@ -55,9 +79,7 @@ public class RegistrarMuestraController {
             txtUbicacion.setText(muestra.getUbicacion());
             fechaRecepcionPicker.setValue(muestra.getFechaRecepcion());
             rutaFotoSeleccionada = muestra.getRutaFoto();
-            if (rutaFotoSeleccionada != null && !rutaFotoSeleccionada.isEmpty()) {
-                imgProducto.setImage(new Image(new File(rutaFotoSeleccionada).toURI().toString()));
-            }
+            cargarImagenProducto();
         }
     }
 
@@ -90,7 +112,7 @@ public class RegistrarMuestraController {
         try {
             int cantidad = Integer.parseInt(txtCantidad.getText());
             if (muestraEditando == null) {
-                service.registrarMuestra(txtRotuloCliente.getText(),
+                boolean guardada = service.registrarMuestra(txtRotuloCliente.getText(),
                         txtDescripcion.getText(),
                         txtMarca.getText(),
                         txtReferencia.getText(),
@@ -101,6 +123,11 @@ public class RegistrarMuestraController {
                         estado,
                         fecha
                 );
+                if (!guardada) {
+                    txtInformativos.setText("No se pudo registrar la muestra");
+                    txtInformativos.setVisible(true);
+                    return;
+                }
                 txtInformativos.setText("Muestra registrada correctamente");
             } else {
                 muestraEditando.setDescripcion(txtDescripcion.getText());
@@ -142,6 +169,7 @@ public class RegistrarMuestraController {
         fechaRecepcionPicker.setValue(null);
         rutaFotoSeleccionada = "";
         imgProducto.setImage(null);
+        cargarImagenProducto();
     }
 
     public void setUsuario(Usuario usuario) {

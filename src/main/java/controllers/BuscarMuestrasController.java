@@ -22,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,8 @@ import service.MuestraService;
 import utilities.UsuarioSesion;
 
 public class BuscarMuestrasController {
+
+    private static final String IMAGEN_PRODUCTO_DEFECTO = "/images/default_image.png";
 
     @FXML private TextField txtBusquedaGeneral;
 
@@ -44,7 +47,6 @@ public class BuscarMuestrasController {
     @FXML private TableColumn<Muestra, Estado> colEstado;
     @FXML private TableColumn<Muestra, LocalDate> colFecha;
     @FXML private TableColumn<Muestra, String> colUbicacion;
-    @FXML private TableColumn<Muestra, String> colEstante;
     @FXML private TableColumn<Muestra, Usuario> colTecnico;
 
     @FXML private ImageView imgDetalle;
@@ -53,15 +55,7 @@ public class BuscarMuestrasController {
     @FXML private Label lblDetalleRotulo;
     @FXML private Label lblDetalleMarca;
     @FXML private Label lblDetalleReferencia;
-    @FXML private Label lblDetalleCantidad;
-    @FXML private Label lblDetalleEstado;
-    @FXML private Label lblDetalleFecha;
-    @FXML private Label lblDetalleUbicacion;
-    @FXML private Label lblDetalleEstante;
-    @FXML private Label lblDetalleTecnico;
-    @FXML private Label lblDetalleNumeroInforme;
-    @FXML private Label lblDetalleNumeroCotizacion;
-    @FXML private Label lblDetalleObservacionAlmacenamiento;
+
 
     private ObservableList<Muestra> listaMuestras = FXCollections.observableArrayList();
 
@@ -79,7 +73,6 @@ public class BuscarMuestrasController {
         colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fechaRecepcion"));
         colUbicacion.setCellValueFactory(new PropertyValueFactory<>("ubicacion"));
-        colEstante.setCellValueFactory(new PropertyValueFactory<>("estante"));
         colTecnico.setCellValueFactory(new PropertyValueFactory<>("tecnico"));
 
         tblResultados.setItems(listaMuestras);
@@ -92,6 +85,7 @@ public class BuscarMuestrasController {
             }
         });
 
+        cargarImagenDetalle(null);
         // Cargar todos los datos inicialmente
         buscarMuestras();
     }
@@ -111,7 +105,6 @@ public class BuscarMuestrasController {
                              "LOWER(COALESCE(m.referencia, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.estado, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.ubicacion, '')) LIKE ? OR " +
-                             "LOWER(COALESCE(m.estante, '')) LIKE ? OR " +
                              "LOWER(COALESCE(t.nombre, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.numeroInforme, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.numeroCotizacion, '')) LIKE ? OR " +
@@ -120,7 +113,7 @@ public class BuscarMuestrasController {
                              "CAST(m.fechaRecepcion AS VARCHAR) LIKE ?")) {
 
             String busqueda = "%" + txtBusquedaGeneral.getText().trim().toLowerCase() + "%";
-            for (int i = 1; i <= 14; i++) {
+            for (int i = 1; i <= 13; i++) {
                 ps.setString(i, busqueda);
             }
 
@@ -138,7 +131,6 @@ public class BuscarMuestrasController {
                 java.sql.Date fecha = rs.getDate("fechaRecepcion");
                 m.setFechaRecepcion(fecha == null ? null : fecha.toLocalDate());
                 m.setUbicacion(rs.getString("ubicacion"));
-                m.setEstante(rs.getString("estante"));
                 m.setObservacionAlmacenamiento(rs.getString("observacionAlmacenamiento"));
                 m.setNumeroInforme(rs.getString("numeroInforme"));
                 m.setNumeroCotizacion(rs.getString("numeroCotizacion"));
@@ -166,22 +158,14 @@ public class BuscarMuestrasController {
         lblDetalleRotulo.setText(textoSeguro(muestra.getRotuloCliente()));
         lblDetalleMarca.setText(textoSeguro(muestra.getMarca()));
         lblDetalleReferencia.setText(textoSeguro(muestra.getReferencia()));
-        lblDetalleCantidad.setText(String.valueOf(muestra.getCantidad()));
-        lblDetalleEstado.setText(muestra.getEstado().name());
-        lblDetalleFecha.setText(muestra.getFechaRecepcion() == null ? "" : muestra.getFechaRecepcion().toString());
-        lblDetalleUbicacion.setText(textoSeguro(muestra.getUbicacion()));
-        lblDetalleEstante.setText(textoSeguro(muestra.getEstante()));
-        lblDetalleTecnico.setText(muestra.getTecnico() == null ? "" : muestra.getTecnico().getNombre());
-        lblDetalleNumeroInforme.setText(textoSeguro(muestra.getNumeroInforme()));
-        lblDetalleNumeroCotizacion.setText(textoSeguro(muestra.getNumeroCotizacion()));
-        lblDetalleObservacionAlmacenamiento.setText(textoSeguro(muestra.getObservacionAlmacenamiento()));
+
 
         cargarImagenDetalle(muestra.getRutaFoto());
     }
 
     private void cargarImagenDetalle(String rutaFoto) {
         if (rutaFoto == null || rutaFoto.isBlank()) {
-            imgDetalle.setImage(null);
+            imgDetalle.setImage(cargarImagenProductoDefecto());
             return;
         }
 
@@ -191,10 +175,15 @@ public class BuscarMuestrasController {
                     ? new Image(archivo.toURI().toString())
                     : new Image(rutaFoto);
 
-            imgDetalle.setImage(img.isError() ? null : img);
+            imgDetalle.setImage(img.isError() ? cargarImagenProductoDefecto() : img);
         } catch (Exception e) {
-            imgDetalle.setImage(null);
+            imgDetalle.setImage(cargarImagenProductoDefecto());
         }
+    }
+
+    private Image cargarImagenProductoDefecto() {
+        URL recurso = getClass().getResource(IMAGEN_PRODUCTO_DEFECTO);
+        return recurso == null ? null : new Image(recurso.toExternalForm());
     }
 
     @FXML
@@ -219,7 +208,6 @@ public class BuscarMuestrasController {
             controller.setUsuario(usuario);
             controller.setAlActualizar(this::buscarMuestras);
             controller.editarMuestra(muestra);
-
             Stage stage = new Stage();
             stage.setTitle("Editar Muestra");
             stage.initOwner(tblResultados.getScene().getWindow());
@@ -280,38 +268,65 @@ public class BuscarMuestrasController {
         Muestra muestra = obtenerMuestraSeleccionada();
         if (muestra == null) return;
 
+        // Crear los campos de texto para el diálogo
         TextField txtUbicacion = new TextField(textoSeguro(muestra.getUbicacion()));
-        TextField txtEstante = new TextField(textoSeguro(muestra.getEstante()));
         TextArea txtObservaciones = new TextArea(textoSeguro(muestra.getObservacionAlmacenamiento()));
         txtObservaciones.setPrefRowCount(3);
 
+        // Crear el diálogo
         Dialog<ButtonType> dialogo = crearDialogo("Almacenar muestra");
         GridPane contenido = crearFormulario();
         contenido.add(new Label("Ubicacion"), 0, 0);
         contenido.add(txtUbicacion, 1, 0);
-        contenido.add(new Label("Estante"), 0, 1);
-        contenido.add(txtEstante, 1, 1);
-        contenido.add(new Label("Observaciones"), 0, 2);
-        contenido.add(txtObservaciones, 1, 2);
+        contenido.add(new Label("Observaciones"), 0, 1);
+        contenido.add(txtObservaciones, 1, 1);
+
         dialogo.getDialogPane().setContent(contenido);
 
+        // Mostrar diálogo y esperar respuesta
         Optional<ButtonType> resultado = dialogo.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
-        if (txtUbicacion.getText().isBlank() || txtEstante.getText().isBlank()) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Almacenar muestra", "Complete ubicacion y estante");
+
+        // Validar campos obligatorios
+        if (txtUbicacion.getText().isBlank()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Almacenar muestra", "Complete la ubicación");
             return;
         }
 
+        // Guardar la información
         if (new MuestraService().almacenarMuestra(
                 muestra.getId(),
                 txtUbicacion.getText(),
-                txtEstante.getText(),
                 txtObservaciones.getText(),
                 UsuarioSesion.getUsuario())) {
             buscarMuestras();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Almacenar muestra", "Muestra almacenada correctamente");
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Almacenar muestra", "No se pudo almacenar la muestra");
+        }
+    }
+
+    @FXML
+    void eliminarMuestra() {
+        Muestra muestra = obtenerMuestraSeleccionada();
+        if (muestra == null) return;
+
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Eliminar muestra");
+        confirmacion.setHeaderText(null);
+        confirmacion.setContentText("Desea eliminar la muestra " + textoSeguro(muestra.getCodigoInterno()) + "?");
+
+        Optional<ButtonType> resultado = confirmacion.showAndWait();
+        if (resultado.isEmpty() || resultado.get() != ButtonType.OK) {
+            return;
+        }
+
+        if (new MuestraService().eliminarMuestra(muestra.getId())) {
+            limpiarDetalle();
+            buscarMuestras();
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Eliminar muestra", "Muestra eliminada correctamente");
+        } else {
+            mostrarAlerta(Alert.AlertType.ERROR, "Eliminar muestra", "No se pudo eliminar la muestra");
         }
     }
 
@@ -350,5 +365,14 @@ public class BuscarMuestrasController {
 
     private String textoSeguro(String texto) {
         return texto == null ? "" : texto;
+    }
+
+    private void limpiarDetalle() {
+        cargarImagenDetalle(null);
+        lblDetalleCodigoInterno.setText("");
+        lblDetalleDescripcion.setText("");
+        lblDetalleRotulo.setText("");
+        lblDetalleMarca.setText("");
+        lblDetalleReferencia.setText("");
     }
 }
