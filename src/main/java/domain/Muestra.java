@@ -1,17 +1,15 @@
 package domain;
 
-import javafx.beans.binding.BooleanExpression;
-import javafx.beans.value.ObservableValue;
-
 import java.time.LocalDate;
 
 public class Muestra {
     private int id;
     private String codigoInterno;
     private String rotuloCliente;
+    private String nombreCliente;
+    private String referencia;
     private String descripcion;
     private String marca;
-    private String referencia;
     private int cantidad;
     private Estado estado;
     private String ubicacion;
@@ -24,10 +22,19 @@ public class Muestra {
     private String numeroInforme;
     private String numeroCotizacion;
 
+    public String getNombreCliente() {
+        return nombreCliente;
+    }
+
+    public void setNombreCliente(String nombreCliente) {
+        this.nombreCliente = nombreCliente;
+    }
+
     public Muestra() {
         this.id = id;
         this.codigoInterno = codigoInterno;
         this.rotuloCliente = rotuloCliente;
+        this.nombreCliente = nombreCliente;
         this.descripcion = descripcion;
         this.cantidad = cantidad;
         this.estado = estado;

@@ -10,8 +10,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import service.MuestraService;
+import utilities.Navegacion;
 
 import java.io.File;
 import java.net.URL;
@@ -23,6 +23,7 @@ public class RegistrarMuestraController {
 
     @FXML private TextField txtDescripcion;
     @FXML private TextField txtRotuloCliente;
+    @FXML private TextField txtNombreCliente;
     @FXML private TextField txtMarca;
     @FXML private TextField txtReferencia;
     @FXML private TextField txtCantidad;
@@ -38,7 +39,7 @@ public class RegistrarMuestraController {
     private Usuario usuario;
 
 
-
+    //metodo para cargar la imagen del producto. Cuando esta vacio muestra una imagen por defecto
     @FXML
     private void cargarImagenProducto() {
         Image imagen;
@@ -72,6 +73,7 @@ public class RegistrarMuestraController {
         if (muestra != null) {
             txtDescripcion.setText(muestra.getDescripcion());
             txtRotuloCliente.setText(muestra.getRotuloCliente());
+            txtNombreCliente.setText(muestra.getNombreCliente());
             txtMarca.setText(muestra.getMarca());
             txtReferencia.setText(muestra.getReferencia());
             txtCantidad.setText(String.valueOf(muestra.getCantidad()));
@@ -112,7 +114,9 @@ public class RegistrarMuestraController {
         try {
             int cantidad = Integer.parseInt(txtCantidad.getText());
             if (muestraEditando == null) {
-                boolean guardada = service.registrarMuestra(txtRotuloCliente.getText(),
+                boolean guardada = service.registrarMuestra(
+                        txtRotuloCliente.getText(),
+                        txtNombreCliente.getText(),
                         txtDescripcion.getText(),
                         txtMarca.getText(),
                         txtReferencia.getText(),
@@ -132,6 +136,7 @@ public class RegistrarMuestraController {
             } else {
                 muestraEditando.setDescripcion(txtDescripcion.getText());
                 muestraEditando.setRotuloCliente(txtRotuloCliente.getText());
+                muestraEditando.setNombreCliente(txtNombreCliente.getText());
                 muestraEditando.setMarca(txtMarca.getText());
                 muestraEditando.setReferencia(txtReferencia.getText());
                 muestraEditando.setCantidad(cantidad);
@@ -153,14 +158,14 @@ public class RegistrarMuestraController {
 
     @FXML
     void cerrarVentana(ActionEvent event) {
-        Stage stage = (Stage) txtDescripcion.getScene().getWindow();
-        stage.close();
+        Navegacion.irInicio();
     }
 
     @FXML
     private void limpiarCampos() {
         txtDescripcion.clear();
         txtRotuloCliente.clear();
+        txtNombreCliente.clear();
         txtMarca.clear();
         txtReferencia.clear();
         txtCantidad.clear();
@@ -175,6 +180,8 @@ public class RegistrarMuestraController {
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
     }
+
+
 
 
 }

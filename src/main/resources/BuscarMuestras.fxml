@@ -29,6 +29,7 @@
                 <TableColumn fx:id="colCodigoInterno" prefWidth="110.0" text="ID" />
                 <TableColumn fx:id="colDescripcion" prefWidth="216.0" text="Descripcion" />
                 <TableColumn fx:id="colRotulo" prefWidth="91.0" text="Rotulo Cliente" />
+                <TableColumn fx:id="colCliente" prefWidth="140.0" text="Cliente" />
                 <TableColumn fx:id="colMarca" prefWidth="100.0" text="Marca" />
                 <TableColumn fx:id="colReferencia" prefWidth="110.0" text="Referencia" />
                 <TableColumn fx:id="colCantidad" prefWidth="69.0" text="Cantidad" />
@@ -55,6 +56,8 @@
             <Label fx:id="lblDetalleDescripcion" />
             <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Rotulo Cliente:" textFill="#0a4d4a" />
             <Label fx:id="lblDetalleRotulo" />
+            <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Cliente:" textFill="#0a4d4a" />
+            <Label fx:id="lblDetalleCliente" />
             <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Marca:" textFill="#0a4d4a" />
             <Label fx:id="lblDetalleMarca" />
             <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Referencia:" textFill="#0a4d4a" />

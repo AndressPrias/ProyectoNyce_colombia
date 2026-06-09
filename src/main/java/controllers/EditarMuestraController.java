@@ -21,12 +21,12 @@ public class EditarMuestraController {
 
     @FXML private TextField txtDescripcion;
     @FXML private TextField txtRotuloCliente;
+    @FXML private TextField txtNombreCliente;
     @FXML private TextField txtMarca;
     @FXML private TextField txtReferencia;
     @FXML private TextField txtCantidad;
     @FXML private ComboBox<String> comboEstado;
     @FXML private TextField txtUbicacion;
-    @FXML private TextField txtEstante;
     @FXML private ComboBox<Usuario> comboTecnico;
     @FXML private TextField txtNumeroInforme;
     @FXML private TextField txtNumeroCotizacion;
@@ -56,6 +56,7 @@ public class EditarMuestraController {
         if (muestra != null) {
             txtDescripcion.setText(muestra.getDescripcion());
             txtRotuloCliente.setText(muestra.getRotuloCliente());
+            txtNombreCliente.setText(muestra.getNombreCliente());
             txtMarca.setText(muestra.getMarca());
             txtReferencia.setText(muestra.getReferencia());
             txtCantidad.setText(String.valueOf(muestra.getCantidad()));
@@ -122,6 +123,7 @@ public class EditarMuestraController {
             if (muestraEditando != null) {
                 muestraEditando.setDescripcion(txtDescripcion.getText());
                 muestraEditando.setRotuloCliente(txtRotuloCliente.getText());
+                muestraEditando.setNombreCliente(txtNombreCliente.getText());
                 muestraEditando.setMarca(txtMarca.getText());
                 muestraEditando.setReferencia(txtReferencia.getText());
                 muestraEditando.setCantidad(cantidad);
@@ -175,12 +177,12 @@ public class EditarMuestraController {
     private void limpiarCampos() {
         txtDescripcion.clear();
         txtRotuloCliente.clear();
+        txtNombreCliente.clear();
         txtMarca.clear();
         txtReferencia.clear();
         txtCantidad.clear();
         comboEstado.getSelectionModel().clearSelection();
         txtUbicacion.clear();
-        txtEstante.clear();
         comboTecnico.getSelectionModel().clearSelection();
         fechaRecepcionPicker.setValue(null);
         txtNumeroInforme.clear();

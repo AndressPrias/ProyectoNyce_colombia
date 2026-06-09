@@ -41,6 +41,7 @@ public class BuscarMuestrasController {
     @FXML private TableColumn<Muestra, String> colCodigoInterno;
     @FXML private TableColumn<Muestra, String> colDescripcion;
     @FXML private TableColumn<Muestra, String> colRotulo;
+    @FXML private TableColumn<Muestra, String> colCliente;
     @FXML private TableColumn<Muestra, String> colMarca;
     @FXML private TableColumn<Muestra, String> colReferencia;
     @FXML private TableColumn<Muestra, Integer> colCantidad;
@@ -53,6 +54,7 @@ public class BuscarMuestrasController {
     @FXML private Label lblDetalleCodigoInterno;
     @FXML private Label lblDetalleDescripcion;
     @FXML private Label lblDetalleRotulo;
+    @FXML private Label lblDetalleCliente;
     @FXML private Label lblDetalleMarca;
     @FXML private Label lblDetalleReferencia;
 
@@ -67,6 +69,7 @@ public class BuscarMuestrasController {
         colCodigoInterno.setCellValueFactory(new PropertyValueFactory<>("codigoInterno"));
         colDescripcion.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
         colRotulo.setCellValueFactory(new PropertyValueFactory<>("rotuloCliente"));
+        colCliente.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         colMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
         colReferencia.setCellValueFactory(new PropertyValueFactory<>("referencia"));
         colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
@@ -101,6 +104,7 @@ public class BuscarMuestrasController {
                              "LOWER(COALESCE(m.codigoInterno, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.descripcion, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.rotuloCliente, '')) LIKE ? OR " +
+                             "LOWER(COALESCE(m.nombreCliente, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.marca, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.referencia, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.estado, '')) LIKE ? OR " +
@@ -113,7 +117,7 @@ public class BuscarMuestrasController {
                              "CAST(m.fechaRecepcion AS VARCHAR) LIKE ?")) {
 
             String busqueda = "%" + txtBusquedaGeneral.getText().trim().toLowerCase() + "%";
-            for (int i = 1; i <= 13; i++) {
+            for (int i = 1; i <= 14; i++) {
                 ps.setString(i, busqueda);
             }
 
@@ -124,6 +128,7 @@ public class BuscarMuestrasController {
                 m.setCodigoInterno(rs.getString("codigoInterno"));
                 m.setDescripcion(rs.getString("descripcion"));
                 m.setRotuloCliente(rs.getString("rotuloCliente"));
+                m.setNombreCliente(rs.getString("nombreCliente"));
                 m.setMarca(rs.getString("marca"));
                 m.setReferencia(rs.getString("referencia"));
                 m.setCantidad(rs.getInt("cantidad"));
@@ -156,6 +161,7 @@ public class BuscarMuestrasController {
         lblDetalleCodigoInterno.setText(textoSeguro(muestra.getCodigoInterno()));
         lblDetalleDescripcion.setText(textoSeguro(muestra.getDescripcion()));
         lblDetalleRotulo.setText(textoSeguro(muestra.getRotuloCliente()));
+        lblDetalleCliente.setText(textoSeguro(muestra.getNombreCliente()));
         lblDetalleMarca.setText(textoSeguro(muestra.getMarca()));
         lblDetalleReferencia.setText(textoSeguro(muestra.getReferencia()));
 

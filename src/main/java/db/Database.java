@@ -48,6 +48,7 @@ public class Database {
                             "id INT AUTO_INCREMENT PRIMARY KEY," +
                             "codigoInterno VARCHAR(20) NOT NULL," +
                             "rotuloCliente VARCHAR(100)," +
+                            "nombreCliente VARCHAR(150)," +
                             "descripcion VARCHAR(255)," +
                             "marca VARCHAR(100)," +
                             "referencia VARCHAR(100)," +
@@ -65,6 +66,9 @@ public class Database {
                             "FOREIGN KEY (custodioId) REFERENCES usuarios(id)," +
                             "FOREIGN KEY (tecnicoId) REFERENCES usuarios(id)" +
                             ");"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS nombreCliente VARCHAR(150);"
             );
             conn.createStatement().execute(
                     "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS marca VARCHAR(100);"

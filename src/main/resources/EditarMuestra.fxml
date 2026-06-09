@@ -43,6 +43,8 @@
                   <TextField fx:id="txtDescripcion" promptText="Ingrese la descripción de la muestra..." />
                         <Label style="-fx-font-weight: bold;" text="ID Rotulo Cliente" textFill="#0a4d4a" />
                         <TextField fx:id="txtRotuloCliente" maxWidth="1.7976931348623157E308" promptText="Identificación Rotulo Cliente" />
+                  <Label style="-fx-font-weight: bold;" text="Cliente" textFill="#0a4d4a" />
+                  <TextField fx:id="txtNombreCliente" maxWidth="1.7976931348623157E308" promptText="Nombre del cliente" />
                   <Label style="-fx-font-weight: bold;" text="Marca" textFill="#0a4d4a" />
                         <TextField fx:id="txtMarca" maxWidth="1.7976931348623157E308" promptText="Ingrese la marca de la muestra" />
                   <Label style="-fx-font-weight: bold;" text="Referencia" textFill="#0a4d4a" />
