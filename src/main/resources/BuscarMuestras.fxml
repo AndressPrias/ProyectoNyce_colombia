@@ -7,20 +7,30 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="873.0" prefWidth="1309.0" spacing="20" style="-fx-background-color: #EEF2F2; -fx-padding: 20;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BuscarMuestrasController">
+<VBox prefHeight="1006.0" prefWidth="1322.0" spacing="20" style="-fx-background-color: #EEF2F2; -fx-padding: 20;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BuscarMuestrasController">
 
     <Text fill="#0a4d4a" style="-fx-font-size: 24; -fx-font-weight: bold" text="Buscar y Gestionar Muestras" />
     <Text style="-fx-font-size: 14" text="Consulta y visualiza las muestras registradas en el sistema." />
 
     <VBox prefHeight="78.0" prefWidth="681.0" spacing="8.0" style="-fx-background-color: #ffffff; -fx-padding: 14; -fx-background-radius: 5;">
         <Label style="-fx-font-weight: bold;" text="Busqueda general" textFill="#0a4d4a" />
-         <TextField fx:id="txtBusquedaGeneral" onAction="#buscarMuestras" prefHeight="25.0" prefWidth="1000.0" promptText="Buscar por codigo, descripcion, marca, referencia, estado, ubicacion, fecha o cualquier valor..." styleClass="text-field" stylesheets="@css/login.css" />
+      <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+         <children>
+            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@icons/filtrar.png" />
+               </image>
+            </ImageView>
+               <TextField fx:id="txtBusquedaGeneral" onAction="#buscarMuestras" prefHeight="27.0" prefWidth="523.0" promptText="Buscar por codigo, descripcion, marca, referencia, estado, ubicacion, fecha o cualquier valor..." styleClass="text-field" stylesheets="@css/login.css" />
+         </children>
+      </HBox>
     </VBox>
     
     <HBox spacing="20" VBox.vgrow="ALWAYS">
@@ -62,10 +72,41 @@
             <Label fx:id="lblDetalleMarca" />
             <Label style="-fx-font-weight: bold; -fx-font-size: 12;" text="Referencia:" textFill="#0a4d4a" />
             <Label fx:id="lblDetalleReferencia" />
-            <Button fx:id="btnEditarInformación" onAction="#editarInformacion" prefHeight="40.0" prefWidth="177.0" style="-fx-background-color: #008C84;" styleClass="btn-primary" stylesheets="@css/botones.css" text="Editar Información" textFill="WHITE" />
-         <Button fx:id="btnAsignartecnico" onAction="#asignarTecnico" prefHeight="40.0" prefWidth="177.0" style="-fx-background-color: #008C84;" styleClass="btn-primary" stylesheets="@css/botones.css" text="Asignar Técnico" textFill="WHITE" />
-         <Button fx:id="btnAlmacenarMuestra" onAction="#almacenarMuestra" style="-fx-background-color: #008C84;" styleClass="btn-primary" stylesheets="@css/botones.css" text="Almacenar Muestra" textFill="WHITE" />
-         <Button fx:id="btnEliminarMuestra" onAction="#eliminarMuestra" prefHeight="40.0" prefWidth="175.0" style="-fx-background-color: #E4002B; -fx-text-fill: white;" styleClass="btn-primary" stylesheets="@css/botones.css" text="Eliminar Muestra" />
+            <Button fx:id="btnEditarInformación" onAction="#editarInformacion" prefHeight="40.0" prefWidth="205.0" style="-fx-background-color: #008C84;" styleClass="btn-primary" stylesheets="@css/botones.css" text="Editar Información" textFill="WHITE">
+                  <graphic>
+                     <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <Image url="@icons/lapiz.png" />
+                        </image>
+                     </ImageView>
+                  </graphic>
+                  <VBox.margin>
+                     <Insets />
+                  </VBox.margin></Button>
+         <Button fx:id="btnAsignartecnico" onAction="#asignarTecnico" prefHeight="40.0" prefWidth="205.0" style="-fx-background-color: #008C84;" styleClass="btn-primary" stylesheets="@css/botones.css" text="Asignar Técnico" textFill="WHITE">
+                  <graphic>
+                     <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <Image url="@icons/iconRegistraUsuarioWhite.png" />
+                        </image>
+                     </ImageView>
+                  </graphic></Button>
+         <Button fx:id="btnAlmacenarMuestra" onAction="#almacenarMuestra" prefHeight="40.0" prefWidth="205.0" style="-fx-background-color: #008C84;" styleClass="btn-primary" stylesheets="@css/botones.css" text="Almacenar Muestra" textFill="WHITE">
+                  <graphic>
+                     <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <Image url="@icons/iconMuestraWhite.png" />
+                        </image>
+                     </ImageView>
+                  </graphic></Button>
+         <Button fx:id="btnEliminarMuestra" onAction="#eliminarMuestra" prefHeight="40.0" prefWidth="205.0" style="-fx-background-color: #E4002B; -fx-text-fill: white;" styleClass="btn-primary" stylesheets="@css/botones.css" text="Eliminar Muestra">
+                  <graphic>
+                     <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <Image url="@icons/basura.png" />
+                        </image>
+                     </ImageView>
+                  </graphic></Button>
            </VBox>
           </content>
         </ScrollPane>
