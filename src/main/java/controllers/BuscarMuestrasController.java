@@ -44,7 +44,6 @@ public class BuscarMuestrasController {
     @FXML private TableColumn<Muestra, String> colCliente;
     @FXML private TableColumn<Muestra, String> colMarca;
     @FXML private TableColumn<Muestra, String> colReferencia;
-    @FXML private TableColumn<Muestra, Integer> colCantidad;
     @FXML private TableColumn<Muestra, Estado> colEstado;
     @FXML private TableColumn<Muestra, LocalDate> colFecha;
     @FXML private TableColumn<Muestra, String> colUbicacion;
@@ -72,7 +71,6 @@ public class BuscarMuestrasController {
         colCliente.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         colMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
         colReferencia.setCellValueFactory(new PropertyValueFactory<>("referencia"));
-        colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
         colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fechaRecepcion"));
         colUbicacion.setCellValueFactory(new PropertyValueFactory<>("ubicacion"));
@@ -113,12 +111,17 @@ public class BuscarMuestrasController {
                              "LOWER(COALESCE(m.numeroInforme, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.numeroCotizacion, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.observacionAlmacenamiento, '')) LIKE ? OR " +
-                             "CAST(m.cantidad AS VARCHAR) LIKE ? OR " +
                              "CAST(m.fechaRecepcion AS VARCHAR) LIKE ?")) {
 
-            String busqueda = "%" + txtBusquedaGeneral.getText().trim().toLowerCase() + "%";
-            for (int i = 1; i <= 14; i++) {
+            String textoBusqueda = txtBusquedaGeneral.getText().trim();
+            String busqueda = "%" + textoBusqueda.toLowerCase() + "%";
+            for (int i = 1; i <= 13; i++) {
                 ps.setString(i, busqueda);
+            }
+            try {
+                ps.setString(7, "%" + Estado.desdeTexto(textoBusqueda).name().toLowerCase() + "%");
+            } catch (IllegalArgumentException ignored) {
+                // Para búsquedas parciales se conserva el texto escrito por el usuario.
             }
 
             ResultSet rs = ps.executeQuery();
@@ -131,8 +134,7 @@ public class BuscarMuestrasController {
                 m.setNombreCliente(rs.getString("nombreCliente"));
                 m.setMarca(rs.getString("marca"));
                 m.setReferencia(rs.getString("referencia"));
-                m.setCantidad(rs.getInt("cantidad"));
-                m.setEstado(Estado.valueOf(rs.getString("estado")));
+                m.setEstado(Estado.desdeTexto(rs.getString("estado")));
                 java.sql.Date fecha = rs.getDate("fechaRecepcion");
                 m.setFechaRecepcion(fecha == null ? null : fecha.toLocalDate());
                 m.setUbicacion(rs.getString("ubicacion"));

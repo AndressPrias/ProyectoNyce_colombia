@@ -24,8 +24,7 @@ public class EditarMuestraController {
     @FXML private TextField txtNombreCliente;
     @FXML private TextField txtMarca;
     @FXML private TextField txtReferencia;
-    @FXML private TextField txtCantidad;
-    @FXML private ComboBox<String> comboEstado;
+    @FXML private ComboBox<Estado> comboEstado;
     @FXML private TextField txtUbicacion;
     @FXML private ComboBox<Usuario> comboTecnico;
     @FXML private TextField txtNumeroInforme;
@@ -42,11 +41,7 @@ public class EditarMuestraController {
 
     @FXML
     public void initialize() {
-        comboEstado.setItems(FXCollections.observableArrayList(
-                java.util.Arrays.stream(Estado.values())
-                        .map(Enum::name)
-                        .toList()
-        ));
+        comboEstado.setItems(FXCollections.observableArrayList(Estado.values()));
         comboTecnico.setItems(FXCollections.observableArrayList(UsuarioSesion.obtenerUsuariosAsignables()));
     }
 
@@ -59,8 +54,7 @@ public class EditarMuestraController {
             txtNombreCliente.setText(muestra.getNombreCliente());
             txtMarca.setText(muestra.getMarca());
             txtReferencia.setText(muestra.getReferencia());
-            txtCantidad.setText(String.valueOf(muestra.getCantidad()));
-            comboEstado.setValue(muestra.getEstado().name());
+            comboEstado.setValue(muestra.getEstado());
             txtUbicacion.setText(muestra.getUbicacion());
             seleccionarTecnico(muestra.getTecnico());
             fechaRecepcionPicker.setValue(muestra.getFechaRecepcion());
@@ -102,7 +96,7 @@ public class EditarMuestraController {
         // Validaciones
         if (txtDescripcion.getText().isBlank() || txtRotuloCliente.getText().isBlank()
                 || txtMarca.getText().isBlank() || txtReferencia.getText().isBlank()
-                || txtCantidad.getText().isEmpty() || comboEstado.getValue() == null
+                || comboEstado.getValue() == null
                 || fechaRecepcionPicker.getValue() == null) {
 
             lblMensaje.setText("Complete todos los campos obligatorios");
@@ -111,13 +105,7 @@ public class EditarMuestraController {
         }
 
         try {
-            int cantidad = Integer.parseInt(txtCantidad.getText());
-            if (cantidad <= 0) {
-                lblMensaje.setText("La cantidad debe ser mayor que cero");
-                lblMensaje.setVisible(true);
-                return;
-            }
-            Estado estado = Estado.valueOf(comboEstado.getSelectionModel().getSelectedItem());
+            Estado estado = comboEstado.getValue();
             LocalDate fecha = fechaRecepcionPicker.getValue();
 
             if (muestraEditando != null) {
@@ -126,7 +114,6 @@ public class EditarMuestraController {
                 muestraEditando.setNombreCliente(txtNombreCliente.getText());
                 muestraEditando.setMarca(txtMarca.getText());
                 muestraEditando.setReferencia(txtReferencia.getText());
-                muestraEditando.setCantidad(cantidad);
                 muestraEditando.setEstado(estado);
                 muestraEditando.setUbicacion(txtUbicacion.getText());
                 muestraEditando.setTecnico(comboTecnico.getValue());
@@ -162,9 +149,6 @@ public class EditarMuestraController {
                 lblMensaje.setVisible(true);
             }
 
-        } catch (NumberFormatException e) {
-            lblMensaje.setText("La cantidad debe ser un número entero");
-            lblMensaje.setVisible(true);
         } catch (Exception e) {
             lblMensaje.setText("Error al actualizar la muestra");
             lblMensaje.setVisible(true);
@@ -180,7 +164,6 @@ public class EditarMuestraController {
         txtNombreCliente.clear();
         txtMarca.clear();
         txtReferencia.clear();
-        txtCantidad.clear();
         comboEstado.getSelectionModel().clearSelection();
         txtUbicacion.clear();
         comboTecnico.getSelectionModel().clearSelection();

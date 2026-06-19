@@ -97,7 +97,7 @@
                <Region prefHeight="5.0" prefWidth="120.0" />
                     <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Busca y consulta muestras registradas" textAlignment="CENTER" />
                 </VBox>
-            <VBox fx:id="cardCargarDatos" alignment="CENTER" onMouseClicked="#CargarExel" prefHeight="180" prefWidth="160" spacing="20.0" styleClass="card">
+            <VBox fx:id="cardCargarDatos" alignment="CENTER" onMouseClicked="#abrirCargarBaseDatos" prefHeight="180" prefWidth="160" spacing="20.0" styleClass="card">
                <children>
                   <ImageView fx:id="iconVerMuestras1" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                      <image>

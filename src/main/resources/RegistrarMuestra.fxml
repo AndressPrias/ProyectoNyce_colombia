@@ -38,12 +38,12 @@
          <children>
             <VBox maxWidth="1.7976931348623157E308" prefHeight="677.0" prefWidth="307.0" spacing="14.0" style="-fx-background-color: white; -fx-border-radius: 5; -fx-padding: 15; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
                <children>
-                  <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="400.0" style="-fx-font-weight: bold;" text="Datos de la Muestra" textAlignment="CENTER" textFill="#0a4d4a">
+                  <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="624.0" style="-fx-font-weight: bold;" text="Datos de la Muestra" textAlignment="CENTER" textFill="#0a4d4a">
                      <VBox.margin>
                         <Insets />
                      </VBox.margin></Label>
                   <Label style="-fx-font-weight: bold;" text="Descripcion" textFill="#0a4d4a" />
-                  <TextField fx:id="txtDescripcion" prefHeight="25.0" prefWidth="300.0" promptText="Ingrese la descripción de la muestra..." />
+                  <TextField fx:id="txtDescripcion" prefHeight="25.0" prefWidth="268.0" promptText="Ingrese la descripción de la muestra..." />
                   <Label style="-fx-font-weight: bold;" text="ID Rotulo Cliente" textFill="#0a4d4a" />
                   <TextField fx:id="txtRotuloCliente" maxWidth="1.7976931348623157E308" promptText="Identificación Rotulo Cliente" />
                   <Label style="-fx-font-weight: bold;" text="Cliente" textFill="#0a4d4a" />
@@ -52,8 +52,6 @@
                   <TextField fx:id="txtMarca" promptText="Marca de la muestra" />
                   <Label style="-fx-font-weight: bold;" text="Referencia" textFill="#0a4d4a" />
                   <TextField fx:id="txtReferencia" promptText="Referencia del producto" />
-                  <Label style="-fx-font-weight: bold;" text="Cantidad" textFill="#0a4d4a" />
-                  <TextField fx:id="txtCantidad" maxWidth="1.7976931348623157E308" promptText="Cantidad" />
                   <Label style="-fx-font-weight: bold;" text="Estado" textFill="#0a4d4a" />
                   <ComboBox fx:id="comboEstado" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="541.0" promptText="Seleccione un estado..." />
                   <Label style="-fx-font-weight: bold;" text="Fecha de Recepcion" textFill="#0a4d4a" />

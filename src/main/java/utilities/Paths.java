@@ -14,5 +14,7 @@ public class Paths {
 
     public static final String BUSCAR_MUESTRAS = "/BuscarMuestras.fxml";
 
+    public static final String CARGAR_BASE_DATOS = "/CargarBaseDatos.fxml";
+
 
 }

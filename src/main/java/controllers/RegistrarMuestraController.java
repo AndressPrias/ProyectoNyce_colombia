@@ -26,8 +26,7 @@ public class RegistrarMuestraController {
     @FXML private TextField txtNombreCliente;
     @FXML private TextField txtMarca;
     @FXML private TextField txtReferencia;
-    @FXML private TextField txtCantidad;
-    @FXML private ComboBox<String> comboEstado;
+    @FXML private ComboBox<Estado> comboEstado;
     @FXML private TextField txtUbicacion;
     @FXML private DatePicker fechaRecepcionPicker;
     @FXML private Label txtInformativos;
@@ -60,11 +59,7 @@ public class RegistrarMuestraController {
 
     @FXML
     public void initialize() {
-        comboEstado.setItems(FXCollections.observableArrayList(
-                java.util.Arrays.stream(Estado.values())
-                        .map(Enum::name)
-                        .toList()
-        ));
+        comboEstado.setItems(FXCollections.observableArrayList(Estado.values()));
         cargarImagenProducto();
     }
 
@@ -76,8 +71,7 @@ public class RegistrarMuestraController {
             txtNombreCliente.setText(muestra.getNombreCliente());
             txtMarca.setText(muestra.getMarca());
             txtReferencia.setText(muestra.getReferencia());
-            txtCantidad.setText(String.valueOf(muestra.getCantidad()));
-            comboEstado.setValue(muestra.getEstado().name());
+            comboEstado.setValue(muestra.getEstado());
             txtUbicacion.setText(muestra.getUbicacion());
             fechaRecepcionPicker.setValue(muestra.getFechaRecepcion());
             rutaFotoSeleccionada = muestra.getRutaFoto();
@@ -102,17 +96,16 @@ public class RegistrarMuestraController {
 
     @FXML
     void guardarMuestra(ActionEvent event) {
-        if (txtDescripcion.getText().isEmpty() || txtRotuloCliente.getText().isEmpty() || txtCantidad.getText().isEmpty() || comboEstado.getValue() == null) {
+        if (txtDescripcion.getText().isEmpty() || txtRotuloCliente.getText().isEmpty() || comboEstado.getValue() == null) {
             txtInformativos.setText("Complete todos los campos obligatorios");
             return;
         }
 
         MuestraService service = new MuestraService();
-        Estado estado = Estado.valueOf(comboEstado.getValue());
+        Estado estado = comboEstado.getValue();
         LocalDate fecha = fechaRecepcionPicker.getValue();
 
         try {
-            int cantidad = Integer.parseInt(txtCantidad.getText());
             if (muestraEditando == null) {
                 boolean guardada = service.registrarMuestra(
                         txtRotuloCliente.getText(),
@@ -120,7 +113,6 @@ public class RegistrarMuestraController {
                         txtDescripcion.getText(),
                         txtMarca.getText(),
                         txtReferencia.getText(),
-                        cantidad,
                         txtUbicacion.getText(),
                         usuario,
                         rutaFotoSeleccionada,
@@ -139,7 +131,6 @@ public class RegistrarMuestraController {
                 muestraEditando.setNombreCliente(txtNombreCliente.getText());
                 muestraEditando.setMarca(txtMarca.getText());
                 muestraEditando.setReferencia(txtReferencia.getText());
-                muestraEditando.setCantidad(cantidad);
                 muestraEditando.setEstado(estado);
                 muestraEditando.setUbicacion(txtUbicacion.getText());
                 muestraEditando.setFechaRecepcion(fecha);
@@ -150,9 +141,10 @@ public class RegistrarMuestraController {
 
             limpiarCampos();
 
-        } catch (NumberFormatException e) {
-            txtInformativos.setText("La cantidad debe ser un numero entero");
+        } catch (Exception e) {
+            txtInformativos.setText("Error al guardar la muestra");
             txtInformativos.setVisible(true);
+            e.printStackTrace();
         }
     }
 
@@ -168,7 +160,6 @@ public class RegistrarMuestraController {
         txtNombreCliente.clear();
         txtMarca.clear();
         txtReferencia.clear();
-        txtCantidad.clear();
         comboEstado.getSelectionModel().clearSelection();
         txtUbicacion.clear();
         fechaRecepcionPicker.setValue(null);

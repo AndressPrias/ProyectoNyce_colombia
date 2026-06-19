@@ -10,7 +10,6 @@ public class Muestra {
     private String referencia;
     private String descripcion;
     private String marca;
-    private int cantidad;
     private Estado estado;
     private String ubicacion;
     private String estante;
@@ -36,7 +35,6 @@ public class Muestra {
         this.rotuloCliente = rotuloCliente;
         this.nombreCliente = nombreCliente;
         this.descripcion = descripcion;
-        this.cantidad = cantidad;
         this.estado = estado;
         this.ubicacion = ubicacion;
         this.custodio = custodio;
@@ -84,14 +82,6 @@ public class Muestra {
 
     public void setReferencia(String referencia) {
         this.referencia = referencia;
-    }
-
-    public int getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
     }
 
     public LocalDate getFechaRecepcion() {

@@ -24,6 +24,9 @@ public class MenuLateralController {
     private Button btnBuscarMuestra;
 
     @FXML
+    private Button btnCargarDatos;
+
+    @FXML
     private Button btnCerrarSesion;
 
     @FXML
@@ -38,7 +41,8 @@ public class MenuLateralController {
                 btnInicio,
                 btnRegistrarMuestra,
                 btnRegistrarUsuario,
-                btnBuscarMuestra
+                btnBuscarMuestra,
+                btnCargarDatos
         );
 
         for (Button boton : botonesNavegacion) {
@@ -50,6 +54,7 @@ public class MenuLateralController {
             case REGISTRAR_MUESTRA -> btnRegistrarMuestra;
             case GESTIONAR_USUARIOS -> btnRegistrarUsuario;
             case BUSCAR_MUESTRAS -> btnBuscarMuestra;
+            case CARGAR_BASE_DATOS -> btnCargarDatos;
         };
 
         if (!activo.getStyleClass().contains("menu-activo")) {
@@ -75,6 +80,11 @@ public class MenuLateralController {
     @FXML
     private void abrirBuscarMuestra() {
         Navegacion.irBuscarMuestras();
+    }
+
+    @FXML
+    private void abrirCargarDatos() {
+        Navegacion.irCargarBaseDatos();
     }
 
     @FXML

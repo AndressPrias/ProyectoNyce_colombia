@@ -15,12 +15,6 @@ import java.util.List;
 
 public class MuestraService {
 
-    public static void actualizarMuestra(int id, String descripcion, String rotulo, int cantidad, Estado estado, LocalDate fecha, String ubicacion, String rutaFotoSeleccionada) {
-    }
-
-    public static void registrarMuestra(String descripcion, String rotulo, int cantidad, Estado estado, LocalDate fecha, String ubicacion, String rutaFotoSeleccionada) {
-    }
-
     public String generarCodigoInterno() {
         String fecha = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         int consecutivo = 1;
@@ -42,28 +36,27 @@ public class MuestraService {
         return String.format("%s-%02d", fecha, consecutivo);
     }
 
-    public boolean registrarMuestra(String rotuloCliente, String descripcion, int cantidad,
+    public boolean registrarMuestra(String rotuloCliente, String descripcion,
                                  String ubicacion, Usuario custodio, String rutaFoto) {
-        return registrarMuestra(rotuloCliente, null, descripcion, null, null, cantidad, ubicacion, custodio, rutaFoto, null, null);
+        return registrarMuestra(rotuloCliente, null, descripcion, null, null, ubicacion, custodio, rutaFoto, null, null);
     }
 
     public boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,
-                                 String referencia, int cantidad,
-                                 String ubicacion, Usuario custodio, String rutaFoto,
-                                 Estado estadoUI, LocalDate fechaRecepcionUI) {
+                                    String referencia, String ubicacion, Usuario custodio, String rutaFoto,
+                                    Estado estadoUI, LocalDate fechaRecepcionUI) {
 
         if (custodio == null) {
             throw new IllegalArgumentException("No hay un usuario autenticado para registrar la muestra");
         }
 
         String codigo = generarCodigoInterno();
-        Estado estado = estadoUI != null ? estadoUI : Estado.RECIBIDA;
+        Estado estado = estadoUI != null ? estadoUI : Estado.EN_CUSTODIA;
         LocalDate fecha = fechaRecepcionUI != null ? fechaRecepcionUI : LocalDate.now();
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
-                     "INSERT INTO muestras (codigoInterno, rotuloCliente, nombreCliente, descripcion, marca, referencia, cantidad, estado, ubicacion, custodioId, fechaRecepcion, rutaFoto) " +
-                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+                     "INSERT INTO muestras (codigoInterno, rotuloCliente, nombreCliente, descripcion, marca, referencia, estado, ubicacion, custodioId, fechaRecepcion, rutaFoto) " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, codigo);
             ps.setString(2, rotuloCliente);
@@ -71,12 +64,11 @@ public class MuestraService {
             ps.setString(4, descripcion);
             ps.setString(5, marca);
             ps.setString(6, referencia);
-            ps.setInt(7, cantidad);
-            ps.setString(8, estado.name());
-            ps.setString(9, ubicacion);
-            ps.setInt(10, custodio.getId());
-            ps.setObject(11, fecha);
-            ps.setString(12, rutaFoto);
+            ps.setString(7, estado.name());
+            ps.setString(8, ubicacion);
+            ps.setInt(9, custodio.getId());
+            ps.setObject(10, fecha);
+            ps.setString(11, rutaFoto);
 
             ps.executeUpdate();
 
@@ -137,18 +129,16 @@ public class MuestraService {
                 m.setDescripcion(rs.getString("descripcion"));
                 m.setMarca(rs.getString("marca"));
                 m.setReferencia(rs.getString("referencia"));
-                m.setCantidad(rs.getInt("cantidad"));
-
                 // Convertir String a Enum Estado
                 String estadoStr = rs.getString("estado");
                 if (estadoStr != null) {
                     try {
-                        m.setEstado(Estado.valueOf(estadoStr));
+                        m.setEstado(Estado.desdeTexto(estadoStr));
                     } catch (IllegalArgumentException e) {
-                        m.setEstado(Estado.RECIBIDA); // valor por defecto si es inválido
+                        m.setEstado(Estado.EN_CUSTODIA);
                     }
                 } else {
-                    m.setEstado(Estado.RECIBIDA); // valor por defecto
+                    m.setEstado(Estado.EN_CUSTODIA);
                 }
 
                 m.setUbicacion(rs.getString("ubicacion"));
@@ -176,7 +166,7 @@ public class MuestraService {
     }
 
     public boolean actualizarMuestra(Muestra muestra) {
-        String sql = "UPDATE muestras SET descripcion=?, rotuloCliente=?, nombreCliente=?, marca=?, referencia=?, cantidad=?, estado=?, " +
+        String sql = "UPDATE muestras SET descripcion=?, rotuloCliente=?, nombreCliente=?, marca=?, referencia=?, estado=?, " +
                 "fechaRecepcion=?, ubicacion=?, estante=?, tecnicoId=?, rutaFoto=?, numeroInforme=?, numeroCotizacion=? WHERE id=?";
 
         try (Connection conn = Database.getConnection();
@@ -187,16 +177,15 @@ public class MuestraService {
             ps.setString(3, muestra.getNombreCliente());
             ps.setString(4, muestra.getMarca());
             ps.setString(5, muestra.getReferencia());
-            ps.setInt(6, muestra.getCantidad());
-            ps.setString(7, muestra.getEstado().name());
-            ps.setObject(8, muestra.getFechaRecepcion()); // LocalDate compatible
-            ps.setString(9, muestra.getUbicacion());
-            ps.setString(10, muestra.getEstante());
-            setUsuarioIdNullable(ps, 11, muestra.getTecnico());
-            ps.setString(12, muestra.getRutaFoto());
-            ps.setString(13, muestra.getNumeroInforme());
-            ps.setString(14, muestra.getNumeroCotizacion());
-            ps.setInt(15, muestra.getId());
+            ps.setString(6, muestra.getEstado().name());
+            ps.setObject(7, muestra.getFechaRecepcion()); // LocalDate compatible
+            ps.setString(8, muestra.getUbicacion());
+            ps.setString(9, muestra.getEstante());
+            setUsuarioIdNullable(ps, 10, muestra.getTecnico());
+            ps.setString(11, muestra.getRutaFoto());
+            ps.setString(12, muestra.getNumeroInforme());
+            ps.setString(13, muestra.getNumeroCotizacion());
+            ps.setInt(14, muestra.getId());
 
             return ps.executeUpdate() == 1;
 
@@ -224,14 +213,14 @@ public class MuestraService {
                         conn.rollback();
                         return false;
                     }
-                    estadoAnterior = Estado.valueOf(rs.getString("estado"));
+                    estadoAnterior = Estado.desdeTexto(rs.getString("estado"));
                     ubicacionActual = rs.getString("ubicacion");
                 }
 
                 try (PreparedStatement ps = conn.prepareStatement(
                         "UPDATE muestras SET tecnicoId=?, estado=? WHERE id=?")) {
                     ps.setInt(1, tecnico.getId());
-                    ps.setString(2, Estado.EN_ENSAYO.name());
+                    ps.setString(2, Estado.EN_CURSO.name());
                     ps.setInt(3, muestraId);
                     if (ps.executeUpdate() != 1) {
                         conn.rollback();
@@ -245,7 +234,7 @@ public class MuestraService {
                     movimiento.setInt(1, muestraId);
                     movimiento.setInt(2, tecnico.getId());
                     movimiento.setString(3, estadoAnterior.name());
-                    movimiento.setString(4, Estado.EN_ENSAYO.name());
+                    movimiento.setString(4, Estado.EN_CURSO.name());
                     movimiento.setString(5, ubicacionActual);
                     movimiento.setString(6, ubicacionActual);
                     movimiento.setObject(7, LocalDateTime.now());
@@ -321,7 +310,7 @@ public class MuestraService {
                         return false;
                     }
                     ubicacionAnterior = rs.getString("ubicacion");
-                    estadoAnterior = Estado.valueOf(rs.getString("estado"));
+                    estadoAnterior = Estado.desdeTexto(rs.getString("estado"));
                 }
 
                 try (PreparedStatement actualizacion = conn.prepareStatement(
@@ -329,7 +318,7 @@ public class MuestraService {
                     actualizacion.setString(1, ubicacion.trim());
                     actualizacion.setString(2, normalizarOpcional(estante));
                     actualizacion.setString(3, normalizarOpcional(observacion));
-                    actualizacion.setString(4, Estado.EN_ALMACENAMIENTO.name());
+                    actualizacion.setString(4, Estado.ALMACENADO.name());
                     actualizacion.setInt(5, muestraId);
                     if (actualizacion.executeUpdate() != 1) {
                         conn.rollback();
@@ -343,7 +332,7 @@ public class MuestraService {
                     movimiento.setInt(1, muestraId);
                     movimiento.setInt(2, usuario.getId());
                     movimiento.setString(3, estadoAnterior.name());
-                    movimiento.setString(4, Estado.EN_ALMACENAMIENTO.name());
+                    movimiento.setString(4, Estado.ALMACENADO.name());
                     movimiento.setString(5, ubicacionAnterior);
                     String nuevaUbicacion = normalizarOpcional(estante) == null
                             ? ubicacion.trim()

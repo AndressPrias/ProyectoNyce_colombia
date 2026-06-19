@@ -59,6 +59,15 @@
             </ImageView>
          </graphic>
       </Button>
+      <Button fx:id="btnCargarDatos" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#abrirCargarDatos" prefHeight="40.0" styleClass="button-menu" text="Cargar datos">
+         <graphic>
+            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@icons/IconCargarDatos.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
       <Line endX="70.0" startX="-70.0" stroke="#f8f8f8" />
       <Button fx:id="btnCerrarSesion" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#cerrarSesion" prefHeight="40.0" styleClass="button-menu" text="Cerrar sesion">
          <graphic>

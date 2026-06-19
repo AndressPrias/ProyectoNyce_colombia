@@ -42,7 +42,6 @@
                 <TableColumn fx:id="colCliente" prefWidth="140.0" text="Cliente" />
                 <TableColumn fx:id="colMarca" prefWidth="100.0" text="Marca" />
                 <TableColumn fx:id="colReferencia" prefWidth="110.0" text="Referencia" />
-                <TableColumn fx:id="colCantidad" prefWidth="69.0" text="Cantidad" />
                 <TableColumn fx:id="colEstado" prefWidth="97.0" text="Estado" />
                 <TableColumn fx:id="colFecha" prefWidth="123.0" text="Fecha de recepcion" />
                 <TableColumn fx:id="colUbicacion" prefWidth="100.0" text="Ubicacion" />

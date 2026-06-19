@@ -49,8 +49,6 @@
                         <TextField fx:id="txtMarca" maxWidth="1.7976931348623157E308" promptText="Ingrese la marca de la muestra" />
                   <Label style="-fx-font-weight: bold;" text="Referencia" textFill="#0a4d4a" />
                   <TextField fx:id="txtReferencia" maxWidth="1.7976931348623157E308" promptText="Ingrese la referencia de la muestra" />
-                        <Label style="-fx-font-weight: bold;" text="Cantidad" textFill="#0a4d4a" />
-                        <TextField fx:id="txtCantidad" maxWidth="1.7976931348623157E308" promptText="Cantidad" />
                         <Label style="-fx-font-weight: bold;" text="Estado" textFill="#0a4d4a" />
                         <ComboBox fx:id="comboEstado" maxWidth="1.7976931348623157E308" promptText="Seleccione un estado..." />
                         <Label style="-fx-font-weight: bold;" text="Fecha de Recepcion" textFill="#0a4d4a" />

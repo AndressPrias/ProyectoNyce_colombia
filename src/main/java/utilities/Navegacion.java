@@ -2,6 +2,7 @@ package utilities;
 
 import controllers.ControladorBaseController;
 import controllers.BuscarMuestrasController;
+import controllers.CargarBaseDatosController;
 import controllers.GestionarUsuariosController;
 import controllers.MenuLateralController;
 import controllers.MenuPrincipalController;
@@ -68,6 +69,15 @@ public final class Navegacion {
             }
         });
         marcarSeccionActiva(SeccionApp.BUSCAR_MUESTRAS);
+    }
+
+    public static void irCargarBaseDatos() {
+        cargar(Paths.CARGAR_BASE_DATOS, "Cargar Base de Datos", controller -> {
+            if (controller instanceof CargarBaseDatosController c) {
+                c.setUsuario(UsuarioSesion.getUsuario());
+            }
+        });
+        marcarSeccionActiva(SeccionApp.CARGAR_BASE_DATOS);
     }
 
     public static void cargar(String fxmlPath, String tituloVentana, ConfiguradorVista configurador) {
