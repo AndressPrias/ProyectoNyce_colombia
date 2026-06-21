@@ -8,6 +8,7 @@ public enum Estado {
     REALIZAR_DISPOSICION_FINAL("Realizar disposición final"),
     EN_CUSTODIA("En custodia"),
     EN_CURSO("En curso"),
+    LISTA_PARA_ALMACENAR("Lista para almacenar"),
     LABORATORIO_EXTERNO("Laboratorio Externo"),
     ENVIADO("Enviado"),
     DESTRUCCION("Destrucción");

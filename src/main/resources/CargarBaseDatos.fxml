@@ -27,13 +27,13 @@
       <HBox alignment="CENTER_LEFT" spacing="16.0" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 6;">
          <VBox prefWidth="310.0" spacing="6.0">
             <Label style="-fx-font-weight: bold;" text="1. Descargar plantilla" textFill="#0a4d4a" />
-            <Label text="Incluye encabezados, instrucciones y estados validos." textFill="#456372" wrapText="true" />
+            <Label text="Incluye encabezados, instrucciones y estados válidos." textFill="#456372" wrapText="true" />
          </VBox>
          <Button mnemonicParsing="false" onAction="#descargarPlantilla" prefWidth="175.0" styleClass="btn-secondary" text="Descargar plantilla" />
          <Region HBox.hgrow="ALWAYS" />
          <VBox prefWidth="310.0" spacing="6.0">
             <Label style="-fx-font-weight: bold;" text="2. Seleccionar archivo" textFill="#0a4d4a" />
-            <Label fx:id="lblArchivo" text="Ningun archivo seleccionado" textFill="#456372" wrapText="true" />
+            <Label fx:id="lblArchivo" text="Ningún archivo seleccionado" textFill="#456372" wrapText="true" />
          </VBox>
          <Button mnemonicParsing="false" onAction="#seleccionarArchivo" prefWidth="175.0" styleClass="btn-primary" text="Seleccionar Excel" />
       </HBox>
@@ -48,17 +48,19 @@
             <Label text="No hay datos para mostrar" />
          </placeholder>
          <columns>
-            <TableColumn fx:id="colRotulo" minWidth="110.0" text="Rotulo cliente" />
+            <TableColumn fx:id="colRotulo" minWidth="110.0" text="Rótulo cliente *" />
             <TableColumn fx:id="colCliente" minWidth="130.0" text="Cliente" />
-            <TableColumn fx:id="colDescripcion" minWidth="180.0" text="Descripcion" />
+            <TableColumn fx:id="colDescripcion" minWidth="180.0" text="Descripción *" />
             <TableColumn fx:id="colMarca" minWidth="100.0" text="Marca" />
             <TableColumn fx:id="colReferencia" minWidth="110.0" text="Referencia" />
             <TableColumn fx:id="colEstado" minWidth="120.0" text="Estado" />
-            <TableColumn fx:id="colFecha" minWidth="110.0" text="Fecha recepcion" />
-            <TableColumn fx:id="colUbicacion" minWidth="120.0" text="Ubicacion" />
+            <TableColumn fx:id="colFecha" minWidth="110.0" text="Fecha de recepción" />
+            <TableColumn fx:id="colUbicacion" minWidth="120.0" text="Ubicación" />
             <TableColumn fx:id="colRutaFoto" minWidth="160.0" text="Ruta de imagen" />
          </columns>
       </TableView>
+
+      <Label style="-fx-font-size: 11;" text="* Campos obligatorios en la plantilla" textFill="#d32f2f" />
 
       <VBox spacing="7.0" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 6;">
          <Label style="-fx-font-weight: bold;" text="Validacion del archivo" textFill="#0a4d4a" />

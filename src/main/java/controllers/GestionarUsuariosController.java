@@ -8,6 +8,9 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -39,6 +42,8 @@ public class GestionarUsuariosController {
     @FXML private TableColumn<Usuario, Integer> colId;
     @FXML private TableColumn<Usuario, String> colNombre;
     @FXML private TableColumn<Usuario, Rol> colRol;
+    @FXML private TableColumn<Usuario, Boolean> colControlMuestras;
+    @FXML private TableColumn<Usuario, Boolean> colControlTotal;
     @FXML private TextField txtNombre;
     @FXML private ComboBox<String> comboRol;
     @FXML private PasswordField txtPassword;
@@ -46,6 +51,10 @@ public class GestionarUsuariosController {
     @FXML private ImageView imgFotoPerfil;
     @FXML private Button btnSeleccionarImagen;
     @FXML private Button btnGuardar;
+    @FXML private Button btnNuevo;
+    @FXML private Button btnEliminar;
+    @FXML private CheckBox chkControlMuestras;
+    @FXML private CheckBox chkControlTotal;
 
     private final ObservableList<Usuario> usuarios = FXCollections.observableArrayList();
     private String rutaFotoSeleccionada = "";
@@ -60,6 +69,13 @@ public class GestionarUsuariosController {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colRol.setCellValueFactory(new PropertyValueFactory<>("rol"));
+        colControlMuestras.setCellValueFactory(new PropertyValueFactory<>("controlMuestrasEfectivo"));
+        colControlTotal.setCellValueFactory(new PropertyValueFactory<>("controlTotalEfectivo"));
+        chkControlTotal.selectedProperty().addListener((obs, anterior, seleccionado) -> {
+            if (seleccionado) {
+                chkControlMuestras.setSelected(true);
+            }
+        });
         tblUsuarios.setItems(usuarios);
         tblUsuarios.getSelectionModel().selectedItemProperty().addListener((obs, anterior, seleccionado) -> {
             if (seleccionado != null) {
@@ -98,12 +114,19 @@ public class GestionarUsuariosController {
             return;
         }
 
+        if (!puedeGestionarUsuarios()) {
+            actualizarPerfilPropio();
+            return;
+        }
+
         String nombre = txtNombre.getText();
-        String rolStr = puedeGestionarUsuarios() ? comboRol.getValue() : usuario.getRol().name();
+        String rolStr = comboRol.getValue();
         String password = txtPassword.getText();
+        boolean controlMuestras = chkControlMuestras.isSelected();
+        boolean controlTotal = chkControlTotal.isSelected();
 
         if (usuarioSeleccionado == null && !puedeGestionarUsuarios()) {
-            mostrarMensaje("Solo Supervisor o Admin puede crear usuarios");
+            mostrarMensaje("Solo el supervisor o el administrador pueden crear usuarios");
             return;
         }
 
@@ -112,13 +135,23 @@ public class GestionarUsuariosController {
             return;
         }
 
+        Rol nuevoRol = leerRol(rolStr);
+        boolean nuevoControlTotalEfectivo = controlTotal
+                || nuevoRol == Rol.ADMIN
+                || nuevoRol == Rol.SUPERVISOR;
+        if (nuevoControlTotalEfectivo
+                && (usuarioSeleccionado == null || !usuarioSeleccionado.tieneControlTotal())
+                && !confirmarControlTotal(nombre)) {
+            return;
+        }
+
         try (Connection conn = Database.getConnection()) {
             if (usuarioSeleccionado == null) {
-                registrarNuevoUsuario(conn, nombre, rolStr, password);
+                registrarNuevoUsuario(conn, nombre, rolStr, password, controlMuestras, controlTotal);
                 mostrarMensaje("Usuario registrado correctamente");
             } else {
-                actualizarUsuario(conn, nombre, rolStr, password);
-                actualizarUsuarioActivo(nombre, rolStr);
+                actualizarUsuario(conn, nombre, rolStr, password, controlMuestras, controlTotal);
+                actualizarUsuarioActivo(nombre, rolStr, controlMuestras, controlTotal);
                 mostrarMensaje("Usuario actualizado correctamente");
             }
             limpiarFormulario();
@@ -133,7 +166,7 @@ public class GestionarUsuariosController {
     void nuevoUsuario() {
         if (!puedeGestionarUsuarios()) {
             cargarUsuarioEnFormulario(usuario);
-            mostrarMensaje("Solo Supervisor o Admin puede crear usuarios");
+            mostrarMensaje("Solo el supervisor o el administrador pueden crear usuarios");
             return;
         }
         limpiarFormulario();
@@ -143,7 +176,7 @@ public class GestionarUsuariosController {
     @FXML
     void eliminarUsuario() {
         if (!puedeGestionarUsuarios()) {
-            mostrarMensaje("Solo Supervisor o Admin puede eliminar usuarios");
+            mostrarMensaje("Solo el supervisor o el administrador pueden eliminar usuarios");
             return;
         }
 
@@ -153,7 +186,7 @@ public class GestionarUsuariosController {
         }
 
         if (usuario != null && usuario.getId() == usuarioSeleccionado.getId()) {
-            mostrarMensaje("No puede eliminar el usuario con sesion activa");
+            mostrarMensaje("No puede eliminar el usuario con la sesión activa");
             return;
         }
 
@@ -162,7 +195,7 @@ public class GestionarUsuariosController {
 
             ps.setInt(1, usuarioSeleccionado.getId());
             int filas = ps.executeUpdate();
-            mostrarMensaje(filas > 0 ? "Usuario eliminado correctamente" : "No se encontro el usuario");
+            mostrarMensaje(filas > 0 ? "Usuario eliminado correctamente" : "No se encontró el usuario");
             limpiarFormulario();
             cargarUsuarios();
         } catch (SQLException e) {
@@ -179,33 +212,41 @@ public class GestionarUsuariosController {
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
         UsuarioSesion.setUsuario(usuario);
+        configurarPermisosFormulario();
         cargarUsuarios();
     }
 
-    private void registrarNuevoUsuario(Connection conn, String nombre, String rolStr, String password) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement("INSERT INTO usuarios (nombre, rol, password, rutaFoto) VALUES (?, ?, ?, ?)")) {
+    private void registrarNuevoUsuario(Connection conn, String nombre, String rolStr, String password,
+                                       boolean controlMuestras, boolean controlTotal) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO usuarios (nombre, rol, password, rutaFoto, controlMuestras, controlTotal) VALUES (?, ?, ?, ?, ?, ?)")) {
             ps.setString(1, nombre);
             ps.setString(2, rolStr);
             ps.setString(3, password);
             ps.setString(4, rutaFotoSeleccionada.isBlank() ? null : rutaFotoSeleccionada);
+            ps.setBoolean(5, controlMuestras);
+            ps.setBoolean(6, controlTotal);
             ps.executeUpdate();
         }
     }
 
-    private void actualizarUsuario(Connection conn, String nombre, String rolStr, String password) throws SQLException {
+    private void actualizarUsuario(Connection conn, String nombre, String rolStr, String password,
+                                   boolean controlMuestras, boolean controlTotal) throws SQLException {
         String sql = password.isEmpty()
-                ? "UPDATE usuarios SET nombre = ?, rol = ?, rutaFoto = ? WHERE id = ?"
-                : "UPDATE usuarios SET nombre = ?, rol = ?, rutaFoto = ?, password = ? WHERE id = ?";
+                ? "UPDATE usuarios SET nombre=?, rol=?, rutaFoto=?, controlMuestras=?, controlTotal=? WHERE id=?"
+                : "UPDATE usuarios SET nombre=?, rol=?, rutaFoto=?, controlMuestras=?, controlTotal=?, password=? WHERE id=?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nombre);
             ps.setString(2, rolStr);
             ps.setString(3, rutaFotoSeleccionada.isBlank() ? null : rutaFotoSeleccionada);
+            ps.setBoolean(4, controlMuestras);
+            ps.setBoolean(5, controlTotal);
             if (password.isEmpty()) {
-                ps.setInt(4, usuarioSeleccionado.getId());
+                ps.setInt(6, usuarioSeleccionado.getId());
             } else {
-                ps.setString(4, password);
-                ps.setInt(5, usuarioSeleccionado.getId());
+                ps.setString(6, password);
+                ps.setInt(7, usuarioSeleccionado.getId());
             }
             ps.executeUpdate();
         }
@@ -218,8 +259,8 @@ public class GestionarUsuariosController {
         }
 
         String sql = puedeGestionarUsuarios()
-                ? "SELECT id, nombre, rol, rutaFoto FROM usuarios ORDER BY nombre"
-                : "SELECT id, nombre, rol, rutaFoto FROM usuarios WHERE id = ? ORDER BY nombre";
+                ? "SELECT id, nombre, rol, rutaFoto, controlMuestras, controlTotal FROM usuarios ORDER BY nombre"
+                : "SELECT id, nombre, rol, rutaFoto, controlMuestras, controlTotal FROM usuarios WHERE id = ? ORDER BY nombre";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -234,7 +275,9 @@ public class GestionarUsuariosController {
                         rs.getInt("id"),
                         rs.getString("nombre"),
                         leerRol(rs.getString("rol")),
-                        rs.getString("rutaFoto")
+                        rs.getString("rutaFoto"),
+                        rs.getBoolean("controlMuestras"),
+                        rs.getBoolean("controlTotal")
                 ));
             }
             if (!puedeGestionarUsuarios() && !usuarios.isEmpty()) {
@@ -250,11 +293,13 @@ public class GestionarUsuariosController {
         usuarioSeleccionado = usuarioEditar;
         txtNombre.setText(usuarioEditar.getNombre());
         comboRol.setValue(usuarioEditar.getRol().name());
-        comboRol.setDisable(!puedeGestionarUsuarios());
+        chkControlMuestras.setSelected(usuarioEditar.isControlMuestras());
+        chkControlTotal.setSelected(usuarioEditar.isControlTotal());
         txtPassword.clear();
         rutaFotoSeleccionada = usuarioEditar.getRutaFoto() == null ? "" : usuarioEditar.getRutaFoto();
         cargarImagen(rutaFotoSeleccionada);
         btnGuardar.setText("Actualizar");
+        configurarPermisosFormulario();
     }
 
     private void limpiarFormulario() {
@@ -262,11 +307,13 @@ public class GestionarUsuariosController {
         tblUsuarios.getSelectionModel().clearSelection();
         txtNombre.clear();
         comboRol.getSelectionModel().clearSelection();
-        comboRol.setDisable(false);
+        chkControlMuestras.setSelected(false);
+        chkControlTotal.setSelected(false);
         txtPassword.clear();
         rutaFotoSeleccionada = "";
         imgFotoPerfil.setImage(null);
         btnGuardar.setText("Registrar");
+        configurarPermisosFormulario();
     }
 
     private void cargarImagen(String rutaFoto) {
@@ -316,7 +363,8 @@ public class GestionarUsuariosController {
         return archivo.getAbsolutePath();
     }
 
-    private void actualizarUsuarioActivo(String nombre, String rolStr) {
+    private void actualizarUsuarioActivo(String nombre, String rolStr,
+                                         boolean controlMuestras, boolean controlTotal) {
         if (usuario == null || usuarioSeleccionado == null || usuario.getId() != usuarioSeleccionado.getId()) {
             return;
         }
@@ -324,6 +372,8 @@ public class GestionarUsuariosController {
         usuario.setNombre(nombre);
         usuario.setRol(leerRol(rolStr));
         usuario.setRutaFoto(rutaFotoSeleccionada.isBlank() ? null : rutaFotoSeleccionada);
+        usuario.setControlMuestras(controlMuestras);
+        usuario.setControlTotal(controlTotal);
         UsuarioSesion.setUsuario(usuario);
     }
 
@@ -332,7 +382,7 @@ public class GestionarUsuariosController {
     }
 
     private boolean puedeGestionarUsuarios() {
-        return usuario != null && (usuario.getRol() == Rol.SUPERVISOR || usuario.getRol() == Rol.ADMIN);
+        return usuario != null && usuario.puedeAdministrarUsuarios();
     }
 
     private boolean puedeModificarSeleccionado() {
@@ -343,5 +393,64 @@ public class GestionarUsuariosController {
     private void mostrarMensaje(String mensaje) {
         lblMensaje.setText(mensaje);
         lblMensaje.setVisible(true);
+    }
+
+    private void actualizarPerfilPropio() {
+        if (usuario == null || usuarioSeleccionado == null || usuario.getId() != usuarioSeleccionado.getId()) {
+            mostrarMensaje("Solo puede modificar su propio perfil");
+            return;
+        }
+        String password = txtPassword.getText();
+        boolean cambiarPassword = password != null && !password.isBlank();
+        String rutaFoto = rutaFotoSeleccionada == null || rutaFotoSeleccionada.isBlank()
+                ? null
+                : rutaFotoSeleccionada;
+        String sql = cambiarPassword
+                ? "UPDATE usuarios SET rutaFoto=?, password=? WHERE id=?"
+                : "UPDATE usuarios SET rutaFoto=? WHERE id=?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, rutaFoto);
+            if (cambiarPassword) {
+                ps.setString(2, password);
+                ps.setInt(3, usuario.getId());
+            } else {
+                ps.setInt(2, usuario.getId());
+            }
+            ps.executeUpdate();
+
+            usuario.setRutaFoto(rutaFoto);
+            usuarioSeleccionado.setRutaFoto(rutaFoto);
+            UsuarioSesion.setUsuario(usuario);
+            txtPassword.clear();
+            tblUsuarios.refresh();
+            mostrarMensaje(cambiarPassword
+                    ? "Foto y contraseña actualizadas correctamente"
+                    : "Foto de perfil actualizada correctamente");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            mostrarMensaje("No se pudo actualizar el perfil");
+        }
+    }
+
+    private boolean confirmarControlTotal(String nombre) {
+        Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
+        alerta.setTitle("Confirmar control total");
+        alerta.setHeaderText("Está cediendo el control total de la aplicación");
+        alerta.setContentText("El usuario " + nombre
+                + " podrá controlar todas las muestras y sus procesos, pero no podrá crear, eliminar ni modificar otros usuarios. ¿Desea continuar?");
+        return alerta.showAndWait().filter(ButtonType.OK::equals).isPresent();
+    }
+
+    private void configurarPermisosFormulario() {
+        boolean gestor = puedeGestionarUsuarios();
+        txtNombre.setDisable(!gestor);
+        comboRol.setDisable(!gestor);
+        btnSeleccionarImagen.setDisable(false);
+        chkControlMuestras.setDisable(!gestor);
+        chkControlTotal.setDisable(!gestor);
+        btnNuevo.setDisable(!gestor);
+        btnEliminar.setDisable(!gestor);
     }
 }

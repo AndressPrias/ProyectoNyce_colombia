@@ -47,87 +47,82 @@
       </HBox>
 
                           <!-- Dashboard con tarjetas -->
-        <HBox alignment="CENTER" layoutY="141.0" spacing="40.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0">
+        <HBox alignment="CENTER" layoutY="141.0" spacing="18.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
             <children>
 
                                   <!-- Registrar Muestra -->
-                <VBox fx:id="cardRegistrarMuestra" alignment="CENTER" onMouseClicked="#abrirRegistroMuestra" prefHeight="332.0" prefWidth="160" spacing="30.0" styleClass="card">
+                <VBox fx:id="cardRegistrarMuestra" alignment="CENTER" maxHeight="300.0" maxWidth="150.0" minHeight="300.0" minWidth="150.0" onMouseClicked="#abrirRegistroMuestra" prefHeight="300.0" prefWidth="150.0" spacing="18.0" styleClass="card">
                     <ImageView fx:id="iconRegistrarMuestra" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                   <image>
                      <Image url="@icons/iconRegistrar-inicio.png" />
                   </image>
                </ImageView>
-                    <Label text="Registrar Muestra" textAlignment="CENTER" textFill="#0a4d4a" wrapText="true">
+                    <Label alignment="CENTER" maxWidth="120.0" minHeight="54.0" prefHeight="54.0" prefWidth="120.0" styleClass="card-title" text="Registrar muestra" textAlignment="CENTER" wrapText="true">
                   <font>
                      <Font name="System Bold" size="14.0" />
                   </font>
                </Label>
-               <Region prefHeight="20.0" prefWidth="120.0" />
-                    <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Registra una nueva muestra en el sistema" textAlignment="CENTER" />
-                </VBox>
-
-                                  <!-- Gestionar Usuarios -->
-                <VBox fx:id="cardRegistrarUsuario" alignment="CENTER" onMouseClicked="#abrirRegistrarUsuario" prefHeight="180" prefWidth="160" spacing="30.0" styleClass="card">
-                    <ImageView fx:id="iconRegistrarUsuario" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
-                  <image>
-                     <Image url="@icons/iconRUsuario-inicio.png" />
-                  </image>
-               </ImageView>
-                    <Label prefHeight="40.0" prefWidth="120.0" text="Gestionar Usuarios" textAlignment="CENTER" textFill="#0a4d4a" wrapText="true">
-                  <font>
-                     <Font name="System Bold" size="14.0" />
-                  </font>
-               </Label>
-               <Region prefHeight="5.0" prefWidth="120.0" />
-                    <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Administra los usuarios del sistema" textAlignment="CENTER" />
+                    <Label alignment="CENTER" maxWidth="120.0" minHeight="52.0" prefHeight="52.0" prefWidth="120.0" styleClass="card-description" text="Registra una nueva muestra en el sistema" textAlignment="CENTER" wrapText="true" />
                 </VBox>
 
                                   <!-- Buscar Muestras -->
-                <VBox fx:id="cardBuscarMuestras" alignment="CENTER" onMouseClicked="#abrirBuscarMuestras" prefHeight="180" prefWidth="160" spacing="20.0" styleClass="card">
+                <VBox fx:id="cardBuscarMuestras" alignment="CENTER" maxHeight="300.0" maxWidth="150.0" minHeight="300.0" minWidth="150.0" onMouseClicked="#abrirBuscarMuestras" prefHeight="300.0" prefWidth="150.0" spacing="18.0" styleClass="card">
                     <ImageView fx:id="iconVerMuestras" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                   <image>
                      <Image url="@icons/iconBuscar-inicio.png" />
                   </image>
                </ImageView>
-                    <Label prefHeight="64.0" prefWidth="120.0" text="Buscar y Gestionar Muestras" textAlignment="CENTER" textFill="#0a4d4a" wrapText="true">
+                    <Label alignment="CENTER" maxWidth="120.0" minHeight="54.0" prefHeight="54.0" prefWidth="120.0" styleClass="card-title" text="Buscar y gestionar muestras" textAlignment="CENTER" wrapText="true">
                   <font>
                      <Font name="System Bold" size="14.0" />
                   </font>
                </Label>
-               <Region prefHeight="5.0" prefWidth="120.0" />
-                    <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Busca y consulta muestras registradas" textAlignment="CENTER" />
+                    <Label alignment="CENTER" maxWidth="120.0" minHeight="52.0" prefHeight="52.0" prefWidth="120.0" styleClass="card-description" text="Busca y consulta muestras registradas" textAlignment="CENTER" wrapText="true" />
                 </VBox>
-            <VBox fx:id="cardCargarDatos" alignment="CENTER" onMouseClicked="#abrirCargarBaseDatos" prefHeight="180" prefWidth="160" spacing="20.0" styleClass="card">
+            <VBox fx:id="cardCargarDatos" alignment="CENTER" maxHeight="300.0" maxWidth="150.0" minHeight="300.0" minWidth="150.0" onMouseClicked="#abrirCargarBaseDatos" prefHeight="300.0" prefWidth="150.0" spacing="18.0" styleClass="card">
                <children>
                   <ImageView fx:id="iconVerMuestras1" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                      <image>
                         <Image url="@icons/IconCargarDatos.png" />
                      </image>
                   </ImageView>
-                  <Label prefHeight="64.0" prefWidth="120.0" text="Cargar Base de datos" textAlignment="CENTER" textFill="#0a4d4a" wrapText="true">
+                  <Label alignment="CENTER" maxWidth="120.0" minHeight="54.0" prefHeight="54.0" prefWidth="120.0" styleClass="card-title" text="Cargar base de datos" textAlignment="CENTER" wrapText="true">
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font>
                   </Label>
-                  <Region prefHeight="5.0" prefWidth="120.0" />
-                  <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Carga y actualiza desde excel" textAlignment="CENTER" />
+                  <Label alignment="CENTER" maxWidth="120.0" minHeight="52.0" prefHeight="52.0" prefWidth="120.0" styleClass="card-description" text="Carga y actualiza desde Excel" textAlignment="CENTER" wrapText="true" />
                </children>
             </VBox>
 
-                                  <!-- Cerrar sesión -->
-                <VBox fx:id="cardCerrarSesion" alignment="CENTER" onMouseClicked="#cerrarSesion" prefHeight="180.0" prefWidth="170.0" spacing="30.0" styleClass="card-logout">
+                                           <!-- Gestionar Usuarios -->
+                <VBox fx:id="cardRegistrarUsuario" alignment="CENTER" maxHeight="300.0" maxWidth="150.0" minHeight="300.0" minWidth="150.0" onMouseClicked="#abrirRegistrarUsuario" prefHeight="300.0" prefWidth="150.0" spacing="18.0" styleClass="card">
+                    <ImageView fx:id="iconRegistrarUsuario" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
+                  <image>
+                     <Image url="@icons/iconRUsuario-inicio.png" />
+                  </image>
+               </ImageView>
+                    <Label alignment="CENTER" maxWidth="120.0" minHeight="54.0" prefHeight="54.0" prefWidth="120.0" styleClass="card-title" text="Gestionar usuarios" textAlignment="CENTER" wrapText="true">
+                  <font>
+                     <Font name="System Bold" size="14.0" />
+                  </font>
+               </Label>
+                    <Label alignment="CENTER" maxWidth="120.0" minHeight="52.0" prefHeight="52.0" prefWidth="120.0" styleClass="card-description" text="Administra los usuarios del sistema" textAlignment="CENTER" wrapText="true" />
+                </VBox>
+
+                                        <!-- Cerrar sesión -->
+                <VBox fx:id="cardCerrarSesion" alignment="CENTER" maxHeight="300.0" maxWidth="150.0" minHeight="300.0" minWidth="150.0" onMouseClicked="#cerrarSesion" prefHeight="300.0" prefWidth="150.0" spacing="18.0" styleClass="card-logout">
                     <ImageView fx:id="iconCerrarSesion" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                   <image>
                      <Image url="@icons/iconSalir-inicio.png" />
                   </image>
                </ImageView>
-                    <Label prefHeight="22.0" prefWidth="86.0" text="Cerrar sesión" textFill="#0a4d4a">
+                    <Label alignment="CENTER" maxWidth="120.0" minHeight="54.0" prefHeight="54.0" prefWidth="120.0" styleClass="card-title" text="Cerrar sesión" textAlignment="CENTER" wrapText="true">
                   <font>
                      <Font name="System Bold" size="14.0" />
                   </font>
                </Label>
-               <Region prefHeight="25.0" prefWidth="130.0" />
-                    <Label style="-fx-wrap-text:true; -fx-text-fill:white;" text="Salir del sistema de forma segura" textAlignment="CENTER" />
+                    <Label alignment="CENTER" maxWidth="120.0" minHeight="52.0" prefHeight="52.0" prefWidth="120.0" styleClass="card-description" text="Salir del sistema de forma segura" textAlignment="CENTER" wrapText="true" />
                 </VBox>
 
                               </children>

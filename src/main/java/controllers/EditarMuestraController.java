@@ -16,6 +16,7 @@ import utilities.UsuarioSesion;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.util.function.UnaryOperator;
 
 public class EditarMuestraController {
 
@@ -43,6 +44,11 @@ public class EditarMuestraController {
     public void initialize() {
         comboEstado.setItems(FXCollections.observableArrayList(Estado.values()));
         comboTecnico.setItems(FXCollections.observableArrayList(UsuarioSesion.obtenerUsuariosAsignables()));
+
+        UnaryOperator<TextFormatter.Change> filtroCuatroDigitos = cambio ->
+                cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null;
+        txtNumeroInforme.setTextFormatter(new TextFormatter<>(filtroCuatroDigitos));
+        txtNumeroCotizacion.setTextFormatter(new TextFormatter<>(filtroCuatroDigitos));
     }
 
     /** Establecer la muestra que se va a editar */
@@ -93,6 +99,11 @@ public class EditarMuestraController {
     /** Actualizar la muestra existente */
     @FXML
     void actualizarMuestra(ActionEvent event) {
+        if (usuario == null || !usuario.puedeControlarMuestras()) {
+            lblMensaje.setText("No tiene permiso para modificar muestras");
+            lblMensaje.setVisible(true);
+            return;
+        }
         // Validaciones
         if (txtDescripcion.getText().isBlank() || txtRotuloCliente.getText().isBlank()
                 || txtMarca.getText().isBlank() || txtReferencia.getText().isBlank()
@@ -100,6 +111,13 @@ public class EditarMuestraController {
                 || fechaRecepcionPicker.getValue() == null) {
 
             lblMensaje.setText("Complete todos los campos obligatorios");
+            lblMensaje.setVisible(true);
+            return;
+        }
+
+        if (!esCodigoCuatroDigitosValido(txtNumeroInforme.getText())
+                || !esCodigoCuatroDigitosValido(txtNumeroCotizacion.getText())) {
+            lblMensaje.setText("Informe y cotización deben contener exactamente 4 dígitos");
             lblMensaje.setVisible(true);
             return;
         }
@@ -119,11 +137,11 @@ public class EditarMuestraController {
                 muestraEditando.setTecnico(comboTecnico.getValue());
                 muestraEditando.setFechaRecepcion(fecha);
                 muestraEditando.setRutaFoto(rutaFotoSeleccionada);
-                muestraEditando.setNumeroInforme(txtNumeroInforme.getText());
-                muestraEditando.setNumeroCotizacion(txtNumeroCotizacion.getText());
+                muestraEditando.setNumeroInforme(normalizarCodigo(txtNumeroInforme.getText()));
+                muestraEditando.setNumeroCotizacion(normalizarCodigo(txtNumeroCotizacion.getText()));
 
                 MuestraService service = new MuestraService();
-                if (!service.actualizarMuestra(muestraEditando)) {
+                if (!service.actualizarMuestra(muestraEditando, usuario)) {
                     lblMensaje.setText("No se pudo actualizar la muestra");
                     lblMensaje.setVisible(true);
                     return;
@@ -201,6 +219,14 @@ public class EditarMuestraController {
                 .filter(tecnico -> tecnico.getId() == tecnicoActual.getId())
                 .findFirst()
                 .ifPresent(comboTecnico::setValue);
+    }
+
+    private boolean esCodigoCuatroDigitosValido(String valor) {
+        return valor == null || valor.isBlank() || valor.trim().matches("\\d{4}");
+    }
+
+    private String normalizarCodigo(String valor) {
+        return valor == null || valor.isBlank() ? null : valor.trim();
     }
 
 

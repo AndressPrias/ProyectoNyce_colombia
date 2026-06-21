@@ -10,6 +10,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import utilities.Navegacion;
@@ -23,6 +24,8 @@ public class MenuPrincipalController {
     @FXML private Circle imgfotoPerfil;
     @FXML private Label lblBienvenida;
     @FXML private Label lblFechaHora;
+    @FXML private VBox cardRegistrarMuestra;
+    @FXML private VBox cardCargarDatos;
 
     private Timeline timelineFechaHora;
 
@@ -37,6 +40,11 @@ public class MenuPrincipalController {
             lblBienvenida.setText(usuarioLogueado.getNombre());
         }
         cargarFotoPerfil(usuarioLogueado);
+        boolean controlMuestras = usuarioLogueado != null && usuarioLogueado.puedeControlarMuestras();
+        cardRegistrarMuestra.setVisible(controlMuestras);
+        cardRegistrarMuestra.setManaged(controlMuestras);
+        cardCargarDatos.setVisible(controlMuestras);
+        cardCargarDatos.setManaged(controlMuestras);
     }
 
     private void cargarFotoPerfil(Usuario usuarioLogueado) {

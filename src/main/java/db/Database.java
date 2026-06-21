@@ -30,7 +30,9 @@ public class Database {
                             "nombre VARCHAR(100) NOT NULL," +
                             "rol VARCHAR(20) NOT NULL," +
                             "password VARCHAR(100)," +
-                            "rutaFoto VARCHAR(255)" +
+                            "rutaFoto VARCHAR(255)," +
+                            "controlMuestras BOOLEAN DEFAULT FALSE," +
+                            "controlTotal BOOLEAN DEFAULT FALSE" +
                             ");"
             );
             conn.createStatement().execute(
@@ -38,6 +40,12 @@ public class Database {
             );
             conn.createStatement().execute(
                     "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS rutaFoto VARCHAR(255);"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS controlMuestras BOOLEAN DEFAULT FALSE;"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS controlTotal BOOLEAN DEFAULT FALSE;"
             );
             conn.createStatement().execute(
                     "UPDATE usuarios SET password = nombre WHERE password IS NULL;"
@@ -54,14 +62,14 @@ public class Database {
                             "referencia VARCHAR(100)," +
                             "estado VARCHAR(40) NOT NULL," +
                             "ubicacion VARCHAR(10)," +
-                            "estante VARCHAR(50)," +
                             "observacionAlmacenamiento VARCHAR(255)," +
                             "custodioId INT," +
                             "tecnicoId INT," +
+                            "responsableId INT," +
                             "fechaRecepcion DATE," +
                             "rutaFoto VARCHAR(255)," +
-                            "numeroInforme VARCHAR(100)," +
-                            "numeroCotizacion VARCHAR(100)," +
+                            "numeroInforme VARCHAR(4)," +
+                            "numeroCotizacion VARCHAR(4)," +
                             "FOREIGN KEY (custodioId) REFERENCES usuarios(id)," +
                             "FOREIGN KEY (tecnicoId) REFERENCES usuarios(id)" +
                             ");"
@@ -76,7 +84,7 @@ public class Database {
                     "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS referencia VARCHAR(100);"
             );
             conn.createStatement().execute(
-                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS estante VARCHAR(50);"
+                    "ALTER TABLE muestras DROP COLUMN IF EXISTS estante;"
             );
             conn.createStatement().execute(
                     "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS observacionAlmacenamiento VARCHAR(255);"
@@ -85,10 +93,19 @@ public class Database {
                     "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS tecnicoId INT;"
             );
             conn.createStatement().execute(
+                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS responsableId INT;"
+            );
+            conn.createStatement().execute(
                     "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS numeroInforme VARCHAR(100);"
             );
             conn.createStatement().execute(
                     "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS numeroCotizacion VARCHAR(100);"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE muestras ALTER COLUMN numeroInforme VARCHAR(4);"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE muestras ALTER COLUMN numeroCotizacion VARCHAR(4);"
             );
             conn.createStatement().execute(
                     "ALTER TABLE muestras DROP COLUMN IF EXISTS cantidad;"

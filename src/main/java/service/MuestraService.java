@@ -15,25 +15,43 @@ import java.util.List;
 
 public class MuestraService {
 
+    private static final String UBICACION_EN_ENSAYOS = "En ensayos";
+
     public String generarCodigoInterno() {
-        String fecha = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int consecutivo = 1;
+        return generarCodigoInternoParaFecha(LocalDate.now());
+    }
+
+    private String generarCodigoInternoParaFecha(LocalDate fechaRecepcion) {
+        LocalDate fechaBase = fechaRecepcion != null ? fechaRecepcion : LocalDate.now();
+        String prefijo = fechaBase.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        int ultimoConsecutivo = 0;
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
-                     "SELECT COUNT(*) FROM muestras WHERE codigoInterno LIKE ?")) {
+                     "SELECT codigoInterno FROM muestras WHERE codigoInterno LIKE ?")) {
 
-            ps.setString(1, fecha + "%");
+            ps.setString(1, prefijo + "-%");
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                consecutivo = rs.getInt(1) + 1;
+            while (rs.next()) {
+                String codigo = rs.getString("codigoInterno");
+                int separador = codigo != null ? codigo.lastIndexOf('-') : -1;
+                if (separador >= 0 && separador < codigo.length() - 1) {
+                    try {
+                        ultimoConsecutivo = Math.max(
+                                ultimoConsecutivo,
+                                Integer.parseInt(codigo.substring(separador + 1))
+                        );
+                    } catch (NumberFormatException ignored) {
+                        // Ignora codigos antiguos que no tengan el formato esperado.
+                    }
+                }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return String.format("%s-%02d", fecha, consecutivo);
+        return String.format("%s-%02d", prefijo, ultimoConsecutivo + 1);
     }
 
     public boolean registrarMuestra(String rotuloCliente, String descripcion,
@@ -44,14 +62,37 @@ public class MuestraService {
     public boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,
                                     String referencia, String ubicacion, Usuario custodio, String rutaFoto,
                                     Estado estadoUI, LocalDate fechaRecepcionUI) {
+        return registrarMuestra(
+                rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, false
+        );
+    }
+
+    public boolean registrarMuestraExterna(String rotuloCliente, String nombreCliente, String descripcion, String marca,
+                                           String referencia, String ubicacion, Usuario custodio, String rutaFoto,
+                                           Estado estadoUI, LocalDate fechaRecepcionUI) {
+        return registrarMuestra(
+                rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, true
+        );
+    }
+
+    private boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,
+                                     String referencia, String ubicacion, Usuario custodio, String rutaFoto,
+                                     Estado estadoUI, LocalDate fechaRecepcionUI, boolean codigoDesdeFechaRecepcion) {
 
         if (custodio == null) {
             throw new IllegalArgumentException("No hay un usuario autenticado para registrar la muestra");
         }
+        if (!custodio.puedeControlarMuestras()) {
+            throw new IllegalArgumentException("El usuario no tiene permiso para registrar muestras");
+        }
 
-        String codigo = generarCodigoInterno();
         Estado estado = estadoUI != null ? estadoUI : Estado.EN_CUSTODIA;
         LocalDate fecha = fechaRecepcionUI != null ? fechaRecepcionUI : LocalDate.now();
+        String codigo = codigoDesdeFechaRecepcion
+                ? generarCodigoInternoParaFecha(fecha)
+                : generarCodigoInterno();
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
@@ -142,7 +183,6 @@ public class MuestraService {
                 }
 
                 m.setUbicacion(rs.getString("ubicacion"));
-                m.setEstante(rs.getString("estante"));
                 m.setObservacionAlmacenamiento(rs.getString("observacionAlmacenamiento"));
                 m.setNumeroInforme(rs.getString("numeroInforme"));
                 m.setNumeroCotizacion(rs.getString("numeroCotizacion"));
@@ -165,9 +205,14 @@ public class MuestraService {
         return lista;
     }
 
-    public boolean actualizarMuestra(Muestra muestra) {
+    public boolean actualizarMuestra(Muestra muestra, Usuario usuarioAccion) {
+        if (usuarioAccion == null || !usuarioAccion.puedeControlarMuestras()) {
+            return false;
+        }
+        String numeroInforme = validarCodigoCuatroDigitos(muestra.getNumeroInforme(), "informe");
+        String numeroCotizacion = validarCodigoCuatroDigitos(muestra.getNumeroCotizacion(), "cotización");
         String sql = "UPDATE muestras SET descripcion=?, rotuloCliente=?, nombreCliente=?, marca=?, referencia=?, estado=?, " +
-                "fechaRecepcion=?, ubicacion=?, estante=?, tecnicoId=?, rutaFoto=?, numeroInforme=?, numeroCotizacion=? WHERE id=?";
+                "fechaRecepcion=?, ubicacion=?, tecnicoId=?, rutaFoto=?, numeroInforme=?, numeroCotizacion=? WHERE id=?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -180,12 +225,11 @@ public class MuestraService {
             ps.setString(6, muestra.getEstado().name());
             ps.setObject(7, muestra.getFechaRecepcion()); // LocalDate compatible
             ps.setString(8, muestra.getUbicacion());
-            ps.setString(9, muestra.getEstante());
-            setUsuarioIdNullable(ps, 10, muestra.getTecnico());
-            ps.setString(11, muestra.getRutaFoto());
-            ps.setString(12, muestra.getNumeroInforme());
-            ps.setString(13, muestra.getNumeroCotizacion());
-            ps.setInt(14, muestra.getId());
+            setUsuarioIdNullable(ps, 9, muestra.getTecnico());
+            ps.setString(10, muestra.getRutaFoto());
+            ps.setString(11, numeroInforme);
+            ps.setString(12, numeroCotizacion);
+            ps.setInt(13, muestra.getId());
 
             return ps.executeUpdate() == 1;
 
@@ -195,8 +239,9 @@ public class MuestraService {
         }
     }
 
-    public boolean asignarTecnico(int muestraId, Usuario tecnico) {
-        if (tecnico == null || tecnico.getRol() == domain.Rol.ADMIN) {
+    public boolean asignarTecnico(int muestraId, Usuario tecnico, Usuario usuarioAccion) {
+        if (tecnico == null || tecnico.getRol() == domain.Rol.ADMIN
+                || usuarioAccion == null || !usuarioAccion.puedeControlarMuestras()) {
             return false;
         }
 
@@ -218,10 +263,11 @@ public class MuestraService {
                 }
 
                 try (PreparedStatement ps = conn.prepareStatement(
-                        "UPDATE muestras SET tecnicoId=?, estado=? WHERE id=?")) {
+                        "UPDATE muestras SET tecnicoId=?, estado=?, ubicacion=? WHERE id=?")) {
                     ps.setInt(1, tecnico.getId());
                     ps.setString(2, Estado.EN_CURSO.name());
-                    ps.setInt(3, muestraId);
+                    ps.setString(3, UBICACION_EN_ENSAYOS);
+                    ps.setInt(4, muestraId);
                     if (ps.executeUpdate() != 1) {
                         conn.rollback();
                         return false;
@@ -236,9 +282,9 @@ public class MuestraService {
                     movimiento.setString(3, estadoAnterior.name());
                     movimiento.setString(4, Estado.EN_CURSO.name());
                     movimiento.setString(5, ubicacionActual);
-                    movimiento.setString(6, ubicacionActual);
+                    movimiento.setString(6, UBICACION_EN_ENSAYOS);
                     movimiento.setObject(7, LocalDateTime.now());
-                    movimiento.setString(8, "Asignacion de tecnico: " + tecnico.getNombre());
+                    movimiento.setString(8, "Asignación de técnico: " + tecnico.getNombre());
                     movimiento.executeUpdate();
                 }
 
@@ -257,7 +303,82 @@ public class MuestraService {
         }
     }
 
-    public boolean eliminarMuestra(int muestraId) {
+    public boolean finalizarEnsayos(int muestraId, Usuario tecnico) {
+        if (tecnico == null) {
+            return false;
+        }
+
+        try (Connection conn = Database.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                Estado estadoAnterior;
+                String ubicacionActual;
+                Integer tecnicoAsignadoId;
+                try (PreparedStatement consulta = conn.prepareStatement(
+                        "SELECT tecnicoId, estado, ubicacion FROM muestras WHERE id=?")) {
+                    consulta.setInt(1, muestraId);
+                    ResultSet rs = consulta.executeQuery();
+                    if (!rs.next()) {
+                        conn.rollback();
+                        return false;
+                    }
+                    int tecnicoId = rs.getInt("tecnicoId");
+                    tecnicoAsignadoId = rs.wasNull() ? null : tecnicoId;
+                    estadoAnterior = Estado.desdeTexto(rs.getString("estado"));
+                    ubicacionActual = rs.getString("ubicacion");
+                }
+
+                if (!tecnico.puedeFinalizarEnsayos()
+                        || tecnicoAsignadoId == null
+                        || tecnicoAsignadoId != tecnico.getId()
+                        || estadoAnterior != Estado.EN_CURSO) {
+                    conn.rollback();
+                    return false;
+                }
+
+                try (PreparedStatement actualizacion = conn.prepareStatement(
+                        "UPDATE muestras SET estado=? WHERE id=?")) {
+                    actualizacion.setString(1, Estado.LISTA_PARA_ALMACENAR.name());
+                    actualizacion.setInt(2, muestraId);
+                    if (actualizacion.executeUpdate() != 1) {
+                        conn.rollback();
+                        return false;
+                    }
+                }
+
+                try (PreparedStatement movimiento = conn.prepareStatement(
+                        "INSERT INTO movimientos (muestraId, usuarioId, estadoAnterior, estadoNuevo, ubicacionAnterior, ubicacionNueva, fechaHora, observacion) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    movimiento.setInt(1, muestraId);
+                    movimiento.setInt(2, tecnico.getId());
+                    movimiento.setString(3, estadoAnterior.name());
+                    movimiento.setString(4, Estado.LISTA_PARA_ALMACENAR.name());
+                    movimiento.setString(5, ubicacionActual);
+                    movimiento.setString(6, ubicacionActual);
+                    movimiento.setObject(7, LocalDateTime.now());
+                    movimiento.setString(8, "Ensayos finalizados. Muestra lista para almacenar");
+                    movimiento.executeUpdate();
+                }
+
+                conn.commit();
+                return true;
+            } catch (Exception e) {
+                conn.rollback();
+                System.err.println("Error al finalizar ensayos de la muestra " + muestraId + ": " + e.getMessage());
+                return false;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error de conexión al finalizar ensayos de la muestra " + muestraId + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean eliminarMuestra(int muestraId, Usuario usuarioAccion) {
+        if (usuarioAccion == null || !usuarioAccion.puedeControlarMuestras()) {
+            return false;
+        }
         try (Connection conn = Database.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement borrarMovimientos = conn.prepareStatement(
@@ -290,9 +411,10 @@ public class MuestraService {
         }
     }
 
-    public boolean almacenarMuestra(int muestraId, String ubicacion, String estante,
-                                    String observacion, Usuario usuario) {
-        if (usuario == null || ubicacion == null || ubicacion.isBlank()) {
+    public boolean almacenarMuestra(int muestraId, String ubicacion,
+                                    String observacion, Usuario responsable, Usuario usuario) {
+        if (usuario == null || !usuario.puedeControlarMuestras()
+                || responsable == null || ubicacion == null || ubicacion.isBlank()) {
             return false;
         }
 
@@ -314,10 +436,10 @@ public class MuestraService {
                 }
 
                 try (PreparedStatement actualizacion = conn.prepareStatement(
-                        "UPDATE muestras SET ubicacion=?, estante=?, observacionAlmacenamiento=?, estado=? WHERE id=?")) {
+                        "UPDATE muestras SET ubicacion=?, observacionAlmacenamiento=?, responsableId=?, estado=? WHERE id=?")) {
                     actualizacion.setString(1, ubicacion.trim());
-                    actualizacion.setString(2, normalizarOpcional(estante));
-                    actualizacion.setString(3, normalizarOpcional(observacion));
+                    actualizacion.setString(2, normalizarOpcional(observacion));
+                    actualizacion.setInt(3, responsable.getId());
                     actualizacion.setString(4, Estado.ALMACENADO.name());
                     actualizacion.setInt(5, muestraId);
                     if (actualizacion.executeUpdate() != 1) {
@@ -334,12 +456,14 @@ public class MuestraService {
                     movimiento.setString(3, estadoAnterior.name());
                     movimiento.setString(4, Estado.ALMACENADO.name());
                     movimiento.setString(5, ubicacionAnterior);
-                    String nuevaUbicacion = normalizarOpcional(estante) == null
-                            ? ubicacion.trim()
-                            : ubicacion.trim() + " / " + estante.trim();
-                    movimiento.setString(6, nuevaUbicacion);
+                    movimiento.setString(6, ubicacion.trim());
                     movimiento.setObject(7, LocalDateTime.now());
-                    movimiento.setString(8, normalizarOpcional(observacion));
+                    String detalleResponsable = "Responsable de almacenamiento: " + responsable.getNombre();
+                    String observacionNormalizada = normalizarOpcional(observacion);
+                    String detalleMovimiento = observacionNormalizada == null
+                            ? detalleResponsable
+                            : detalleResponsable + ". " + observacionNormalizada;
+                    movimiento.setString(8, limitarLongitud(detalleMovimiento, 255));
                     movimiento.executeUpdate();
                 }
 
@@ -370,7 +494,19 @@ public class MuestraService {
         return valor == null || valor.isBlank() ? null : valor.trim();
     }
 
-    public boolean almacenarMuestra(int id, String text, String text1, Usuario usuario) {
-        return almacenarMuestra(id, text, null, text1, usuario);
+    private String limitarLongitud(String valor, int maximo) {
+        return valor != null && valor.length() > maximo ? valor.substring(0, maximo) : valor;
     }
+
+    private String validarCodigoCuatroDigitos(String valor, String campo) {
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+        String codigo = valor.trim();
+        if (!codigo.matches("\\d{4}")) {
+            throw new IllegalArgumentException("El número de " + campo + " debe contener exactamente 4 dígitos");
+        }
+        return codigo;
+    }
+
 }

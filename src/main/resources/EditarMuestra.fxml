@@ -26,7 +26,7 @@
                         <Font name="System Bold" size="24.0" />
                     </font>
                 </Text>
-                <Text text="Actualize la información de la muestra ">
+                <Text text="Actualice la información de la muestra">
                     <font>
                         <Font size="14.0" />
                     </font>
@@ -38,31 +38,32 @@
             <children>
                 <VBox maxWidth="1.7976931348623157E308" prefWidth="430.0" spacing="14.0" style="-fx-background-color: white; -fx-border-radius: 5; -fx-padding: 15; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
                     <children>
-                        <Label alignment="CENTER" prefHeight="17.0" prefWidth="401.0" style="-fx-font-weight: bold;" text="Datos de la Muestra" textFill="#0a4d4a" />
-                        <Label style="-fx-font-weight: bold;" text="Descripcion" textFill="#0a4d4a" />
+                        <Label alignment="CENTER" prefHeight="17.0" prefWidth="401.0" style="-fx-font-weight: bold;" text="Datos de la muestra" textFill="#0a4d4a" />
+                        <Label style="-fx-font-weight: bold;" text="Descripción *" textFill="#0a4d4a" />
                   <TextField fx:id="txtDescripcion" promptText="Ingrese la descripción de la muestra..." />
-                        <Label style="-fx-font-weight: bold;" text="ID Rotulo Cliente" textFill="#0a4d4a" />
-                        <TextField fx:id="txtRotuloCliente" maxWidth="1.7976931348623157E308" promptText="Identificación Rotulo Cliente" />
+                        <Label style="-fx-font-weight: bold;" text="ID rótulo del cliente *" textFill="#0a4d4a" />
+                        <TextField fx:id="txtRotuloCliente" maxWidth="1.7976931348623157E308" promptText="Identificación del rótulo del cliente" />
                   <Label style="-fx-font-weight: bold;" text="Cliente" textFill="#0a4d4a" />
                   <TextField fx:id="txtNombreCliente" maxWidth="1.7976931348623157E308" promptText="Nombre del cliente" />
-                  <Label style="-fx-font-weight: bold;" text="Marca" textFill="#0a4d4a" />
+                  <Label style="-fx-font-weight: bold;" text="Marca *" textFill="#0a4d4a" />
                         <TextField fx:id="txtMarca" maxWidth="1.7976931348623157E308" promptText="Ingrese la marca de la muestra" />
-                  <Label style="-fx-font-weight: bold;" text="Referencia" textFill="#0a4d4a" />
+                  <Label style="-fx-font-weight: bold;" text="Referencia *" textFill="#0a4d4a" />
                   <TextField fx:id="txtReferencia" maxWidth="1.7976931348623157E308" promptText="Ingrese la referencia de la muestra" />
-                        <Label style="-fx-font-weight: bold;" text="Estado" textFill="#0a4d4a" />
+                        <Label style="-fx-font-weight: bold;" text="Estado *" textFill="#0a4d4a" />
                         <ComboBox fx:id="comboEstado" maxWidth="1.7976931348623157E308" promptText="Seleccione un estado..." />
-                        <Label style="-fx-font-weight: bold;" text="Fecha de Recepcion" textFill="#0a4d4a" />
+                        <Label style="-fx-font-weight: bold;" text="Fecha de recepción *" textFill="#0a4d4a" />
                         <DatePicker fx:id="fechaRecepcionPicker" maxWidth="1.7976931348623157E308" />
-                        <Label style="-fx-font-weight: bold;" text="Ubicacion / Estante" textFill="#0a4d4a" />
-                  <TextField fx:id="txtUbicacion" maxWidth="1.7976931348623157E308" promptText="Ingrese la ubicacion" />
-                  <Label style="-fx-font-weight: bold;" text="Nombre Técnico asignado" textFill="#0a4d4a" />
-                  <ComboBox fx:id="comboTecnico" maxWidth="1.7976931348623157E308" promptText="Seleccione un tecnico" />
+                        <Label style="-fx-font-weight: bold;" text="Ubicación" textFill="#0a4d4a" />
+                  <TextField fx:id="txtUbicacion" maxWidth="1.7976931348623157E308" promptText="Ingrese la ubicación" />
+                  <Label style="-fx-font-weight: bold;" text="Nombre del técnico asignado" textFill="#0a4d4a" />
+                  <ComboBox fx:id="comboTecnico" maxWidth="1.7976931348623157E308" promptText="Seleccione un técnico" />
+                  <Label style="-fx-font-size: 11;" text="* Campos obligatorios" textFill="#d32f2f" />
                     </children>
                 </VBox>
 
                 <VBox maxHeight="1.7976931348623157E308" prefWidth="340.0" spacing="14.0" style="-fx-background-color: #ffffff; -fx-padding: 15; -fx-border-radius: 5; -fx-background-radius: 5;">
                     <children>
-                        <Label text="Imagen del Producto" textFill="#0a4d4a">
+                        <Label text="Imagen del producto" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font></Label>
@@ -72,19 +73,19 @@
                         <Font name="System Bold" size="12.0" />
                      </font></Button>
                         <Label style="-fx-font-size: 10" text="Formatos permitidos: JPG, PNG, JPEG" />
-                        <Label style="-fx-font-size: 10" text="Tamano maximo: 5MB" />
-                  <Label text="Numero Informe" textFill="#0a4d4a">
+                        <Label style="-fx-font-size: 10" text="Tamaño máximo: 5 MB" />
+                  <Label text="Número de informe (4 dígitos)" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="txtNumeroInforme" promptText="Ingrese Numero de Informe" />
-                  <Label text="Numero Cotización" textFill="#0a4d4a">
+                  <TextField fx:id="txtNumeroInforme" promptText="Ejemplo: 0304" />
+                  <Label text="Número de cotización (4 dígitos)" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="txtNumeroCotizacion" promptText="Ingrese Numero de Cotización" />
+                  <TextField fx:id="txtNumeroCotizacion" promptText="Ejemplo: 0580" />
                     </children>
                 </VBox>
             </children>

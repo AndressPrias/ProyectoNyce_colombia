@@ -31,7 +31,8 @@ public final class UsuarioSesion {
 
     public static List<Usuario> obtenerUsuariosAsignables() {
         List<Usuario> usuarios = new ArrayList<>();
-        String sql = "SELECT id, nombre, rol, rutaFoto FROM usuarios WHERE UPPER(rol) <> ? ORDER BY nombre";
+        String sql = "SELECT id, nombre, rol, rutaFoto, controlMuestras, controlTotal " +
+                "FROM usuarios WHERE UPPER(rol) <> ? ORDER BY nombre";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -43,11 +44,37 @@ public final class UsuarioSesion {
                         rs.getInt("id"),
                         rs.getString("nombre"),
                         Rol.valueOf(rs.getString("rol").toUpperCase()),
-                        rs.getString("rutaFoto")
+                        rs.getString("rutaFoto"),
+                        rs.getBoolean("controlMuestras"),
+                        rs.getBoolean("controlTotal")
                 ));
             }
         } catch (SQLException | IllegalArgumentException e) {
             System.err.println("No se pudieron cargar los usuarios asignables: " + e.getMessage());
+        }
+        return usuarios;
+    }
+
+    public static List<Usuario> obtenerTodosUsuarios() {
+        List<Usuario> usuarios = new ArrayList<>();
+        String sql = "SELECT id, nombre, rol, rutaFoto, controlMuestras, controlTotal FROM usuarios ORDER BY nombre";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                usuarios.add(new Usuario(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        Rol.valueOf(rs.getString("rol").toUpperCase()),
+                        rs.getString("rutaFoto"),
+                        rs.getBoolean("controlMuestras"),
+                        rs.getBoolean("controlTotal")
+                ));
+            }
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("No se pudieron cargar los usuarios: " + e.getMessage());
         }
         return usuarios;
     }

@@ -21,6 +21,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.time.Year;
+import java.time.format.DateTimeFormatter;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
@@ -50,12 +52,23 @@ public class BuscarMuestrasController {
     @FXML private TableColumn<Muestra, Usuario> colTecnico;
 
     @FXML private ImageView imgDetalle;
+    @FXML private Label lblDetalleEstado;
+    @FXML private Label lblDetalleUbicacion;
     @FXML private Label lblDetalleCodigoInterno;
     @FXML private Label lblDetalleDescripcion;
-    @FXML private Label lblDetalleRotulo;
     @FXML private Label lblDetalleCliente;
     @FXML private Label lblDetalleMarca;
-    @FXML private Label lblDetalleReferencia;
+    @FXML private Label lblDetalleFecha;
+    @FXML private Label lblDetalleTecnico;
+    @FXML private Label lblDetalleResponsable;
+    @FXML private Label lblDetalleInforme;
+    @FXML private Label lblDetalleCotizacion;
+    @FXML private Label lblDetalleObservaciones;
+    @FXML private Button btnFinalizarEnsayos;
+    @FXML private Button btnEditarInformacion;
+    @FXML private Button btnAsignarTecnico;
+    @FXML private Button btnAlmacenarMuestra;
+    @FXML private Button btnEliminarMuestra;
 
 
     private ObservableList<Muestra> listaMuestras = FXCollections.observableArrayList();
@@ -93,12 +106,18 @@ public class BuscarMuestrasController {
 
     @FXML
     void buscarMuestras() {
+        Muestra seleccionAnterior = tblResultados.getSelectionModel().getSelectedItem();
+        Integer idSeleccionado = seleccionAnterior == null ? null : seleccionAnterior.getId();
         listaMuestras.clear();
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
                      "SELECT m.*, t.id AS tecnico_id, t.nombre AS tecnico_nombre, " +
-                             "t.rol AS tecnico_rol, t.rutaFoto AS tecnico_rutaFoto " +
-                             "FROM muestras m LEFT JOIN usuarios t ON t.id = m.tecnicoId WHERE " +
+                             "t.rol AS tecnico_rol, t.rutaFoto AS tecnico_rutaFoto, " +
+                             "r.id AS responsable_id, r.nombre AS responsable_nombre, " +
+                             "r.rol AS responsable_rol, r.rutaFoto AS responsable_rutaFoto " +
+                             "FROM muestras m " +
+                             "LEFT JOIN usuarios t ON t.id = m.tecnicoId " +
+                             "LEFT JOIN usuarios r ON r.id = m.responsableId WHERE " +
                              "LOWER(COALESCE(m.codigoInterno, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.descripcion, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.rotuloCliente, '')) LIKE ? OR " +
@@ -108,6 +127,7 @@ public class BuscarMuestrasController {
                              "LOWER(COALESCE(m.estado, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.ubicacion, '')) LIKE ? OR " +
                              "LOWER(COALESCE(t.nombre, '')) LIKE ? OR " +
+                             "LOWER(COALESCE(r.nombre, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.numeroInforme, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.numeroCotizacion, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.observacionAlmacenamiento, '')) LIKE ? OR " +
@@ -115,7 +135,7 @@ public class BuscarMuestrasController {
 
             String textoBusqueda = txtBusquedaGeneral.getText().trim();
             String busqueda = "%" + textoBusqueda.toLowerCase() + "%";
-            for (int i = 1; i <= 13; i++) {
+            for (int i = 1; i <= 14; i++) {
                 ps.setString(i, busqueda);
             }
             try {
@@ -150,25 +170,112 @@ public class BuscarMuestrasController {
                             rs.getString("tecnico_rutaFoto")
                     ));
                 }
+                int responsableId = rs.getInt("responsable_id");
+                if (!rs.wasNull()) {
+                    m.setResponsableAlmacenamiento(new Usuario(
+                            responsableId,
+                            rs.getString("responsable_nombre"),
+                            domain.Rol.valueOf(rs.getString("responsable_rol").toUpperCase()),
+                            rs.getString("responsable_rutaFoto")
+                    ));
+                }
                 m.setRutaFoto(rs.getString("rutaFoto"));
                 listaMuestras.add(m);
             }
 
+            actualizarSeleccionYDetalle(idSeleccionado);
+
         } catch (Exception e) {
             e.printStackTrace();
+            limpiarDetalle();
         }
     }
 
-    private void mostrarDetalle(Muestra muestra) {
-        lblDetalleCodigoInterno.setText(textoSeguro(muestra.getCodigoInterno()));
-        lblDetalleDescripcion.setText(textoSeguro(muestra.getDescripcion()));
-        lblDetalleRotulo.setText(textoSeguro(muestra.getRotuloCliente()));
-        lblDetalleCliente.setText(textoSeguro(muestra.getNombreCliente()));
-        lblDetalleMarca.setText(textoSeguro(muestra.getMarca()));
-        lblDetalleReferencia.setText(textoSeguro(muestra.getReferencia()));
+    private void actualizarSeleccionYDetalle(Integer idSeleccionado) {
+        if (idSeleccionado == null) {
+            limpiarDetalle();
+            return;
+        }
 
+        Muestra muestraActualizada = listaMuestras.stream()
+                .filter(muestra -> muestra.getId() == idSeleccionado)
+                .findFirst()
+                .orElse(null);
+
+        if (muestraActualizada == null) {
+            limpiarDetalle();
+            return;
+        }
+
+        tblResultados.getSelectionModel().select(muestraActualizada);
+        tblResultados.scrollTo(muestraActualizada);
+        mostrarDetalle(muestraActualizada);
+    }
+
+    private void mostrarDetalle(Muestra muestra) {
+        lblDetalleCodigoInterno.setText(textoDetalle(muestra.getCodigoInterno()));
+        lblDetalleEstado.setText(muestra.getEstado() == null ? "Sin datos" : muestra.getEstado().toString());
+        lblDetalleFecha.setText(muestra.getFechaRecepcion() == null
+                ? "Sin datos"
+                : muestra.getFechaRecepcion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        lblDetalleTecnico.setText(muestra.getTecnico() == null
+                ? "Sin asignar"
+                : textoDetalle(muestra.getTecnico().getNombre()));
+        lblDetalleResponsable.setText(muestra.getResponsableAlmacenamiento() == null
+                ? "Sin asignar"
+                : textoDetalle(muestra.getResponsableAlmacenamiento().getNombre()));
+        lblDetalleCliente.setText(textoDetalle(muestra.getNombreCliente()));
+        lblDetalleMarca.setText(textoDetalle(muestra.getMarca()));
+        lblDetalleUbicacion.setText(textoDetalle(muestra.getUbicacion()));
+        lblDetalleInforme.setText(formatearInforme(muestra));
+        lblDetalleCotizacion.setText(formatearCotizacion(muestra));
+        lblDetalleDescripcion.setText(textoDetalle(muestra.getDescripcion()));
+        lblDetalleObservaciones.setText(textoDetalle(muestra.getObservacionAlmacenamiento()));
+        actualizarAccionesControlMuestras();
+        actualizarAccionFinalizarEnsayos(muestra);
 
         cargarImagenDetalle(muestra.getRutaFoto());
+    }
+
+    private void actualizarAccionFinalizarEnsayos(Muestra muestra) {
+        Usuario usuarioActual = usuario != null ? usuario : UsuarioSesion.getUsuario();
+        boolean tieneTecnico = muestra.getTecnico() != null;
+        boolean estaEnCurso = muestra.getEstado() == Estado.EN_CURSO;
+        boolean puedeFinalizarPorRol = usuarioActual != null && usuarioActual.puedeFinalizarEnsayos();
+        boolean esTecnicoAsignado = usuarioActual != null
+                && tieneTecnico
+                && muestra.getTecnico().getId() == usuarioActual.getId();
+        boolean puedeFinalizar = estaEnCurso
+                && esTecnicoAsignado
+                && puedeFinalizarPorRol;
+        btnFinalizarEnsayos.setDisable(!puedeFinalizar);
+        btnFinalizarEnsayos.setVisible(puedeFinalizar);
+        btnFinalizarEnsayos.setManaged(puedeFinalizar);
+
+        String ayuda;
+        if (!estaEnCurso) {
+            ayuda = "La muestra debe estar en estado En curso";
+        } else if (usuarioActual == null) {
+            ayuda = "No hay un usuario autenticado";
+        } else if (!puedeFinalizarPorRol) {
+            ayuda = "Su rol no permite finalizar ensayos";
+        } else if (!tieneTecnico) {
+            ayuda = "La muestra no tiene un técnico asignado";
+        } else if (!esTecnicoAsignado) {
+            ayuda = "Solo " + muestra.getTecnico().getNombre() + " puede finalizar estos ensayos";
+        } else {
+            ayuda = "Marcar la muestra como lista para almacenar";
+        }
+        btnFinalizarEnsayos.setTooltip(new Tooltip(ayuda));
+    }
+
+    private void actualizarAccionesControlMuestras() {
+        Usuario usuarioActual = usuario != null ? usuario : UsuarioSesion.getUsuario();
+        boolean permitido = usuarioActual != null && usuarioActual.puedeControlarMuestras();
+        for (Button boton : List.of(btnEditarInformacion, btnAsignarTecnico, btnAlmacenarMuestra, btnEliminarMuestra)) {
+            boton.setVisible(permitido);
+            boton.setManaged(permitido);
+        }
     }
 
     private void cargarImagenDetalle(String rutaFoto) {
@@ -206,6 +313,7 @@ public class BuscarMuestrasController {
 
     @FXML
     void editarInformacion() {
+        if (!verificarControlMuestras()) return;
         Muestra muestra = obtenerMuestraSeleccionada();
         if (muestra == null) return;
 
@@ -231,18 +339,19 @@ public class BuscarMuestrasController {
 
     @FXML
     void asignarTecnico() {
+        if (!verificarControlMuestras()) return;
         Muestra muestra = obtenerMuestraSeleccionada();
         if (muestra == null) return;
 
         List<Usuario> tecnicos = UsuarioSesion.obtenerUsuariosAsignables();
         if (tecnicos.isEmpty()) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Asignar tecnico", "No hay usuarios disponibles para asignar");
+            mostrarAlerta(Alert.AlertType.WARNING, "Asignar técnico", "No hay usuarios disponibles para asignar");
             return;
         }
 
         ComboBox<Usuario> comboTecnico = new ComboBox<>(FXCollections.observableArrayList(tecnicos));
         comboTecnico.setMaxWidth(Double.MAX_VALUE);
-        comboTecnico.setPromptText("Seleccione un tecnico");
+        comboTecnico.setPromptText("Seleccione un técnico");
         if (muestra.getTecnico() != null) {
             tecnicos.stream()
                     .filter(tecnico -> tecnico.getId() == muestra.getTecnico().getId())
@@ -250,7 +359,7 @@ public class BuscarMuestrasController {
                     .ifPresent(comboTecnico::setValue);
         }
 
-        Dialog<ButtonType> dialogo = crearDialogo("Asignar tecnico");
+        Dialog<ButtonType> dialogo = crearDialogo("Asignar técnico");
         GridPane contenido = crearFormulario();
         contenido.add(new Label("Tecnico"), 0, 0);
         contenido.add(comboTecnico, 1, 0);
@@ -259,20 +368,21 @@ public class BuscarMuestrasController {
         Optional<ButtonType> resultado = dialogo.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
         if (comboTecnico.getValue() == null) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Asignar tecnico", "Seleccione un tecnico");
+            mostrarAlerta(Alert.AlertType.WARNING, "Asignar técnico", "Seleccione un técnico");
             return;
         }
 
-        if (new MuestraService().asignarTecnico(muestra.getId(), comboTecnico.getValue())) {
+        if (new MuestraService().asignarTecnico(muestra.getId(), comboTecnico.getValue(), usuarioActual())) {
             buscarMuestras();
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Asignar tecnico", "Tecnico asignado correctamente");
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Asignar técnico", "Técnico asignado correctamente");
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Asignar tecnico", "No se pudo guardar la asignacion");
+            mostrarAlerta(Alert.AlertType.ERROR, "Asignar técnico", "No se pudo guardar la asignación");
         }
     }
 
     @FXML
     void almacenarMuestra() {
+        if (!verificarControlMuestras()) return;
         Muestra muestra = obtenerMuestraSeleccionada();
         if (muestra == null) return;
 
@@ -280,14 +390,30 @@ public class BuscarMuestrasController {
         TextField txtUbicacion = new TextField(textoSeguro(muestra.getUbicacion()));
         TextArea txtObservaciones = new TextArea(textoSeguro(muestra.getObservacionAlmacenamiento()));
         txtObservaciones.setPrefRowCount(3);
+        List<Usuario> usuariosResponsables = UsuarioSesion.obtenerTodosUsuarios();
+        if (usuariosResponsables.isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Almacenar muestra", "No hay usuarios disponibles para seleccionar como responsable");
+            return;
+        }
+        ComboBox<Usuario> comboResponsable = new ComboBox<>(FXCollections.observableArrayList(usuariosResponsables));
+        comboResponsable.setMaxWidth(Double.MAX_VALUE);
+        comboResponsable.setPromptText("Seleccione un responsable");
+        if (muestra.getResponsableAlmacenamiento() != null) {
+            usuariosResponsables.stream()
+                    .filter(responsable -> responsable.getId() == muestra.getResponsableAlmacenamiento().getId())
+                    .findFirst()
+                    .ifPresent(comboResponsable::setValue);
+        }
 
         // Crear el diálogo
         Dialog<ButtonType> dialogo = crearDialogo("Almacenar muestra");
         GridPane contenido = crearFormulario();
-        contenido.add(new Label("Ubicacion"), 0, 0);
+        contenido.add(new Label("Ubicación *"), 0, 0);
         contenido.add(txtUbicacion, 1, 0);
-        contenido.add(new Label("Observaciones"), 0, 1);
-        contenido.add(txtObservaciones, 1, 1);
+        contenido.add(new Label("Responsable *"), 0, 1);
+        contenido.add(comboResponsable, 1, 1);
+        contenido.add(new Label("Observaciones"), 0, 2);
+        contenido.add(txtObservaciones, 1, 2);
 
         dialogo.getDialogPane().setContent(contenido);
 
@@ -296,8 +422,8 @@ public class BuscarMuestrasController {
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
 
         // Validar campos obligatorios
-        if (txtUbicacion.getText().isBlank()) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Almacenar muestra", "Complete la ubicación");
+        if (txtUbicacion.getText().isBlank() || comboResponsable.getValue() == null) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Almacenar muestra", "Complete la ubicación y seleccione un responsable");
             return;
         }
 
@@ -306,6 +432,7 @@ public class BuscarMuestrasController {
                 muestra.getId(),
                 txtUbicacion.getText(),
                 txtObservaciones.getText(),
+                comboResponsable.getValue(),
                 UsuarioSesion.getUsuario())) {
             buscarMuestras();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Almacenar muestra", "Muestra almacenada correctamente");
@@ -316,20 +443,21 @@ public class BuscarMuestrasController {
 
     @FXML
     void eliminarMuestra() {
+        if (!verificarControlMuestras()) return;
         Muestra muestra = obtenerMuestraSeleccionada();
         if (muestra == null) return;
 
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
         confirmacion.setTitle("Eliminar muestra");
         confirmacion.setHeaderText(null);
-        confirmacion.setContentText("Desea eliminar la muestra " + textoSeguro(muestra.getCodigoInterno()) + "?");
+        confirmacion.setContentText("¿Desea eliminar la muestra " + textoSeguro(muestra.getCodigoInterno()) + "?");
 
         Optional<ButtonType> resultado = confirmacion.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) {
             return;
         }
 
-        if (new MuestraService().eliminarMuestra(muestra.getId())) {
+        if (new MuestraService().eliminarMuestra(muestra.getId(), usuarioActual())) {
             limpiarDetalle();
             buscarMuestras();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Eliminar muestra", "Muestra eliminada correctamente");
@@ -375,12 +503,108 @@ public class BuscarMuestrasController {
         return texto == null ? "" : texto;
     }
 
+    @FXML
+    void finalizarEnsayos() {
+        Muestra muestra = obtenerMuestraSeleccionada();
+        if (muestra == null) return;
+
+        Usuario tecnicoActual = usuario != null ? usuario : UsuarioSesion.getUsuario();
+        if (!puedeFinalizarEnsayos(muestra, tecnicoActual)) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Finalizar ensayos",
+                    "El usuario actual no tiene permiso para finalizar los ensayos de esta muestra");
+            return;
+        }
+
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Finalizar ensayos");
+        confirmacion.setHeaderText(null);
+        confirmacion.setContentText("¿Confirma que los ensayos finalizaron y la muestra está lista para almacenar?");
+        Optional<ButtonType> resultado = confirmacion.showAndWait();
+        if (resultado.isEmpty() || resultado.get() != ButtonType.OK) {
+            return;
+        }
+
+        if (new MuestraService().finalizarEnsayos(muestra.getId(), tecnicoActual)) {
+            buscarMuestras();
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Finalizar ensayos",
+                    "La muestra quedó lista para almacenar");
+        } else {
+            mostrarAlerta(Alert.AlertType.ERROR, "Finalizar ensayos",
+                    "No se pudieron finalizar los ensayos de la muestra");
+        }
+    }
+
+    private String textoDetalle(String texto) {
+        return texto == null || texto.isBlank() ? "Sin datos" : texto.trim();
+    }
+
+    private boolean puedeFinalizarEnsayos(Muestra muestra, Usuario usuarioActual) {
+        if (muestra == null || usuarioActual == null || muestra.getEstado() != Estado.EN_CURSO) {
+            return false;
+        }
+        return usuarioActual.puedeFinalizarEnsayos()
+                && muestra.getTecnico() != null
+                && muestra.getTecnico().getId() == usuarioActual.getId();
+    }
+
+    private Usuario usuarioActual() {
+        return usuario != null ? usuario : UsuarioSesion.getUsuario();
+    }
+
+    private boolean verificarControlMuestras() {
+        Usuario actual = usuarioActual();
+        if (actual != null && actual.puedeControlarMuestras()) {
+            return true;
+        }
+        mostrarAlerta(Alert.AlertType.WARNING, "Permiso requerido",
+                "No tiene permiso para controlar muestras");
+        return false;
+    }
+
+    private String formatearInforme(Muestra muestra) {
+        String codigo = muestra.getNumeroInforme();
+        if (codigo == null || codigo.isBlank()) {
+            return "Sin datos";
+        }
+        return "LENC - " + obtenerAnioCorto(muestra) + " - I " + codigo.trim();
+    }
+
+    private String formatearCotizacion(Muestra muestra) {
+        String codigo = muestra.getNumeroCotizacion();
+        if (codigo == null || codigo.isBlank()) {
+            return "Sin datos";
+        }
+        return "LENC-" + obtenerAnioCorto(muestra) + "-C" + codigo.trim();
+    }
+
+    private String obtenerAnioCorto(Muestra muestra) {
+        int anio = muestra.getFechaRecepcion() == null
+                ? Year.now().getValue()
+                : muestra.getFechaRecepcion().getYear();
+        return String.format("%02d", anio % 100);
+    }
+
     private void limpiarDetalle() {
         cargarImagenDetalle(null);
         lblDetalleCodigoInterno.setText("");
+        lblDetalleEstado.setText("");
+        lblDetalleFecha.setText("");
+        lblDetalleTecnico.setText("");
+        lblDetalleResponsable.setText("");
+        lblDetalleCliente.setText("");
         lblDetalleDescripcion.setText("");
-        lblDetalleRotulo.setText("");
         lblDetalleMarca.setText("");
-        lblDetalleReferencia.setText("");
+        lblDetalleUbicacion.setText("");
+        lblDetalleInforme.setText("");
+        lblDetalleCotizacion.setText("");
+        lblDetalleObservaciones.setText("");
+        btnFinalizarEnsayos.setDisable(true);
+        btnFinalizarEnsayos.setVisible(false);
+        btnFinalizarEnsayos.setManaged(false);
+        btnFinalizarEnsayos.setTooltip(new Tooltip("Seleccione una muestra"));
+        for (Button boton : List.of(btnEditarInformacion, btnAsignarTecnico, btnAlmacenarMuestra, btnEliminarMuestra)) {
+            boton.setVisible(false);
+            boton.setManaged(false);
+        }
     }
 }

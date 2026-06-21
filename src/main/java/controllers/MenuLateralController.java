@@ -37,6 +37,7 @@ public class MenuLateralController {
     }
 
     public void marcarActivo(SeccionApp seccion) {
+        actualizarPermisos();
         List<Button> botonesNavegacion = List.of(
                 btnInicio,
                 btnRegistrarMuestra,
@@ -80,6 +81,15 @@ public class MenuLateralController {
     @FXML
     private void abrirBuscarMuestra() {
         Navegacion.irBuscarMuestras();
+    }
+
+    private void actualizarPermisos() {
+        domain.Usuario usuario = utilities.UsuarioSesion.getUsuario();
+        boolean controlMuestras = usuario != null && usuario.puedeControlarMuestras();
+        btnRegistrarMuestra.setVisible(controlMuestras);
+        btnRegistrarMuestra.setManaged(controlMuestras);
+        btnCargarDatos.setVisible(controlMuestras);
+        btnCargarDatos.setManaged(controlMuestras);
     }
 
     @FXML

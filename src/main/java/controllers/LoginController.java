@@ -88,7 +88,8 @@ public class LoginController {
     private Usuario consultarUsuario(String nombre, String password) {
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
-                     "SELECT id, nombre, rol, rutaFoto FROM usuarios WHERE nombre = ? AND password = ?")) {
+                     "SELECT id, nombre, rol, rutaFoto, controlMuestras, controlTotal " +
+                             "FROM usuarios WHERE nombre = ? AND password = ?")) {
 
             ps.setString(1, nombre);
             ps.setString(2, password);
@@ -99,7 +100,14 @@ public class LoginController {
                 String rolStr = rs.getString("rol");
                 String rutaFoto = rs.getString("rutaFoto");
                 Rol rol = Rol.valueOf(rolStr.toUpperCase());
-                return new Usuario(id, nombre, rol, rutaFoto);
+                return new Usuario(
+                        id,
+                        nombre,
+                        rol,
+                        rutaFoto,
+                        rs.getBoolean("controlMuestras"),
+                        rs.getBoolean("controlTotal")
+                );
             }
 
         } catch (SQLException e) {

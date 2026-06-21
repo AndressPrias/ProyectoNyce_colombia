@@ -71,6 +71,19 @@
     -fx-border-style: solid;
 }
 
+.card-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-alignment: center;
+}
+
+.card-description {
+    -fx-font-size: 12px;
+    -fx-text-fill: #f2fffd;
+    -fx-alignment: center;
+}
+
 .avatar-preview {
     -fx-background-color: white;
     -fx-background-radius: 80;
@@ -79,6 +92,87 @@
     -fx-border-radius: 80;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 12, 0, 0, 4);
     -fx-padding: 6;
+}
+
+.detail-panel {
+    -fx-background-color: white;
+    -fx-padding: 18;
+    -fx-background-radius: 6;
+}
+
+.detail-image-frame {
+    -fx-background-color: #f7f9f9;
+    -fx-border-color: #cbd8d7;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 6;
+}
+
+.detail-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0a4d4a;
+}
+
+.detail-value {
+    -fx-font-size: 12px;
+    -fx-text-fill: #344f59;
+}
+
+.detail-value-strong {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0a4d4a;
+}
+
+.detail-status {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00796b;
+}
+
+.detail-highlight-status,
+.detail-highlight-location {
+    -fx-padding: 10 12 10 12;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-width: 0 0 0 4;
+}
+
+.detail-highlight-status {
+    -fx-background-color: #e4f4ef;
+    -fx-border-color: #008c84;
+}
+
+.detail-highlight-location {
+    -fx-background-color: #fff3df;
+    -fx-border-color: #e49a21;
+}
+
+.detail-highlight-title {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #52666d;
+}
+
+.detail-highlight-value-status {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #006f68;
+}
+
+.detail-highlight-value-location {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #9a5a00;
+}
+
+.detail-text-block {
+    -fx-background-color: #f5f8f8;
+    -fx-background-radius: 4;
+    -fx-padding: 8;
+    -fx-text-fill: #344f59;
 }
 
 .btn-avatar {

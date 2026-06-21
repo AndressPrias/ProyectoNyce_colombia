@@ -854,3 +854,7 @@ Invalid value "14" for parameter "parameterIndex" [90008-214]
 	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
 	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
 	at java.base/java.lang.Thread.run(Thread.java:1516)
+2026-06-20 11:43:54 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Valor demasiado largo para la columna "UBICACION CHARACTER VARYING(10)": "U&'21645 - 21646\\000aA3' (16)"
+Value too long for column "UBICACION CHARACTER VARYING(10)": "U&'21645 - 21646\\000aA3' (16)"; SQL statement:
+INSERT INTO muestras (codigoInterno, rotuloCliente, nombreCliente, descripcion, marca, referencia, estado, ubicacion, custodioId, fechaRecepcion, rutaFoto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) [22001-214]

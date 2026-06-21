@@ -94,6 +94,24 @@
 
     -fx-background-radius:18;
 
+    -fx-font-size:14px;
+
+    -fx-font-weight:bold;
+
+    -fx-cursor:hand;
+
+    -fx-padding:10 25 10 25;
+
+    -fx-effect:
+            dropshadow(
+                    gaussian,
+                    rgba(0,0,0,0.15),
+                    8,
+                    0,
+                    0,
+                    3
+            );
+
 }
 
 .btn-danger:hover{
@@ -206,4 +224,19 @@
 
     -fx-transition:all 0.3s;
 
+}
+
+.btn-ready {
+    -fx-background-color: #26734d;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 18;
+    -fx-cursor: hand;
+    -fx-padding: 10 25 10 25;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 3);
+}
+
+.btn-ready:hover {
+    -fx-background-color: #318a5e;
 }

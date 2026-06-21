@@ -39,9 +39,9 @@ import java.util.Map;
 public final class ExcelHelper {
 
     private static final String[] ENCABEZADOS = {
-            "rotuloCliente",
+            "rotuloCliente *",
             "nombreCliente",
-            "descripcion",
+            "descripcion *",
             "marca",
             "referencia",
             "estado",
@@ -169,11 +169,11 @@ public final class ExcelHelper {
         String[] lineas = {
                 "Complete una muestra por fila en la hoja Datos.",
                 "No cambie los nombres de los encabezados.",
-                "Campos obligatorios: rotuloCliente y descripcion.",
+                "Campos obligatorios: rotuloCliente * y descripcion *.",
                 "estado: seleccione un valor de la lista disponible.",
                 "fechaRecepcion: use una fecha de Excel o el formato dd/MM/yyyy.",
                 "rutaFoto es opcional y debe contener la ruta completa de una imagen existente.",
-                "El codigo interno y el custodio se asignan automaticamente al importar."
+                "El código interno y el custodio se asignan automáticamente al importar."
         };
 
         for (int i = 0; i < lineas.length; i++) {
@@ -219,10 +219,10 @@ public final class ExcelHelper {
 
     private static void validarEncabezados(Map<String, Integer> columnas, List<String> errores) {
         if (!columnas.containsKey("rotulocliente")) {
-            errores.add("Falta el encabezado obligatorio rotuloCliente.");
+            errores.add("Falta el encabezado obligatorio rotuloCliente *.");
         }
         if (!columnas.containsKey("descripcion")) {
-            errores.add("Falta el encabezado obligatorio descripcion.");
+            errores.add("Falta el encabezado obligatorio descripcion *.");
         }
     }
 

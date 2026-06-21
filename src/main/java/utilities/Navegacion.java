@@ -45,6 +45,9 @@ public final class Navegacion {
     }
 
     public static void irRegistrarMuestra() {
+        if (UsuarioSesion.getUsuario() == null || !UsuarioSesion.getUsuario().puedeControlarMuestras()) {
+            return;
+        }
         cargar(Paths.REGISTRAR_MUESTRA, "Registrar Muestra", controller -> {
             if (controller instanceof RegistrarMuestraController c) {
                 c.setUsuario(UsuarioSesion.getUsuario());
@@ -72,6 +75,9 @@ public final class Navegacion {
     }
 
     public static void irCargarBaseDatos() {
+        if (UsuarioSesion.getUsuario() == null || !UsuarioSesion.getUsuario().puedeControlarMuestras()) {
+            return;
+        }
         cargar(Paths.CARGAR_BASE_DATOS, "Cargar Base de Datos", controller -> {
             if (controller instanceof CargarBaseDatosController c) {
                 c.setUsuario(UsuarioSesion.getUsuario());

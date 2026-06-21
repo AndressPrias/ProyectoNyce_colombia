@@ -118,7 +118,7 @@
                                     <Insets />
                                  </HBox.margin>
                               </StackPane>
-                              <TextField fx:id="txtUsuario" maxWidth="1.7976931348623157E308" onAction="#iniciarSesion" prefHeight="30.0" prefWidth="220.0" promptText="Usuario" styleClass="text-field" stylesheets="@css/login.css" />
+                              <TextField fx:id="txtUsuario" maxWidth="1.7976931348623157E308" onAction="#iniciarSesion" prefHeight="30.0" prefWidth="220.0" promptText="Usuario *" styleClass="text-field" stylesheets="@css/login.css" />
                            </children>
                         </HBox>
                         <HBox alignment="CENTER">
@@ -132,12 +132,12 @@
                                     </ImageView>
                                  </children>
                               </StackPane>
-                              <PasswordField fx:id="txtPassword" maxWidth="1.7976931348623157E308" onAction="#iniciarSesion" prefHeight="30.0" prefWidth="218.0" promptText="Contraseña" styleClass="password-field" stylesheets="@css/login.css" />
+                              <PasswordField fx:id="txtPassword" maxWidth="1.7976931348623157E308" onAction="#iniciarSesion" prefHeight="30.0" prefWidth="218.0" promptText="Contraseña *" styleClass="password-field" stylesheets="@css/login.css" />
                            </children>
                         </HBox>
                         <VBox prefHeight="85.0" prefWidth="244.0" spacing="20.0">
                            <children>
-                              <Label fx:id="txtOlvidoContraseña" alignment="BOTTOM_RIGHT" maxWidth="1.7976931348623157E308" text="¿Olvido contrasena?" textFill="RED">
+                              <Label fx:id="txtOlvidoContraseña" alignment="BOTTOM_RIGHT" maxWidth="1.7976931348623157E308" text="¿Olvidó su contraseña?" textFill="RED">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>

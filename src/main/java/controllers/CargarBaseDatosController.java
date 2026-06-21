@@ -79,7 +79,7 @@ public class CargarBaseDatosController {
         try {
             ExcelHelper.crearPlantilla(destino);
             mostrarAlerta(Alert.AlertType.INFORMATION, "Plantilla creada",
-                    "La plantilla se guardo correctamente en:\n" + destino.getAbsolutePath());
+                    "La plantilla se guardó correctamente en:\n" + destino.getAbsolutePath());
         } catch (Exception e) {
             mostrarAlerta(Alert.AlertType.ERROR, "No se pudo crear la plantilla", e.getMessage());
         }
@@ -115,15 +115,20 @@ public class CargarBaseDatosController {
     private void importarDatos() {
         Usuario usuarioActual = usuario != null ? usuario : UsuarioSesion.getUsuario();
         if (usuarioActual == null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Sesion no disponible",
+            mostrarAlerta(Alert.AlertType.ERROR, "Sesión no disponible",
                     "No hay un usuario autenticado para registrar las muestras.");
+            return;
+        }
+        if (!usuarioActual.puedeControlarMuestras()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Permiso requerido",
+                    "No tiene permiso para cargar muestras externas.");
             return;
         }
 
         MuestraService service = new MuestraService();
         int cargadas = 0;
         for (Muestra muestra : muestrasValidadas) {
-            boolean guardada = service.registrarMuestra(
+            boolean guardada = service.registrarMuestraExterna(
                     muestra.getRotuloCliente(),
                     muestra.getNombreCliente(),
                     muestra.getDescripcion(),
@@ -161,7 +166,7 @@ public class CargarBaseDatosController {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
         alerta.setHeaderText(null);
-        alerta.setContentText(mensaje == null || mensaje.isBlank() ? "Ocurrio un error inesperado." : mensaje);
+        alerta.setContentText(mensaje == null || mensaje.isBlank() ? "Ocurrió un error inesperado." : mensaje);
         alerta.showAndWait();
     }
 }

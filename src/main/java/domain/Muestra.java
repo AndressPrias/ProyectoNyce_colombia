@@ -12,10 +12,10 @@ public class Muestra {
     private String marca;
     private Estado estado;
     private String ubicacion;
-    private String estante;
     private String observacionAlmacenamiento;
     private Usuario custodio;
     private Usuario tecnico;
+    private Usuario responsableAlmacenamiento;
     private LocalDate fechaRecepcion;
     private String rutaFoto;
     private String numeroInforme;
@@ -105,19 +105,19 @@ public class Muestra {
     public String getCodigoInterno() { return codigoInterno; }
     public Estado getEstado() { return estado; }
     public String getUbicacion() { return ubicacion; }
-    public String getEstante() { return estante; }
     public String getObservacionAlmacenamiento() { return observacionAlmacenamiento; }
     public Usuario getCustodio() { return custodio; }
     public Usuario getTecnico() { return tecnico; }
+    public Usuario getResponsableAlmacenamiento() { return responsableAlmacenamiento; }
     public String getNumeroInforme() { return numeroInforme; }
     public String getNumeroCotizacion() { return numeroCotizacion; }
 
     public void setEstado(Estado estado) { this.estado = estado; }
     public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
-    public void setEstante(String estante) { this.estante = estante; }
     public void setObservacionAlmacenamiento(String observacionAlmacenamiento) { this.observacionAlmacenamiento = observacionAlmacenamiento; }
     public void setCustodio(Usuario custodio) { this.custodio = custodio; }
     public void setTecnico(Usuario tecnico) { this.tecnico = tecnico; }
+    public void setResponsableAlmacenamiento(Usuario responsableAlmacenamiento) { this.responsableAlmacenamiento = responsableAlmacenamiento; }
     public void setNumeroInforme(String numeroInforme) { this.numeroInforme = numeroInforme; }
     public void setNumeroCotizacion(String numeroCotizacion) { this.numeroCotizacion = numeroCotizacion; }
 

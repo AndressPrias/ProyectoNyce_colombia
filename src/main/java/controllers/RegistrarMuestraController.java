@@ -96,6 +96,11 @@ public class RegistrarMuestraController {
 
     @FXML
     void guardarMuestra(ActionEvent event) {
+        if (usuario == null || !usuario.puedeControlarMuestras()) {
+            txtInformativos.setText("No tiene permiso para registrar o modificar muestras");
+            txtInformativos.setVisible(true);
+            return;
+        }
         if (txtDescripcion.getText().isEmpty() || txtRotuloCliente.getText().isEmpty() || comboEstado.getValue() == null) {
             txtInformativos.setText("Complete todos los campos obligatorios");
             return;
@@ -135,7 +140,7 @@ public class RegistrarMuestraController {
                 muestraEditando.setUbicacion(txtUbicacion.getText());
                 muestraEditando.setFechaRecepcion(fecha);
                 muestraEditando.setRutaFoto(rutaFotoSeleccionada);
-                service.actualizarMuestra(muestraEditando);
+                service.actualizarMuestra(muestraEditando, usuario);
                 txtInformativos.setText("Muestra actualizada correctamente");
             }
 

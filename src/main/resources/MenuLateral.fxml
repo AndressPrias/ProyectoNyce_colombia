@@ -41,15 +41,6 @@
             </ImageView>
          </graphic>
       </Button>
-      <Button fx:id="btnRegistrarUsuario" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#abrirRegistrarUsuario" prefHeight="40.0" styleClass="button-menu" text="Gestionar Usuarios">
-         <graphic>
-            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@icons/iconRegistraUsuarioWhite.png" />
-               </image>
-            </ImageView>
-         </graphic>
-      </Button>
       <Button fx:id="btnBuscarMuestra" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#abrirBuscarMuestra" prefHeight="40.0" styleClass="button-menu" text="Buscar Muestra">
          <graphic>
             <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
@@ -68,8 +59,17 @@
             </ImageView>
          </graphic>
       </Button>
+      <Button fx:id="btnRegistrarUsuario" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#abrirRegistrarUsuario" prefHeight="40.0" styleClass="button-menu" text="Gestionar Usuarios">
+         <graphic>
+            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@icons/iconRegistraUsuarioWhite.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
       <Line endX="70.0" startX="-70.0" stroke="#f8f8f8" />
-      <Button fx:id="btnCerrarSesion" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#cerrarSesion" prefHeight="40.0" styleClass="button-menu" text="Cerrar sesion">
+      <Button fx:id="btnCerrarSesion" graphicTextGap="8.0" maxWidth="1.7976931348623157E308" onAction="#cerrarSesion" prefHeight="40.0" styleClass="button-menu" text="Cerrar sesión">
          <graphic>
             <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                <image>
