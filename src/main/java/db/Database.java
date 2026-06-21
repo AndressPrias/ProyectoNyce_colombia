@@ -70,6 +70,7 @@ public class Database {
                             "rutaFoto VARCHAR(255)," +
                             "numeroInforme VARCHAR(4)," +
                             "numeroCotizacion VARCHAR(4)," +
+                            "remision VARCHAR(20)," +
                             "FOREIGN KEY (custodioId) REFERENCES usuarios(id)," +
                             "FOREIGN KEY (tecnicoId) REFERENCES usuarios(id)" +
                             ");"
@@ -102,6 +103,9 @@ public class Database {
                     "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS numeroCotizacion VARCHAR(100);"
             );
             conn.createStatement().execute(
+                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS remision VARCHAR(20);"
+            );
+            conn.createStatement().execute(
                     "ALTER TABLE muestras ALTER COLUMN numeroInforme VARCHAR(4);"
             );
             conn.createStatement().execute(
@@ -118,12 +122,61 @@ public class Database {
                             "usuarioId INT NOT NULL," +
                             "estadoAnterior VARCHAR(40)," +
                             "estadoNuevo VARCHAR(40)," +
-                            "ubicacionAnterior VARCHAR(10)," +
-                            "ubicacionNueva VARCHAR(10)," +
+                            "ubicacionAnterior VARCHAR(100)," +
+                            "ubicacionNueva VARCHAR(100)," +
                             "fechaHora TIMESTAMP," +
                             "observacion VARCHAR(255)," +
                             "FOREIGN KEY (muestraId) REFERENCES muestras(id)," +
                             "FOREIGN KEY (usuarioId) REFERENCES usuarios(id)" +
+                    ");"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE movimientos ALTER COLUMN ubicacionAnterior VARCHAR(100);"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE movimientos ALTER COLUMN ubicacionNueva VARCHAR(100);"
+            );
+
+            conn.createStatement().execute(
+                    "CREATE TABLE IF NOT EXISTS remisiones (" +
+                            "id INT AUTO_INCREMENT PRIMARY KEY," +
+                            "consecutivo INT NOT NULL UNIQUE," +
+                            "fechaElaboracion DATE NOT NULL," +
+                            "cliente VARCHAR(150)," +
+                            "tipoSalida VARCHAR(150) NOT NULL," +
+                            "numeroEmpaques INT NOT NULL," +
+                            "observacionFinal VARCHAR(1000)," +
+                            "entregadoPorId INT," +
+                            "recibidoFirma VARCHAR(150)," +
+                            "recibidoCedula VARCHAR(50)," +
+                            "recibidoNombrePlaca VARCHAR(150)," +
+                            "rutaArchivo VARCHAR(500)," +
+                            "fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                            "FOREIGN KEY (entregadoPorId) REFERENCES usuarios(id)" +
+                            ");"
+            );
+            conn.createStatement().execute(
+                    "CREATE TABLE IF NOT EXISTS remision_muestras (" +
+                            "remisionId INT NOT NULL," +
+                            "muestraId INT NOT NULL," +
+                            "fechaEntrega DATE NOT NULL," +
+                            "observaciones VARCHAR(255)," +
+                            "PRIMARY KEY (remisionId, muestraId)," +
+                            "FOREIGN KEY (remisionId) REFERENCES remisiones(id)," +
+                            "FOREIGN KEY (muestraId) REFERENCES muestras(id)" +
+                            ");"
+            );
+            conn.createStatement().execute(
+                    "ALTER TABLE remisiones ADD COLUMN IF NOT EXISTS rutaArchivo VARCHAR(500);"
+            );
+            conn.createStatement().execute(
+                    "UPDATE muestras m SET remision = (" +
+                            "SELECT CONCAT('R', LPAD(CAST(r.consecutivo AS VARCHAR), 4, '0')) " +
+                            "FROM remision_muestras rm " +
+                            "JOIN remisiones r ON r.id = rm.remisionId " +
+                            "WHERE rm.muestraId = m.id" +
+                            ") WHERE m.remision IS NULL AND EXISTS (" +
+                            "SELECT 1 FROM remision_muestras rm WHERE rm.muestraId = m.id" +
                             ");"
             );
 

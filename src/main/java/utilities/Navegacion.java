@@ -7,6 +7,7 @@ import controllers.GestionarUsuariosController;
 import controllers.MenuLateralController;
 import controllers.MenuPrincipalController;
 import controllers.RegistrarMuestraController;
+import controllers.RemisionMuestrasController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -84,6 +85,18 @@ public final class Navegacion {
             }
         });
         marcarSeccionActiva(SeccionApp.CARGAR_BASE_DATOS);
+    }
+
+    public static void irRemisionMuestras() {
+        if (UsuarioSesion.getUsuario() == null || !UsuarioSesion.getUsuario().puedeControlarMuestras()) {
+            return;
+        }
+        cargar(Paths.REMISION_MUESTRAS, "Remisión de Muestras", controller -> {
+            if (controller instanceof RemisionMuestrasController c) {
+                c.setUsuario(UsuarioSesion.getUsuario());
+            }
+        });
+        marcarSeccionActiva(SeccionApp.REMISION_MUESTRAS);
     }
 
     public static void cargar(String fxmlPath, String tituloVentana, ConfiguradorVista configurador) {

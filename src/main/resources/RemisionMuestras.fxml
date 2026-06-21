@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="900.0" prefWidth="1300.0" styleClass="remision-root" stylesheets="@css/remision.css,@css/botones.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RemisionMuestrasController">
+    <top>
+        <VBox prefHeight="359.0" prefWidth="1300.0" spacing="12.0" styleClass="remision-tools">
+            <padding><Insets bottom="14" left="20" right="20" top="16" /></padding>
+            <HBox alignment="CENTER_LEFT" spacing="14">
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label styleClass="screen-title" text="Remisión de muestras" />
+                    <Label styleClass="screen-subtitle" text="Busque las muestras y márquelas en la casilla de selección." />
+                </VBox>
+                <Button onAction="#imprimirRemision" prefHeight="36.0" prefWidth="99.0" styleClass="btn-secondary" text="Imprimir">
+               <graphic>
+                  <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@icons/imprimirVerde.png" />
+                     </image>
+                  </ImageView>
+               </graphic></Button>
+                <Button onAction="#confirmarRemision" styleClass="btn-primary" text="Confirmar remisión">
+               <graphic>
+                  <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@icons/iconRegistrar-inicio.png" />
+                     </image>
+                  </ImageView>
+               </graphic></Button>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
+                <Label styleClass="form-label" text="Buscar muestra" />
+                <TextField fx:id="txtBuscarMuestra" maxWidth="Infinity" promptText="Cliente, referencia, fecha, código, descripción, marca, estado..." HBox.hgrow="ALWAYS" />
+            </HBox>
+            <TableView fx:id="tblDisponibles" fixedCellSize="42.0" prefHeight="180.0" VBox.vgrow="NEVER">
+                <columns>
+                    <TableColumn fx:id="colSeleccion" editable="true" maxWidth="72" minWidth="72" prefWidth="72" resizable="false" text="MARCAR" />
+                    <TableColumn fx:id="colDisponibleInterna" prefWidth="190" text="IDENTIFICACIÓN INTERNA" />
+                    <TableColumn fx:id="colDisponibleExterna" prefWidth="150" text="IDENTIFICACIÓN EXTERNA" />
+                    <TableColumn fx:id="colDisponibleDescripcion" prefWidth="300" text="DESCRIPCIÓN" />
+                    <TableColumn fx:id="colDisponibleCliente" prefWidth="210" text="CLIENTE" />
+                    <TableColumn fx:id="colDisponibleEstado" prefWidth="190" text="ESTADO" />
+                </columns>
+                <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN" /></columnResizePolicy>
+            </TableView>
+            <GridPane hgap="10" vgap="8">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="120" prefWidth="150" />
+                    <ColumnConstraints hgrow="ALWAYS" minWidth="170" prefWidth="230" />
+                    <ColumnConstraints minWidth="120" prefWidth="150" />
+                    <ColumnConstraints hgrow="ALWAYS" minWidth="170" prefWidth="230" />
+                    <ColumnConstraints minWidth="120" prefWidth="150" />
+                    <ColumnConstraints hgrow="ALWAYS" minWidth="150" prefWidth="210" />
+                </columnConstraints>
+                <Label styleClass="form-label" text="Fecha de elaboración" />
+                <DatePicker fx:id="dpFechaElaboracion" maxWidth="Infinity" GridPane.columnIndex="1" />
+                <Label styleClass="form-label" text="Cliente" GridPane.columnIndex="2" />
+                <TextField fx:id="txtCliente" promptText="Se completa con las muestras" GridPane.columnIndex="3" />
+                <Label styleClass="form-label" text="Número de empaques" GridPane.columnIndex="4" />
+                <Spinner fx:id="spnEmpaques" editable="true" maxWidth="Infinity" GridPane.columnIndex="5">
+                    <valueFactory><SpinnerValueFactory.IntegerSpinnerValueFactory initialValue="1" max="999" min="1" /></valueFactory>
+                </Spinner>
+                <Label styleClass="form-label" text="Tipo de salida" GridPane.rowIndex="1" />
+                <ComboBox fx:id="cmbTipoSalida" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <Label styleClass="form-label" text="Observación final" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                <TextArea fx:id="txtObservacionFinal" prefRowCount="2" wrapText="true" GridPane.columnIndex="3" GridPane.columnSpan="3" GridPane.rowIndex="1" />
+            <rowConstraints>
+               <RowConstraints />
+               <RowConstraints />
+            </rowConstraints>
+            </GridPane>
+        </VBox>
+    </top>
+   <bottom>
+        <ScrollPane fitToWidth="true" pannable="true" styleClass="document-scroll" BorderPane.alignment="CENTER">
+            <content>
+                <VBox alignment="TOP_CENTER" spacing="16">
+                    <padding><Insets bottom="32" left="24" right="24" top="24" /></padding>
+                    <VBox fx:id="documentoRemision" maxWidth="1180" minWidth="980" prefWidth="1180" spacing="12" styleClass="document-page">
+                        <padding><Insets bottom="22" left="22" right="22" top="22" /></padding>
+
+                        <HBox alignment="CENTER_LEFT" spacing="16">
+                            <VBox alignment="CENTER" prefWidth="155">
+                                <ImageView fitHeight="62" fitWidth="155" preserveRatio="true">
+                                    <image><Image url="@icons/logo-nyce-7.jpg" /></image>
+                                </ImageView>
+                            </VBox>
+                            <Label alignment="CENTER" maxWidth="Infinity" styleClass="document-title" text="REMISIÓN DE MUESTRAS" HBox.hgrow="ALWAYS" />
+                        </HBox>
+
+                        <HBox alignment="CENTER_RIGHT" spacing="0">
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label styleClass="field-heading" text="FECHA DE&#10;ELABORACIÓN" />
+                            <Label fx:id="lblFechaDocumento" alignment="CENTER" minWidth="205" prefHeight="45.0" prefWidth="205.0" styleClass="field-value">
+                        <HBox.margin>
+                           <Insets />
+                        </HBox.margin></Label>
+                            <Label prefHeight="45.0" prefWidth="135.0" styleClass="field-heading" text="CONSECUTIVO" />
+                            <Label fx:id="lblConsecutivo" alignment="CENTER" minWidth="180" prefHeight="45.0" prefWidth="180.0" styleClass="consecutive-value" />
+                        </HBox>
+
+                        <Label alignment="CENTER" maxWidth="Infinity" styleClass="laboratory-band" text="LABORATORIO DE ENSAYOS  NYCE COLOMBIA S.A.S" />
+
+                        <HBox spacing="120">
+                            <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                <Label minHeight="29.0" prefHeight="29.0" prefWidth="135.0" styleClass="field-heading" text="CLIENTE" />
+                                <Label fx:id="lblClienteDocumento" alignment="CENTER" maxWidth="Infinity" minWidth="250" prefHeight="37.0" prefWidth="403.0" styleClass="field-value" HBox.hgrow="ALWAYS" />
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                <Label styleClass="field-heading" text="TIPO DE SALIDA" />
+                                <Label fx:id="lblTipoSalidaDocumento" alignment="CENTER" maxWidth="Infinity" minWidth="285.0" prefHeight="37.0" prefWidth="343.0" styleClass="field-value" HBox.hgrow="ALWAYS" />
+                            </HBox>
+                        </HBox>
+
+                        <TableView fx:id="tblRemision" editable="false" fixedCellSize="44" minHeight="145" prefHeight="145" styleClass="document-table">
+                            <columns>
+                                <TableColumn fx:id="colInterna" prefWidth="205" text="IDENTIFICACIÓN INTERNA" />
+                                <TableColumn fx:id="colExterna" prefWidth="132" text="IDENTIFICACIÓN EXTERNA" />
+                                <TableColumn fx:id="colDescripcion" prefWidth="255" text="DESCRIPCIÓN" />
+                                <TableColumn fx:id="colMarca" prefWidth="125" text="FABRICANTE / MARCA" />
+                                <TableColumn fx:id="colObservaciones" prefWidth="210" text="OBSERVACIONES" />
+                                <TableColumn fx:id="colRecepcion" prefWidth="105" text="FECHA DE RECEPCIÓN" />
+                                <TableColumn fx:id="colEntrega" prefWidth="105" text="FECHA DE ENTREGA" />
+                            </columns>
+                            <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN" /></columnResizePolicy>
+                        </TableView>
+
+                        <HBox>
+                            <Label styleClass="summary-heading" text="TOTAL MUESTRAS" />
+                            <Label fx:id="lblTotalMuestras" alignment="CENTER" minWidth="100" styleClass="summary-value" />
+                            <Label styleClass="summary-heading" text="NÚMERO DE EMPAQUES" />
+                            <Label fx:id="lblEmpaques" alignment="CENTER" minWidth="100" styleClass="summary-value" />
+                            <Label styleClass="summary-heading" text="OBSERVACIÓN FINAL DE LAS MUESTRAS" />
+                            <Label fx:id="lblObservacionDocumento" alignment="CENTER" maxWidth="Infinity" minHeight="58" styleClass="summary-value" wrapText="true" HBox.hgrow="ALWAYS" />
+                        </HBox>
+
+                        <GridPane prefHeight="135.0" prefWidth="930.0" styleClass="delivery-grid">
+                            <columnConstraints>
+                                <ColumnConstraints halignment="CENTER" percentWidth="50.0" />
+                                <ColumnConstraints percentWidth="50.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="36" />
+                                <RowConstraints minHeight="48" />
+                                <RowConstraints minHeight="31" />
+                            </rowConstraints>
+                            <Label alignment="CENTER" maxWidth="Infinity" styleClass="delivery-title" text="ENTREGADO POR:" />
+                            <Label alignment="CENTER" maxWidth="Infinity" styleClass="delivery-title" text="ENTREGADO A:" GridPane.columnIndex="1" />
+                            <Label fx:id="lblEntregadoPor" alignment="CENTER" maxWidth="Infinity" styleClass="delivered-name" GridPane.rowIndex="1" />
+                            <VBox spacing="2" styleClass="receiver-fields" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.rowSpan="2">
+                                <TextField fx:id="txtFirma" promptText="FIRMA:" />
+                                <TextField fx:id="txtCedula" promptText="CÉDULA:" />
+                                <TextField fx:id="txtNombrePlaca" promptText="NOMBRE Y PLACA:" />
+                            </VBox>
+                            <Label fx:id="lblCargoEntregadoPor" alignment="CENTER" maxWidth="Infinity" prefHeight="15.0" prefWidth="466.0" styleClass="delivered-role" GridPane.rowIndex="2" />
+                        </GridPane>
+
+                        <Label styleClass="effective-date" text="ENTRADA EN VIGOR 2023-08-30" />
+                        <VBox alignment="CENTER" spacing="10" styleClass="footer-band">
+                            <Label styleClass="footer-italic" text="Se prohíbe la reproducción total o parcial sin previa autorización" />
+                            <Label text="NYCE Colombia S.A.S. | Calle 30 No. 17 - 52 | Teusaquillo - Bogotá D.C. Colombia | Tel. +571 756 84 85 ext. 129" />
+                        </VBox>
+                    </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
+   </bottom>
+</BorderPane>

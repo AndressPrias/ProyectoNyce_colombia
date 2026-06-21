@@ -50,10 +50,12 @@ public class BuscarMuestrasController {
     @FXML private TableColumn<Muestra, LocalDate> colFecha;
     @FXML private TableColumn<Muestra, String> colUbicacion;
     @FXML private TableColumn<Muestra, Usuario> colTecnico;
+    @FXML private TableColumn<Muestra, String> colRemision;
 
     @FXML private ImageView imgDetalle;
     @FXML private Label lblDetalleEstado;
     @FXML private Label lblDetalleUbicacion;
+    @FXML private Label lblTituloDetalleUbicacion;
     @FXML private Label lblDetalleCodigoInterno;
     @FXML private Label lblDetalleDescripcion;
     @FXML private Label lblDetalleCliente;
@@ -88,6 +90,7 @@ public class BuscarMuestrasController {
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fechaRecepcion"));
         colUbicacion.setCellValueFactory(new PropertyValueFactory<>("ubicacion"));
         colTecnico.setCellValueFactory(new PropertyValueFactory<>("tecnico"));
+        colRemision.setCellValueFactory(new PropertyValueFactory<>("remision"));
 
         tblResultados.setItems(listaMuestras);
         txtBusquedaGeneral.textProperty().addListener((obs, textoAnterior, textoNuevo) -> buscarMuestras());
@@ -130,12 +133,13 @@ public class BuscarMuestrasController {
                              "LOWER(COALESCE(r.nombre, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.numeroInforme, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.numeroCotizacion, '')) LIKE ? OR " +
+                             "LOWER(COALESCE(m.remision, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.observacionAlmacenamiento, '')) LIKE ? OR " +
                              "CAST(m.fechaRecepcion AS VARCHAR) LIKE ?")) {
 
             String textoBusqueda = txtBusquedaGeneral.getText().trim();
             String busqueda = "%" + textoBusqueda.toLowerCase() + "%";
-            for (int i = 1; i <= 14; i++) {
+            for (int i = 1; i <= 15; i++) {
                 ps.setString(i, busqueda);
             }
             try {
@@ -161,6 +165,7 @@ public class BuscarMuestrasController {
                 m.setObservacionAlmacenamiento(rs.getString("observacionAlmacenamiento"));
                 m.setNumeroInforme(rs.getString("numeroInforme"));
                 m.setNumeroCotizacion(rs.getString("numeroCotizacion"));
+                m.setRemision(rs.getString("remision"));
                 int tecnicoId = rs.getInt("tecnico_id");
                 if (!rs.wasNull()) {
                     m.setTecnico(new Usuario(
@@ -226,7 +231,11 @@ public class BuscarMuestrasController {
                 : textoDetalle(muestra.getResponsableAlmacenamiento().getNombre()));
         lblDetalleCliente.setText(textoDetalle(muestra.getNombreCliente()));
         lblDetalleMarca.setText(textoDetalle(muestra.getMarca()));
-        lblDetalleUbicacion.setText(textoDetalle(muestra.getUbicacion()));
+        boolean muestraEnviada = muestra.getEstado() == Estado.ENVIADO;
+        lblTituloDetalleUbicacion.setText(muestraEnviada ? "REMISIÓN" : "UBICACIÓN");
+        lblDetalleUbicacion.setText(muestraEnviada
+                ? textoDetalle(muestra.getRemision())
+                : textoDetalle(muestra.getUbicacion()));
         lblDetalleInforme.setText(formatearInforme(muestra));
         lblDetalleCotizacion.setText(formatearCotizacion(muestra));
         lblDetalleDescripcion.setText(textoDetalle(muestra.getDescripcion()));
@@ -595,6 +604,7 @@ public class BuscarMuestrasController {
         lblDetalleDescripcion.setText("");
         lblDetalleMarca.setText("");
         lblDetalleUbicacion.setText("");
+        lblTituloDetalleUbicacion.setText("UBICACIÓN");
         lblDetalleInforme.setText("");
         lblDetalleCotizacion.setText("");
         lblDetalleObservaciones.setText("");

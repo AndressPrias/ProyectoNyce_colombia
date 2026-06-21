@@ -186,6 +186,7 @@ public class MuestraService {
                 m.setObservacionAlmacenamiento(rs.getString("observacionAlmacenamiento"));
                 m.setNumeroInforme(rs.getString("numeroInforme"));
                 m.setNumeroCotizacion(rs.getString("numeroCotizacion"));
+                m.setRemision(rs.getString("remision"));
 
                 // Fecha segura
                 java.sql.Date sqlDate = rs.getDate("fechaRecepcion");

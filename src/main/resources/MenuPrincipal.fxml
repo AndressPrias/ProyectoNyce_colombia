@@ -12,10 +12,10 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="569.0" prefWidth="980.0" stylesheets="@css/dashboard.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MenuPrincipalController">
+<AnchorPane prefHeight="801.0" prefWidth="1039.0" stylesheets="@css/dashboard.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MenuPrincipalController">
 
     <children>
-      <HBox prefHeight="98.0" prefWidth="839.0" spacing="40.0">
+      <HBox prefHeight="920.0" prefWidth="1039.0" spacing="40.0">
          <children>
       
                     <!-- Avatar circular -->
@@ -47,11 +47,13 @@
       </HBox>
 
                           <!-- Dashboard con tarjetas -->
-        <HBox alignment="CENTER" layoutY="141.0" spacing="18.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+        <VBox alignment="CENTER" layoutY="105.0" spacing="14.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
             <children>
+                <HBox alignment="CENTER" spacing="28.0">
+                    <children>
 
                                   <!-- Registrar Muestra -->
-                <VBox fx:id="cardRegistrarMuestra" alignment="CENTER" maxHeight="300.0" maxWidth="150.0" minHeight="300.0" minWidth="150.0" onMouseClicked="#abrirRegistroMuestra" prefHeight="300.0" prefWidth="150.0" spacing="18.0" styleClass="card">
+                <VBox fx:id="cardRegistrarMuestra" alignment="CENTER" maxHeight="277.0" maxWidth="220.0" minHeight="180.0" minWidth="191.0" onMouseClicked="#abrirRegistroMuestra" prefHeight="277.0" prefWidth="191.0" spacing="10.0" styleClass="card">
                     <ImageView fx:id="iconRegistrarMuestra" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                   <image>
                      <Image url="@icons/iconRegistrar-inicio.png" />
@@ -66,7 +68,7 @@
                 </VBox>
 
                                   <!-- Buscar Muestras -->
-                <VBox fx:id="cardBuscarMuestras" alignment="CENTER" maxHeight="300.0" maxWidth="150.0" minHeight="300.0" minWidth="150.0" onMouseClicked="#abrirBuscarMuestras" prefHeight="300.0" prefWidth="150.0" spacing="18.0" styleClass="card">
+                <VBox fx:id="cardBuscarMuestras" alignment="CENTER" maxHeight="277.0" maxWidth="220.0" minHeight="180.0" minWidth="191.0" onMouseClicked="#abrirBuscarMuestras" prefHeight="277.0" prefWidth="191.0" spacing="10.0" styleClass="card">
                     <ImageView fx:id="iconVerMuestras" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                   <image>
                      <Image url="@icons/iconBuscar-inicio.png" />
@@ -79,7 +81,7 @@
                </Label>
                     <Label alignment="CENTER" maxWidth="120.0" minHeight="52.0" prefHeight="52.0" prefWidth="120.0" styleClass="card-description" text="Busca y consulta muestras registradas" textAlignment="CENTER" wrapText="true" />
                 </VBox>
-            <VBox fx:id="cardCargarDatos" alignment="CENTER" maxHeight="300.0" maxWidth="150.0" minHeight="300.0" minWidth="150.0" onMouseClicked="#abrirCargarBaseDatos" prefHeight="300.0" prefWidth="150.0" spacing="18.0" styleClass="card">
+            <VBox fx:id="cardCargarDatos" alignment="CENTER" maxHeight="277.0" maxWidth="220.0" minHeight="180.0" minWidth="191.0" onMouseClicked="#abrirCargarBaseDatos" prefHeight="277.0" prefWidth="191.0" spacing="10.0" styleClass="card">
                <children>
                   <ImageView fx:id="iconVerMuestras1" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                      <image>
@@ -94,9 +96,30 @@
                   <Label alignment="CENTER" maxWidth="120.0" minHeight="52.0" prefHeight="52.0" prefWidth="120.0" styleClass="card-description" text="Carga y actualiza desde Excel" textAlignment="CENTER" wrapText="true" />
                </children>
             </VBox>
+                    </children>
+                </HBox>
+
+                <HBox alignment="CENTER" spacing="28.0">
+                    <children>
+
+            <VBox fx:id="cardRemisionMuestras" alignment="CENTER" maxHeight="277.0" maxWidth="220.0" minHeight="180.0" minWidth="191.0" onMouseClicked="#abrirRemisionMuestras" prefHeight="277.0" prefWidth="191.0" spacing="10.0" styleClass="card">
+               <children>
+                  <ImageView cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
+                     <image>
+                        <Image url="@icons/imprimir.png" />
+                     </image>
+                  </ImageView>
+                  <Label alignment="CENTER" maxWidth="120.0" minHeight="54.0" prefHeight="54.0" prefWidth="120.0" styleClass="card-title" text="Remisión de muestras" textAlignment="CENTER" wrapText="true">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label alignment="CENTER" maxWidth="120.0" minHeight="52.0" prefHeight="52.0" prefWidth="120.0" styleClass="card-description" text="Genera y registra la salida de muestras" textAlignment="CENTER" wrapText="true" />
+               </children>
+            </VBox>
 
                                            <!-- Gestionar Usuarios -->
-                <VBox fx:id="cardRegistrarUsuario" alignment="CENTER" maxHeight="300.0" maxWidth="150.0" minHeight="300.0" minWidth="150.0" onMouseClicked="#abrirRegistrarUsuario" prefHeight="300.0" prefWidth="150.0" spacing="18.0" styleClass="card">
+                <VBox fx:id="cardRegistrarUsuario" alignment="CENTER" maxHeight="277.0" maxWidth="220.0" minHeight="180.0" minWidth="191.0" onMouseClicked="#abrirRegistrarUsuario" prefHeight="277.0" prefWidth="191.0" spacing="10.0" styleClass="card">
                     <ImageView fx:id="iconRegistrarUsuario" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                   <image>
                      <Image url="@icons/iconRUsuario-inicio.png" />
@@ -111,7 +134,7 @@
                 </VBox>
 
                                         <!-- Cerrar sesión -->
-                <VBox fx:id="cardCerrarSesion" alignment="CENTER" maxHeight="300.0" maxWidth="150.0" minHeight="300.0" minWidth="150.0" onMouseClicked="#cerrarSesion" prefHeight="300.0" prefWidth="150.0" spacing="18.0" styleClass="card-logout">
+                <VBox fx:id="cardCerrarSesion" alignment="CENTER" maxHeight="277.0" maxWidth="220.0" minHeight="180.0" minWidth="191.0" onMouseClicked="#cerrarSesion" prefHeight="277.0" prefWidth="191.0" spacing="10.0" styleClass="card-logout">
                     <ImageView fx:id="iconCerrarSesion" cache="true" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" smooth="true">
                   <image>
                      <Image url="@icons/iconSalir-inicio.png" />
@@ -125,9 +148,11 @@
                     <Label alignment="CENTER" maxWidth="120.0" minHeight="52.0" prefHeight="52.0" prefWidth="120.0" styleClass="card-description" text="Salir del sistema de forma segura" textAlignment="CENTER" wrapText="true" />
                 </VBox>
 
-                              </children>
-        </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="86.0" prefWidth="870.0" spacing="14.0" style="-fx-background-color: #E6E6E6;" AnchorPane.bottomAnchor="-7.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+      <HBox alignment="CENTER_LEFT" prefHeight="86.0" prefWidth="1004.0" spacing="14.0" style="-fx-background-color: #E6E6E6;" AnchorPane.bottomAnchor="-7.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
             <Text fx:id="imgFooter" fill="#456372" strokeType="OUTSIDE" strokeWidth="0.0" text="Sistema Control Muestras Laboratorio" wrappingWidth="308.0">
                <font>

@@ -30,6 +30,7 @@ public class EditarMuestraController {
     @FXML private ComboBox<Usuario> comboTecnico;
     @FXML private TextField txtNumeroInforme;
     @FXML private TextField txtNumeroCotizacion;
+    @FXML private TextField txtRemision;
     @FXML private DatePicker fechaRecepcionPicker;
     @FXML private Label lblMensaje;
     @FXML private Button btnSubirImagen;
@@ -66,6 +67,7 @@ public class EditarMuestraController {
             fechaRecepcionPicker.setValue(muestra.getFechaRecepcion());
             txtNumeroInforme.setText(muestra.getNumeroInforme());
             txtNumeroCotizacion.setText(muestra.getNumeroCotizacion());
+            txtRemision.setText(muestra.getRemision());
             rutaFotoSeleccionada = muestra.getRutaFoto();
 
             if (rutaFotoSeleccionada != null && !rutaFotoSeleccionada.isEmpty()) {
@@ -188,6 +190,7 @@ public class EditarMuestraController {
         fechaRecepcionPicker.setValue(null);
         txtNumeroInforme.clear();
         txtNumeroCotizacion.clear();
+        txtRemision.clear();
         rutaFotoSeleccionada = "";
         imgProducto.setImage(null);
         lblMensaje.setVisible(false);

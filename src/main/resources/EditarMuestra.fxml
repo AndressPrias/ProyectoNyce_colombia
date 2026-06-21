@@ -86,6 +86,12 @@
                      </font>
                   </Label>
                   <TextField fx:id="txtNumeroCotizacion" promptText="Ejemplo: 0580" />
+                  <Label text="Remisión" textFill="#0a4d4a">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="txtRemision" editable="false" focusTraversable="false" promptText="Se asigna al generar la remisión" style="-fx-background-color: #eef2f2; -fx-text-fill: #0a4d4a; -fx-font-weight: bold;" />
                     </children>
                 </VBox>
             </children>

@@ -47,6 +47,7 @@
                     <TableColumn fx:id="colFecha" prefWidth="125.0" text="Fecha de recepción" />
                     <TableColumn fx:id="colUbicacion" prefWidth="110.0" text="Ubicación" />
                     <TableColumn fx:id="colTecnico" prefWidth="120.0" text="Técnico" />
+                    <TableColumn fx:id="colRemision" prefWidth="100.0" text="Remisión" />
                 </columns>
             </TableView>
 
@@ -61,7 +62,7 @@
                                 <Label fx:id="lblDetalleEstado" maxWidth="1.7976931348623157E308" styleClass="detail-highlight-value-status" wrapText="true" />
                             </VBox>
                             <VBox spacing="3.0" styleClass="detail-highlight-location" HBox.hgrow="ALWAYS">
-                                <Label styleClass="detail-highlight-title" text="UBICACIÓN" />
+                                <Label fx:id="lblTituloDetalleUbicacion" styleClass="detail-highlight-title" text="UBICACIÓN" />
                                 <Label fx:id="lblDetalleUbicacion" maxWidth="1.7976931348623157E308" styleClass="detail-highlight-value-location" wrapText="true" />
                             </VBox>
                         </HBox>

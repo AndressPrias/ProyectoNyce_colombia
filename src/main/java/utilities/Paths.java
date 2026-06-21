@@ -16,5 +16,7 @@ public class Paths {
 
     public static final String CARGAR_BASE_DATOS = "/CargarBaseDatos.fxml";
 
+    public static final String REMISION_MUESTRAS = "/RemisionMuestras.fxml";
+
 
 }

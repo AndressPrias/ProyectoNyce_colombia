@@ -858,3 +858,11 @@ Invalid value "14" for parameter "parameterIndex" [90008-214]
 org.h2.jdbc.JdbcSQLDataException: Valor demasiado largo para la columna "UBICACION CHARACTER VARYING(10)": "U&'21645 - 21646\\000aA3' (16)"
 Value too long for column "UBICACION CHARACTER VARYING(10)": "U&'21645 - 21646\\000aA3' (16)"; SQL statement:
 INSERT INTO muestras (codigoInterno, rotuloCliente, nombreCliente, descripcion, marca, referencia, estado, ubicacion, custodioId, fechaRecepcion, rutaFoto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) [22001-214]
+2026-06-21 07:34:04 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Valor demasiado largo para la columna "UBICACIONNUEVA CHARACTER VARYING(10)": "'Fuera del laboratorio' (21)"
+Value too long for column "UBICACIONNUEVA CHARACTER VARYING(10)": "'Fuera del laboratorio' (21)"; SQL statement:
+INSERT INTO movimientos (muestraId, usuarioId, estadoAnterior, estadoNuevo, ubicacionAnterior, ubicacionNueva, fechaHora, observacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?) [22001-214]
+2026-06-21 07:57:25 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Valor demasiado largo para la columna "UBICACIONNUEVA CHARACTER VARYING(10)": "'Fuera del laboratorio' (21)"
+Value too long for column "UBICACIONNUEVA CHARACTER VARYING(10)": "'Fuera del laboratorio' (21)"; SQL statement:
+INSERT INTO movimientos (muestraId, usuarioId, estadoAnterior, estadoNuevo, ubicacionAnterior, ubicacionNueva, fechaHora, observacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?) [22001-214]

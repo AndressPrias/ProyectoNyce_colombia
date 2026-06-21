@@ -20,6 +20,7 @@ public class Muestra {
     private String rutaFoto;
     private String numeroInforme;
     private String numeroCotizacion;
+    private String remision;
 
     public String getNombreCliente() {
         return nombreCliente;
@@ -111,6 +112,7 @@ public class Muestra {
     public Usuario getResponsableAlmacenamiento() { return responsableAlmacenamiento; }
     public String getNumeroInforme() { return numeroInforme; }
     public String getNumeroCotizacion() { return numeroCotizacion; }
+    public String getRemision() { return remision; }
 
     public void setEstado(Estado estado) { this.estado = estado; }
     public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
@@ -120,6 +122,7 @@ public class Muestra {
     public void setResponsableAlmacenamiento(Usuario responsableAlmacenamiento) { this.responsableAlmacenamiento = responsableAlmacenamiento; }
     public void setNumeroInforme(String numeroInforme) { this.numeroInforme = numeroInforme; }
     public void setNumeroCotizacion(String numeroCotizacion) { this.numeroCotizacion = numeroCotizacion; }
+    public void setRemision(String remision) { this.remision = remision; }
 
 
 

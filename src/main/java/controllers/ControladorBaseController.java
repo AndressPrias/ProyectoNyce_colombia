@@ -22,8 +22,6 @@ import domain.Usuario;
 
 public class ControladorBaseController {
 
-    private static final double ANCHO_MENU_PRINCIPAL = 930;
-    private static final double ALTO_MENU_PRINCIPAL = 650;
     private static final Duration DURACION_TRANSICION = Duration.millis(320);
 
     @FXML
@@ -129,13 +127,14 @@ public class ControladorBaseController {
 
     private void ajustarTamanoVentana(Stage stage, String fxmlPath) {
         if (Paths.MENU_PRINCIPAL.equals(fxmlPath)) {
-            stage.setMaximized(false);
-            stage.setWidth(ANCHO_MENU_PRINCIPAL);
-            stage.setHeight(ALTO_MENU_PRINCIPAL);
-            stage.centerOnScreen();
+            stage.setMinWidth(0);
+            stage.setMinHeight(0);
+            stage.setMaximized(true);
             return;
         }
 
+        stage.setMinWidth(0);
+        stage.setMinHeight(0);
         stage.setMaximized(true);
     }
 

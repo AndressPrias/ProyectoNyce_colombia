@@ -26,6 +26,7 @@ public class MenuPrincipalController {
     @FXML private Label lblFechaHora;
     @FXML private VBox cardRegistrarMuestra;
     @FXML private VBox cardCargarDatos;
+    @FXML private VBox cardRemisionMuestras;
 
     private Timeline timelineFechaHora;
 
@@ -41,10 +42,15 @@ public class MenuPrincipalController {
         }
         cargarFotoPerfil(usuarioLogueado);
         boolean controlMuestras = usuarioLogueado != null && usuarioLogueado.puedeControlarMuestras();
-        cardRegistrarMuestra.setVisible(controlMuestras);
-        cardRegistrarMuestra.setManaged(controlMuestras);
-        cardCargarDatos.setVisible(controlMuestras);
-        cardCargarDatos.setManaged(controlMuestras);
+        configurarTarjetaRestringida(cardRegistrarMuestra, controlMuestras);
+        configurarTarjetaRestringida(cardCargarDatos, controlMuestras);
+        configurarTarjetaRestringida(cardRemisionMuestras, controlMuestras);
+    }
+
+    private void configurarTarjetaRestringida(VBox tarjeta, boolean habilitada) {
+        tarjeta.setVisible(true);
+        tarjeta.setManaged(true);
+        tarjeta.setDisable(!habilitada);
     }
 
     private void cargarFotoPerfil(Usuario usuarioLogueado) {
@@ -120,6 +126,11 @@ public class MenuPrincipalController {
     @FXML
     void abrirCargarBaseDatos() {
         Navegacion.irCargarBaseDatos();
+    }
+
+    @FXML
+    void abrirRemisionMuestras() {
+        Navegacion.irRemisionMuestras();
     }
 
     @FXML
