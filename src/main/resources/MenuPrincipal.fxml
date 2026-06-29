@@ -165,6 +165,21 @@
                </image>
             </ImageView>
             <Region HBox.hgrow="ALWAYS" />
+            <HBox alignment="CENTER" spacing="6.0">
+               <children>
+                  <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@icons/brandAndresPrias.png" />
+                     </image>
+                  </ImageView>
+                  <VBox alignment="CENTER_LEFT" spacing="0.0">
+                     <children>
+                        <Label style="-fx-font-size: 8;" text="Desarrollado por" textFill="#607778" />
+                        <Label style="-fx-font-size: 10; -fx-font-weight: bold;" text="Andres Prias" textFill="#0a4d4a" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
             <ImageView fx:id="imgFechaHora" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true" styleClass="lblFechaHora">
                <image>
                   <Image url="@icons/iconFechaHora.png" />

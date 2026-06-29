@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,8 +44,7 @@ public class RemisionService {
                     muestra.setNumeroInforme(rs.getString("numeroInforme"));
                     muestra.setNumeroCotizacion(rs.getString("numeroCotizacion"));
                     muestra.setRemision(rs.getString("remision"));
-                    java.sql.Date fecha = rs.getDate("fechaRecepcion");
-                    muestra.setFechaRecepcion(fecha == null ? null : fecha.toLocalDate());
+                    muestra.setFechaRecepcion(leerFechaSeguro(rs, "fechaRecepcion"));
                     muestras.add(muestra);
                 }
             }
@@ -134,7 +135,7 @@ public class RemisionService {
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, consecutivo);
-            ps.setObject(2, fechaElaboracion);
+            ps.setString(2, fechaElaboracion == null ? null : fechaElaboracion.toString());
             ps.setString(3, cliente);
             ps.setString(4, tipoSalida);
             ps.setInt(5, numeroEmpaques);
@@ -158,7 +159,7 @@ public class RemisionService {
                 "INSERT INTO remision_muestras (remisionId, muestraId, fechaEntrega, observaciones) VALUES (?, ?, ?, ?)")) {
             ps.setInt(1, remisionId);
             ps.setInt(2, muestra.getId());
-            ps.setObject(3, fechaEntrega);
+            ps.setString(3, fechaEntrega == null ? null : fechaEntrega.toString());
             ps.setString(4, textoOValor(muestra.getObservacionAlmacenamiento(), "Ninguna"));
             ps.executeUpdate();
         }
@@ -188,12 +189,32 @@ public class RemisionService {
             ps.setString(4, Estado.ENVIADO.name());
             ps.setString(5, muestra.getUbicacion());
             ps.setString(6, "Fuera del laboratorio");
-            ps.setObject(7, LocalDateTime.now());
+            ps.setString(7, LocalDateTime.now().toString());
             ps.setString(8, "Salida registrada mediante remisión de muestras");
             ps.executeUpdate();
         }
     }
 
+    private LocalDate leerFechaSeguro(ResultSet rs, String columna) {
+        try {
+            String valor = rs.getString(columna);
+            if (valor == null || valor.isBlank()) {
+                return null;
+            }
+            valor = valor.trim();
+            int espacio = valor.indexOf(' ');
+            if (espacio > 0) {
+                valor = valor.substring(0, espacio);
+            }
+            try {
+                return LocalDate.parse(valor);
+            } catch (DateTimeParseException ignored) {
+                return LocalDate.parse(valor, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
     private String textoOValor(String texto, String valorDefecto) {
         return texto == null || texto.isBlank() ? valorDefecto : texto.trim();
     }

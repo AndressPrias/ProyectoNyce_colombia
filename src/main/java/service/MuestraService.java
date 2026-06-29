@@ -10,6 +10,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,7 +109,7 @@ public class MuestraService {
             ps.setString(7, estado.name());
             ps.setString(8, ubicacion);
             ps.setInt(9, custodio.getId());
-            ps.setObject(10, fecha);
+            ps.setString(10, fecha.toString());
             ps.setString(11, rutaFoto);
 
             ps.executeUpdate();
@@ -144,7 +145,7 @@ public class MuestraService {
             ps.setString(4, estado.name());
             ps.setString(5, null);
             ps.setString(6, ubicacion);
-            ps.setObject(7, LocalDateTime.now());
+            ps.setString(7, LocalDateTime.now().toString());
             ps.setString(8, "Registro inicial de la muestra");
 
             ps.executeUpdate();
@@ -187,14 +188,7 @@ public class MuestraService {
                 m.setNumeroInforme(rs.getString("numeroInforme"));
                 m.setNumeroCotizacion(rs.getString("numeroCotizacion"));
                 m.setRemision(rs.getString("remision"));
-
-                // Fecha segura
-                java.sql.Date sqlDate = rs.getDate("fechaRecepcion");
-                if (sqlDate != null) {
-                    m.setFechaRecepcion(sqlDate.toLocalDate());
-                } else {
-                    m.setFechaRecepcion(null); // o LocalDate.now() si prefieres
-                }
+                m.setFechaRecepcion(leerFechaSeguro(rs, "fechaRecepcion"));
 
                 m.setRutaFoto(rs.getString("rutaFoto"));
                 lista.add(m);
@@ -206,6 +200,26 @@ public class MuestraService {
         return lista;
     }
 
+    private LocalDate leerFechaSeguro(ResultSet rs, String columna) {
+        try {
+            String valor = rs.getString(columna);
+            if (valor == null || valor.isBlank()) {
+                return null;
+            }
+            valor = valor.trim();
+            int espacio = valor.indexOf(' ');
+            if (espacio > 0) {
+                valor = valor.substring(0, espacio);
+            }
+            try {
+                return LocalDate.parse(valor);
+            } catch (DateTimeParseException ignored) {
+                return LocalDate.parse(valor, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
     public boolean actualizarMuestra(Muestra muestra, Usuario usuarioAccion) {
         if (usuarioAccion == null || !usuarioAccion.puedeControlarMuestras()) {
             return false;
@@ -224,7 +238,7 @@ public class MuestraService {
             ps.setString(4, muestra.getMarca());
             ps.setString(5, muestra.getReferencia());
             ps.setString(6, muestra.getEstado().name());
-            ps.setObject(7, muestra.getFechaRecepcion()); // LocalDate compatible
+            ps.setString(7, muestra.getFechaRecepcion() == null ? null : muestra.getFechaRecepcion().toString());
             ps.setString(8, muestra.getUbicacion());
             setUsuarioIdNullable(ps, 9, muestra.getTecnico());
             ps.setString(10, muestra.getRutaFoto());
@@ -284,7 +298,7 @@ public class MuestraService {
                     movimiento.setString(4, Estado.EN_CURSO.name());
                     movimiento.setString(5, ubicacionActual);
                     movimiento.setString(6, UBICACION_EN_ENSAYOS);
-                    movimiento.setObject(7, LocalDateTime.now());
+                    movimiento.setString(7, LocalDateTime.now().toString());
                     movimiento.setString(8, "Asignación de técnico: " + tecnico.getNombre());
                     movimiento.executeUpdate();
                 }
@@ -356,7 +370,7 @@ public class MuestraService {
                     movimiento.setString(4, Estado.LISTA_PARA_ALMACENAR.name());
                     movimiento.setString(5, ubicacionActual);
                     movimiento.setString(6, ubicacionActual);
-                    movimiento.setObject(7, LocalDateTime.now());
+                    movimiento.setString(7, LocalDateTime.now().toString());
                     movimiento.setString(8, "Ensayos finalizados. Muestra lista para almacenar");
                     movimiento.executeUpdate();
                 }
@@ -458,7 +472,7 @@ public class MuestraService {
                     movimiento.setString(4, Estado.ALMACENADO.name());
                     movimiento.setString(5, ubicacionAnterior);
                     movimiento.setString(6, ubicacion.trim());
-                    movimiento.setObject(7, LocalDateTime.now());
+                    movimiento.setString(7, LocalDateTime.now().toString());
                     String detalleResponsable = "Responsable de almacenamiento: " + responsable.getNombre();
                     String observacionNormalizada = normalizarOpcional(observacion);
                     String detalleMovimiento = observacionNormalizada == null

@@ -22,6 +22,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
+import utilities.ImageStorage;
 import utilities.Navegacion;
 import utilities.UsuarioSesion;
 
@@ -90,10 +91,12 @@ public class GestionarUsuariosController {
     void seleccionarImagen(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Seleccionar foto de perfil");
-        File carpetaAvatares = new File(CARPETA_AVATARES);
-        if (carpetaAvatares.exists()) {
-            fileChooser.setInitialDirectory(carpetaAvatares);
+
+        File carpetaInicial = ImageStorage.getUserAvatarsInitialDirectory(rutaFotoSeleccionada);
+        if (carpetaInicial != null) {
+            fileChooser.setInitialDirectory(carpetaInicial);
         }
+
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Imagenes", "*.png", "*.jpg", "*.jpeg")
         );
@@ -103,8 +106,14 @@ public class GestionarUsuariosController {
             return;
         }
 
-        rutaFotoSeleccionada = obtenerRutaAvatar(selectedFile);
-        cargarImagenDesdeArchivo(selectedFile);
+        try {
+            rutaFotoSeleccionada = ImageStorage.copyUserAvatar(selectedFile);
+            cargarImagen(rutaFotoSeleccionada);
+        } catch (Exception e) {
+            rutaFotoSeleccionada = "";
+            imgFotoPerfil.setImage(null);
+            mostrarMensaje("No se pudo copiar la foto de perfil a la carpeta compartida");
+        }
     }
 
     @FXML
@@ -317,50 +326,14 @@ public class GestionarUsuariosController {
     }
 
     private void cargarImagen(String rutaFoto) {
-        if (rutaFoto == null || rutaFoto.isBlank()) {
+        String url = ImageStorage.resolveImageUrl(rutaFoto);
+        if (url == null || url.isBlank()) {
             imgFotoPerfil.setImage(null);
             return;
         }
 
-        try {
-            if (rutaFoto.startsWith("/")) {
-                URL recurso = getClass().getResource(rutaFoto);
-                if (recurso != null) {
-                    imgFotoPerfil.setImage(new Image(recurso.toExternalForm()));
-                    return;
-                }
-                File archivoRecurso = new File("src/main/resources" + rutaFoto);
-                imgFotoPerfil.setImage(archivoRecurso.exists() ? new Image(archivoRecurso.toURI().toString()) : null);
-            } else {
-                imgFotoPerfil.setImage(new Image(new File(rutaFoto).toURI().toURL().toExternalForm()));
-            }
-        } catch (MalformedURLException e) {
-            imgFotoPerfil.setImage(null);
-        }
-    }
-
-    private void cargarImagenDesdeArchivo(File archivo) {
-        try {
-            imgFotoPerfil.setImage(new Image(archivo.toURI().toURL().toExternalForm()));
-        } catch (MalformedURLException e) {
-            imgFotoPerfil.setImage(null);
-        }
-    }
-
-    private String obtenerRutaAvatar(File archivo) {
-        File carpetaAvatares = new File(CARPETA_AVATARES);
-        if (carpetaAvatares.exists()) {
-            try {
-                String carpeta = carpetaAvatares.getCanonicalPath();
-                String seleccionado = archivo.getCanonicalPath();
-                if (seleccionado.startsWith(carpeta + File.separator)) {
-                    return RECURSO_AVATARES + archivo.getName();
-                }
-            } catch (Exception ignored) {
-                // Si no se puede normalizar, se conserva la ruta absoluta.
-            }
-        }
-        return archivo.getAbsolutePath();
+        Image image = new Image(url, false);
+        imgFotoPerfil.setImage(image.isError() ? null : image);
     }
 
     private void actualizarUsuarioActivo(String nombre, String rolStr,

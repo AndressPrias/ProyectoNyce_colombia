@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
@@ -158,9 +159,8 @@ public class BuscarMuestrasController {
                 m.setNombreCliente(rs.getString("nombreCliente"));
                 m.setMarca(rs.getString("marca"));
                 m.setReferencia(rs.getString("referencia"));
-                m.setEstado(Estado.desdeTexto(rs.getString("estado")));
-                java.sql.Date fecha = rs.getDate("fechaRecepcion");
-                m.setFechaRecepcion(fecha == null ? null : fecha.toLocalDate());
+                m.setEstado(leerEstadoSeguro(rs.getString("estado")));
+                m.setFechaRecepcion(leerFechaSeguro(rs, "fechaRecepcion"));
                 m.setUbicacion(rs.getString("ubicacion"));
                 m.setObservacionAlmacenamiento(rs.getString("observacionAlmacenamiento"));
                 m.setNumeroInforme(rs.getString("numeroInforme"));
@@ -196,6 +196,34 @@ public class BuscarMuestrasController {
         }
     }
 
+    private Estado leerEstadoSeguro(String estado) {
+        try {
+            return Estado.desdeTexto(estado);
+        } catch (IllegalArgumentException e) {
+            return Estado.EN_CUSTODIA;
+        }
+    }
+
+    private LocalDate leerFechaSeguro(ResultSet rs, String columna) {
+        try {
+            String valor = rs.getString(columna);
+            if (valor == null || valor.isBlank()) {
+                return null;
+            }
+            valor = valor.trim();
+            int espacio = valor.indexOf(' ');
+            if (espacio > 0) {
+                valor = valor.substring(0, espacio);
+            }
+            try {
+                return LocalDate.parse(valor);
+            } catch (DateTimeParseException ignored) {
+                return LocalDate.parse(valor, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
     private void actualizarSeleccionYDetalle(Integer idSeleccionado) {
         if (idSeleccionado == null) {
             limpiarDetalle();

@@ -1,213 +1,350 @@
 package db;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import utilities.AppConfig;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 
 public class Database {
 
-    private static final String DB_FOLDER = "./data";
-    private static final String JDBC_URL = "jdbc:h2:" + DB_FOLDER + "/lencdb";
-    private static final String USER = "sa";
-    private static final String PASSWORD = "";
+    private static final String LEGACY_DB_FOLDER = "./data";
 
     public static Connection getConnection() throws SQLException {
-        try { Class.forName("org.h2.Driver"); } catch (ClassNotFoundException e) { e.printStackTrace(); }
-        File folder = new File(DB_FOLDER);
-        if (!folder.exists()) folder.mkdirs();
-        return DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("No se encontr\u00f3 el driver SQLite", e);
+        }
+
+        Path databasePath = AppConfig.getDatabasePath();
+        try {
+            Files.createDirectories(databasePath.getParent());
+        } catch (Exception e) {
+            throw new SQLException("No se pudo crear la carpeta de la base de datos: " + databasePath.getParent(), e);
+        }
+
+        Connection conn = DriverManager.getConnection("jdbc:sqlite:" + databasePath);
+        try (Statement st = conn.createStatement()) {
+            st.execute("PRAGMA foreign_keys = ON");
+            st.execute("PRAGMA busy_timeout = 10000");
+            st.execute("PRAGMA journal_mode = WAL");
+            st.execute("PRAGMA synchronous = NORMAL");
+        }
+        return conn;
     }
 
     public static void init() {
         try (Connection conn = getConnection()) {
-
-            // Crear tablas
-            conn.createStatement().execute(
-                    "CREATE TABLE IF NOT EXISTS usuarios (" +
-                            "id INT AUTO_INCREMENT PRIMARY KEY," +
-                            "nombre VARCHAR(100) NOT NULL," +
-                            "rol VARCHAR(20) NOT NULL," +
-                            "password VARCHAR(100)," +
-                            "rutaFoto VARCHAR(255)," +
-                            "controlMuestras BOOLEAN DEFAULT FALSE," +
-                            "controlTotal BOOLEAN DEFAULT FALSE" +
-                            ");"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS password VARCHAR(100);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS rutaFoto VARCHAR(255);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS controlMuestras BOOLEAN DEFAULT FALSE;"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS controlTotal BOOLEAN DEFAULT FALSE;"
-            );
-            conn.createStatement().execute(
-                    "UPDATE usuarios SET password = nombre WHERE password IS NULL;"
-            );
-
-            conn.createStatement().execute(
-                    "CREATE TABLE IF NOT EXISTS muestras (" +
-                            "id INT AUTO_INCREMENT PRIMARY KEY," +
-                            "codigoInterno VARCHAR(20) NOT NULL," +
-                            "rotuloCliente VARCHAR(100)," +
-                            "nombreCliente VARCHAR(150)," +
-                            "descripcion VARCHAR(255)," +
-                            "marca VARCHAR(100)," +
-                            "referencia VARCHAR(100)," +
-                            "estado VARCHAR(40) NOT NULL," +
-                            "ubicacion VARCHAR(10)," +
-                            "observacionAlmacenamiento VARCHAR(255)," +
-                            "custodioId INT," +
-                            "tecnicoId INT," +
-                            "responsableId INT," +
-                            "fechaRecepcion DATE," +
-                            "rutaFoto VARCHAR(255)," +
-                            "numeroInforme VARCHAR(4)," +
-                            "numeroCotizacion VARCHAR(4)," +
-                            "remision VARCHAR(20)," +
-                            "FOREIGN KEY (custodioId) REFERENCES usuarios(id)," +
-                            "FOREIGN KEY (tecnicoId) REFERENCES usuarios(id)" +
-                            ");"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS nombreCliente VARCHAR(150);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS marca VARCHAR(100);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS referencia VARCHAR(100);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras DROP COLUMN IF EXISTS estante;"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS observacionAlmacenamiento VARCHAR(255);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS tecnicoId INT;"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS responsableId INT;"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS numeroInforme VARCHAR(100);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS numeroCotizacion VARCHAR(100);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ADD COLUMN IF NOT EXISTS remision VARCHAR(20);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ALTER COLUMN numeroInforme VARCHAR(4);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras ALTER COLUMN numeroCotizacion VARCHAR(4);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE muestras DROP COLUMN IF EXISTS cantidad;"
-            );
-
-            conn.createStatement().execute(
-                    "CREATE TABLE IF NOT EXISTS movimientos (" +
-                            "id INT AUTO_INCREMENT PRIMARY KEY," +
-                            "muestraId INT NOT NULL," +
-                            "usuarioId INT NOT NULL," +
-                            "estadoAnterior VARCHAR(40)," +
-                            "estadoNuevo VARCHAR(40)," +
-                            "ubicacionAnterior VARCHAR(100)," +
-                            "ubicacionNueva VARCHAR(100)," +
-                            "fechaHora TIMESTAMP," +
-                            "observacion VARCHAR(255)," +
-                            "FOREIGN KEY (muestraId) REFERENCES muestras(id)," +
-                            "FOREIGN KEY (usuarioId) REFERENCES usuarios(id)" +
-                    ");"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE movimientos ALTER COLUMN ubicacionAnterior VARCHAR(100);"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE movimientos ALTER COLUMN ubicacionNueva VARCHAR(100);"
-            );
-
-            conn.createStatement().execute(
-                    "CREATE TABLE IF NOT EXISTS remisiones (" +
-                            "id INT AUTO_INCREMENT PRIMARY KEY," +
-                            "consecutivo INT NOT NULL UNIQUE," +
-                            "fechaElaboracion DATE NOT NULL," +
-                            "cliente VARCHAR(150)," +
-                            "tipoSalida VARCHAR(150) NOT NULL," +
-                            "numeroEmpaques INT NOT NULL," +
-                            "observacionFinal VARCHAR(1000)," +
-                            "entregadoPorId INT," +
-                            "recibidoFirma VARCHAR(150)," +
-                            "recibidoCedula VARCHAR(50)," +
-                            "recibidoNombrePlaca VARCHAR(150)," +
-                            "rutaArchivo VARCHAR(500)," +
-                            "fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-                            "FOREIGN KEY (entregadoPorId) REFERENCES usuarios(id)" +
-                            ");"
-            );
-            conn.createStatement().execute(
-                    "CREATE TABLE IF NOT EXISTS remision_muestras (" +
-                            "remisionId INT NOT NULL," +
-                            "muestraId INT NOT NULL," +
-                            "fechaEntrega DATE NOT NULL," +
-                            "observaciones VARCHAR(255)," +
-                            "PRIMARY KEY (remisionId, muestraId)," +
-                            "FOREIGN KEY (remisionId) REFERENCES remisiones(id)," +
-                            "FOREIGN KEY (muestraId) REFERENCES muestras(id)" +
-                            ");"
-            );
-            conn.createStatement().execute(
-                    "ALTER TABLE remisiones ADD COLUMN IF NOT EXISTS rutaArchivo VARCHAR(500);"
-            );
-            conn.createStatement().execute(
-                    "UPDATE muestras m SET remision = (" +
-                            "SELECT CONCAT('R', LPAD(CAST(r.consecutivo AS VARCHAR), 4, '0')) " +
-                            "FROM remision_muestras rm " +
-                            "JOIN remisiones r ON r.id = rm.remisionId " +
-                            "WHERE rm.muestraId = m.id" +
-                            ") WHERE m.remision IS NULL AND EXISTS (" +
-                            "SELECT 1 FROM remision_muestras rm WHERE rm.muestraId = m.id" +
-                            ");"
-            );
-
+            crearTablas(conn);
+            migrarColumnas(conn);
+            migrarDesdeH2SiAplica(conn);
+            migrarRemisionesEnMuestras(conn);
             migrarEstados(conn);
+            asegurarUsuarioAdmin(conn);
 
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO usuarios (nombre, rol, password) " +
-                            "SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE LOWER(nombre) = LOWER(?))")) {
-                ps.setString(1, "admin");
-                ps.setString(2, "ADMIN");
-                ps.setString(3, "admin");
-                ps.setString(4, "admin");
-                ps.executeUpdate();
+            System.out.println("Base de datos SQLite inicializada.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void crearTablas(Connection conn) throws SQLException {
+        try (Statement st = conn.createStatement()) {
+            st.execute("CREATE TABLE IF NOT EXISTS usuarios (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "nombre TEXT NOT NULL," +
+                    "rol TEXT NOT NULL," +
+                    "password TEXT," +
+                    "rutaFoto TEXT," +
+                    "controlMuestras INTEGER DEFAULT 0," +
+                    "controlTotal INTEGER DEFAULT 0" +
+                    ");");
+
+            st.execute("CREATE TABLE IF NOT EXISTS muestras (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "codigoInterno TEXT NOT NULL," +
+                    "rotuloCliente TEXT," +
+                    "nombreCliente TEXT," +
+                    "descripcion TEXT," +
+                    "marca TEXT," +
+                    "referencia TEXT," +
+                    "estado TEXT NOT NULL," +
+                    "ubicacion TEXT," +
+                    "observacionAlmacenamiento TEXT," +
+                    "custodioId INTEGER," +
+                    "tecnicoId INTEGER," +
+                    "responsableId INTEGER," +
+                    "fechaRecepcion TEXT," +
+                    "rutaFoto TEXT," +
+                    "numeroInforme TEXT," +
+                    "numeroCotizacion TEXT," +
+                    "remision TEXT," +
+                    "FOREIGN KEY (custodioId) REFERENCES usuarios(id)," +
+                    "FOREIGN KEY (tecnicoId) REFERENCES usuarios(id)," +
+                    "FOREIGN KEY (responsableId) REFERENCES usuarios(id)" +
+                    ");");
+
+            st.execute("CREATE TABLE IF NOT EXISTS movimientos (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "muestraId INTEGER NOT NULL," +
+                    "usuarioId INTEGER NOT NULL," +
+                    "estadoAnterior TEXT," +
+                    "estadoNuevo TEXT," +
+                    "ubicacionAnterior TEXT," +
+                    "ubicacionNueva TEXT," +
+                    "fechaHora TEXT," +
+                    "observacion TEXT," +
+                    "FOREIGN KEY (muestraId) REFERENCES muestras(id)," +
+                    "FOREIGN KEY (usuarioId) REFERENCES usuarios(id)" +
+                    ");");
+
+            st.execute("CREATE TABLE IF NOT EXISTS remisiones (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "consecutivo INTEGER NOT NULL UNIQUE," +
+                    "fechaElaboracion TEXT NOT NULL," +
+                    "cliente TEXT," +
+                    "tipoSalida TEXT NOT NULL," +
+                    "numeroEmpaques INTEGER NOT NULL," +
+                    "observacionFinal TEXT," +
+                    "entregadoPorId INTEGER," +
+                    "recibidoFirma TEXT," +
+                    "recibidoCedula TEXT," +
+                    "recibidoNombrePlaca TEXT," +
+                    "rutaArchivo TEXT," +
+                    "fechaCreacion TEXT DEFAULT CURRENT_TIMESTAMP," +
+                    "FOREIGN KEY (entregadoPorId) REFERENCES usuarios(id)" +
+                    ");");
+
+            st.execute("CREATE TABLE IF NOT EXISTS remision_muestras (" +
+                    "remisionId INTEGER NOT NULL," +
+                    "muestraId INTEGER NOT NULL," +
+                    "fechaEntrega TEXT NOT NULL," +
+                    "observaciones TEXT," +
+                    "PRIMARY KEY (remisionId, muestraId)," +
+                    "FOREIGN KEY (remisionId) REFERENCES remisiones(id)," +
+                    "FOREIGN KEY (muestraId) REFERENCES muestras(id)" +
+                    ");");
+        }
+    }
+
+    private static void migrarColumnas(Connection conn) throws SQLException {
+        agregarColumnaSiNoExiste(conn, "usuarios", "password", "TEXT");
+        agregarColumnaSiNoExiste(conn, "usuarios", "rutaFoto", "TEXT");
+        agregarColumnaSiNoExiste(conn, "usuarios", "controlMuestras", "INTEGER DEFAULT 0");
+        agregarColumnaSiNoExiste(conn, "usuarios", "controlTotal", "INTEGER DEFAULT 0");
+
+        agregarColumnaSiNoExiste(conn, "muestras", "nombreCliente", "TEXT");
+        agregarColumnaSiNoExiste(conn, "muestras", "marca", "TEXT");
+        agregarColumnaSiNoExiste(conn, "muestras", "referencia", "TEXT");
+        agregarColumnaSiNoExiste(conn, "muestras", "observacionAlmacenamiento", "TEXT");
+        agregarColumnaSiNoExiste(conn, "muestras", "tecnicoId", "INTEGER");
+        agregarColumnaSiNoExiste(conn, "muestras", "responsableId", "INTEGER");
+        agregarColumnaSiNoExiste(conn, "muestras", "numeroInforme", "TEXT");
+        agregarColumnaSiNoExiste(conn, "muestras", "numeroCotizacion", "TEXT");
+        agregarColumnaSiNoExiste(conn, "muestras", "remision", "TEXT");
+
+        agregarColumnaSiNoExiste(conn, "movimientos", "ubicacionAnterior", "TEXT");
+        agregarColumnaSiNoExiste(conn, "movimientos", "ubicacionNueva", "TEXT");
+        agregarColumnaSiNoExiste(conn, "remisiones", "rutaArchivo", "TEXT");
+
+        try (Statement st = conn.createStatement()) {
+            st.execute("UPDATE usuarios SET password = nombre WHERE password IS NULL");
+        }
+    }
+
+    private static void agregarColumnaSiNoExiste(Connection conn, String tabla, String columna, String definicion) throws SQLException {
+        if (existeColumna(conn, tabla, columna)) return;
+        try (Statement st = conn.createStatement()) {
+            st.execute("ALTER TABLE " + tabla + " ADD COLUMN " + columna + " " + definicion);
+        }
+    }
+
+    private static boolean existeColumna(Connection conn, String tabla, String columna) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement("PRAGMA table_info(" + tabla + ")");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                if (columna.equalsIgnoreCase(rs.getString("name"))) {
+                    return true;
+                }
             }
+        }
+        return false;
+    }
 
-            System.out.println("Base de datos inicializada con usuarios de prueba.");
+    private static void migrarDesdeH2SiAplica(Connection sqliteConn) {
+        File h2File = resolveLegacyH2File();
+        if (!h2File.exists()) return;
+        if (!tablaVacia(sqliteConn, "usuarios") || !tablaVacia(sqliteConn, "muestras")) return;
 
-        } catch (SQLException e) { e.printStackTrace(); }
+        try {
+            Class.forName("org.h2.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Existe una base H2 anterior, pero no est\u00e1 disponible el driver H2 para migrarla.");
+            return;
+        }
+
+        boolean autoCommitOriginal = true;
+        try (Connection h2Conn = DriverManager.getConnection(resolveLegacyH2JdbcUrl(h2File), "sa", "")) {
+            autoCommitOriginal = sqliteConn.getAutoCommit();
+            sqliteConn.setAutoCommit(false);
+
+            copiarTabla(h2Conn, sqliteConn, "usuarios", List.of(
+                    "id", "nombre", "rol", "password", "rutaFoto", "controlMuestras", "controlTotal"));
+            copiarTabla(h2Conn, sqliteConn, "muestras", List.of(
+                    "id", "codigoInterno", "rotuloCliente", "nombreCliente", "descripcion", "marca", "referencia",
+                    "estado", "ubicacion", "observacionAlmacenamiento", "custodioId", "tecnicoId", "responsableId",
+                    "fechaRecepcion", "rutaFoto", "numeroInforme", "numeroCotizacion", "remision"));
+            copiarTabla(h2Conn, sqliteConn, "movimientos", List.of(
+                    "id", "muestraId", "usuarioId", "estadoAnterior", "estadoNuevo", "ubicacionAnterior",
+                    "ubicacionNueva", "fechaHora", "observacion"));
+            copiarTabla(h2Conn, sqliteConn, "remisiones", List.of(
+                    "id", "consecutivo", "fechaElaboracion", "cliente", "tipoSalida", "numeroEmpaques",
+                    "observacionFinal", "entregadoPorId", "recibidoFirma", "recibidoCedula",
+                    "recibidoNombrePlaca", "rutaArchivo", "fechaCreacion"));
+            copiarTabla(h2Conn, sqliteConn, "remision_muestras", List.of(
+                    "remisionId", "muestraId", "fechaEntrega", "observaciones"));
+
+            sqliteConn.commit();
+            System.out.println("Migraci\u00f3n desde H2 a SQLite completada.");
+        } catch (Exception e) {
+            try { sqliteConn.rollback(); } catch (SQLException ignored) {}
+            System.err.println("No se pudo migrar la base H2 a SQLite: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try { sqliteConn.setAutoCommit(autoCommitOriginal); } catch (SQLException ignored) {}
+        }
+    }
+    private static File resolveLegacyH2File() {
+        Path selectedFolderH2 = AppConfig.getStorageFolder().resolve("lencdb.mv.db");
+        if (Files.exists(selectedFolderH2)) {
+            return selectedFolderH2.toFile();
+        }
+        return new File(LEGACY_DB_FOLDER + "/lencdb.mv.db");
+    }
+
+    private static String resolveLegacyH2JdbcUrl(File h2File) {
+        String absolutePath = h2File.getAbsolutePath();
+        String withoutExtension = absolutePath.endsWith(".mv.db")
+                ? absolutePath.substring(0, absolutePath.length() - ".mv.db".length())
+                : absolutePath;
+        return "jdbc:h2:" + withoutExtension;
+    }
+
+    private static boolean tablaVacia(Connection conn, String tabla) {
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM " + tabla)) {
+            return rs.next() && rs.getInt(1) == 0;
+        } catch (SQLException e) {
+            return true;
+        }
+    }
+
+    private static void copiarTabla(Connection origen, Connection destino, String tabla, List<String> columnasDeseadas) throws SQLException {
+        if (!existeTabla(origen, tabla)) return;
+
+        List<String> columnasOrigen = columnasExistentes(origen, tabla, columnasDeseadas);
+        List<String> columnasDestino = columnasExistentes(destino, tabla, columnasOrigen);
+        if (columnasDestino.isEmpty()) return;
+
+        StringJoiner selectCols = new StringJoiner(", ");
+        StringJoiner insertCols = new StringJoiner(", ");
+        StringJoiner placeholders = new StringJoiner(", ");
+        for (String columna : columnasDestino) {
+            selectCols.add(columna);
+            insertCols.add(columna);
+            placeholders.add("?");
+        }
+
+        String selectSql = "SELECT " + selectCols + " FROM " + tabla;
+        String insertSql = "INSERT OR IGNORE INTO " + tabla + " (" + insertCols + ") VALUES (" + placeholders + ")";
+
+        try (Statement select = origen.createStatement();
+             ResultSet rs = select.executeQuery(selectSql);
+             PreparedStatement insert = destino.prepareStatement(insertSql)) {
+            ResultSetMetaData md = rs.getMetaData();
+            int columnas = md.getColumnCount();
+            while (rs.next()) {
+                for (int i = 1; i <= columnas; i++) {
+                    insert.setObject(i, rs.getObject(i));
+                }
+                insert.executeUpdate();
+            }
+        }
+    }
+
+    private static boolean existeTabla(Connection conn, String tabla) throws SQLException {
+        DatabaseMetaData metaData = conn.getMetaData();
+        try (ResultSet rs = metaData.getTables(null, null, tabla.toUpperCase(), null)) {
+            if (rs.next()) return true;
+        }
+        try (ResultSet rs = metaData.getTables(null, null, tabla, null)) {
+            return rs.next();
+        }
+    }
+
+    private static List<String> columnasExistentes(Connection conn, String tabla, List<String> columnasDeseadas) throws SQLException {
+        List<String> existentes = new ArrayList<>();
+        for (String columna : columnasDeseadas) {
+            if (esSqlite(conn)) {
+                if (existeColumna(conn, tabla, columna)) existentes.add(columna);
+            } else if (existeColumnaJdbc(conn, tabla, columna)) {
+                existentes.add(columna);
+            }
+        }
+        return existentes;
+    }
+
+    private static boolean esSqlite(Connection conn) throws SQLException {
+        return conn.getMetaData().getURL().startsWith("jdbc:sqlite:");
+    }
+
+    private static boolean existeColumnaJdbc(Connection conn, String tabla, String columna) throws SQLException {
+        DatabaseMetaData metaData = conn.getMetaData();
+        try (ResultSet rs = metaData.getColumns(null, null, tabla.toUpperCase(), columna.toUpperCase())) {
+            if (rs.next()) return true;
+        }
+        try (ResultSet rs = metaData.getColumns(null, null, tabla, columna)) {
+            return rs.next();
+        }
+    }
+
+    private static void migrarRemisionesEnMuestras(Connection conn) throws SQLException {
+        try (Statement st = conn.createStatement()) {
+            st.execute("UPDATE muestras SET remision = (" +
+                    "SELECT 'R' || printf('%04d', r.consecutivo) " +
+                    "FROM remision_muestras rm " +
+                    "JOIN remisiones r ON r.id = rm.remisionId " +
+                    "WHERE rm.muestraId = muestras.id" +
+                    ") WHERE remision IS NULL AND EXISTS (" +
+                    "SELECT 1 FROM remision_muestras rm WHERE rm.muestraId = muestras.id" +
+                    ")");
+        }
+    }
+
+    private static void asegurarUsuarioAdmin(Connection conn) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO usuarios (nombre, rol, password) " +
+                        "SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE LOWER(nombre) = LOWER(?))")) {
+            ps.setString(1, "admin");
+            ps.setString(2, "ADMIN");
+            ps.setString(3, "admin");
+            ps.setString(4, "admin");
+            ps.executeUpdate();
+        }
     }
 
     private static void migrarEstados(Connection conn) throws SQLException {
-        conn.createStatement().execute(
-                "ALTER TABLE muestras ALTER COLUMN estado VARCHAR(40) NOT NULL;"
-        );
-        conn.createStatement().execute(
-                "ALTER TABLE movimientos ALTER COLUMN estadoAnterior VARCHAR(40);"
-        );
-        conn.createStatement().execute(
-                "ALTER TABLE movimientos ALTER COLUMN estadoNuevo VARCHAR(40);"
-        );
-
         String[][] equivalencias = {
                 {"RECIBIDA", "EN_CUSTODIA"},
                 {"EN_ALMACENAMIENTO", "ALMACENADO"},

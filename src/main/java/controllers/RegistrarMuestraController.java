@@ -11,6 +11,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import service.MuestraService;
+import utilities.ImageStorage;
 import utilities.Navegacion;
 
 import java.io.File;
@@ -50,7 +51,7 @@ public class RegistrarMuestraController {
             if (archivo.exists()) {
                 imagen = new Image(archivo.toURI().toString());
             } else {
-                // si el archivo no existe, también carga la imagen por defecto
+                // si el archivo no existe, tambiÃƒÂ©n carga la imagen por defecto
                 imagen = new Image(getClass().getResourceAsStream(IMAGEN_PRODUCTO_DEFECTO));
             }
         }
@@ -87,13 +88,18 @@ public class RegistrarMuestraController {
                 new FileChooser.ExtensionFilter("Imagenes", "*.png", "*.jpg", "*.jpeg")
         );
         File selectedFile = fileChooser.showOpenDialog(btnSubirImagen.getScene().getWindow());
-        if (selectedFile != null) {
-            rutaFotoSeleccionada = selectedFile.getAbsolutePath();
-            imgProducto.setImage(new Image(selectedFile.toURI().toString()));
-            System.out.println("Foto seleccionada: " + rutaFotoSeleccionada);
+        if (selectedFile == null) return;
+
+        try {
+            rutaFotoSeleccionada = ImageStorage.copySamplePhoto(selectedFile);
+            imgProducto.setImage(new Image(new File(rutaFotoSeleccionada).toURI().toString()));
+            System.out.println("Foto copiada a carpeta compartida: " + rutaFotoSeleccionada);
+        } catch (Exception e) {
+            txtInformativos.setText("No se pudo copiar la foto a la carpeta configurada");
+            txtInformativos.setVisible(true);
+            e.printStackTrace();
         }
     }
-
     @FXML
     void guardarMuestra(ActionEvent event) {
         if (usuario == null || !usuario.puedeControlarMuestras()) {

@@ -12,6 +12,7 @@ import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import service.MuestraService;
+import utilities.ImageStorage;
 import utilities.UsuarioSesion;
 
 import java.io.File;
@@ -91,13 +92,18 @@ public class EditarMuestraController {
         );
 
         File selectedFile = fileChooser.showOpenDialog(btnSubirImagen.getScene().getWindow());
-        if (selectedFile != null) {
-            rutaFotoSeleccionada = selectedFile.getAbsolutePath();
-            imgProducto.setImage(new Image(selectedFile.toURI().toString()));
-            System.out.println("Foto seleccionada: " + rutaFotoSeleccionada);
+        if (selectedFile == null) return;
+
+        try {
+            rutaFotoSeleccionada = ImageStorage.copySamplePhoto(selectedFile);
+            imgProducto.setImage(new Image(new File(rutaFotoSeleccionada).toURI().toString()));
+            System.out.println("Foto copiada a carpeta compartida: " + rutaFotoSeleccionada);
+        } catch (Exception e) {
+            lblMensaje.setText("No se pudo copiar la foto a la carpeta configurada");
+            lblMensaje.setVisible(true);
+            e.printStackTrace();
         }
     }
-
     /** Actualizar la muestra existente */
     @FXML
     void actualizarMuestra(ActionEvent event) {
@@ -119,7 +125,7 @@ public class EditarMuestraController {
 
         if (!esCodigoCuatroDigitosValido(txtNumeroInforme.getText())
                 || !esCodigoCuatroDigitosValido(txtNumeroCotizacion.getText())) {
-            lblMensaje.setText("Informe y cotización deben contener exactamente 4 dígitos");
+            lblMensaje.setText("Informe y cotizaciÃƒÂ³n deben contener exactamente 4 dÃƒÂ­gitos");
             lblMensaje.setVisible(true);
             return;
         }
@@ -149,9 +155,9 @@ public class EditarMuestraController {
                     return;
                 }
 
-                // Mostrar alerta de éxito
+                // Mostrar alerta de ÃƒÂ©xito
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Actualización de Muestra");
+                alert.setTitle("ActualizaciÃƒÂ³n de Muestra");
                 alert.setHeaderText(null);
                 alert.setContentText("La muestra se ha actualizado correctamente.");
                 alert.showAndWait();
@@ -160,7 +166,7 @@ public class EditarMuestraController {
                     alActualizar.run();
                 }
 
-                // Cerrar la ventana después de actualizar
+                // Cerrar la ventana despuÃƒÂ©s de actualizar
                 Stage stage = (Stage) txtDescripcion.getScene().getWindow();
                 stage.close();
 

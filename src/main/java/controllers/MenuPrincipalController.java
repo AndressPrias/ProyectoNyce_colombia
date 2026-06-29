@@ -13,6 +13,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import utilities.ImageStorage;
 import utilities.Navegacion;
 import utilities.UsuarioSesion;
 
@@ -74,19 +75,8 @@ public class MenuPrincipalController {
     }
 
     private Image cargarImagen(String rutaFoto) {
-        if (rutaFoto.startsWith("/")) {
-            URL recurso = getClass().getResource(rutaFoto);
-            if (recurso != null) {
-                return new Image(recurso.toExternalForm(), false);
-            }
-
-            File archivoRecurso = new File("src/main/resources" + rutaFoto);
-            if (archivoRecurso.exists()) {
-                return new Image(archivoRecurso.toURI().toString(), false);
-            }
-            return null;
-        }
-        return new Image(new File(rutaFoto).toURI().toString(), false);
+        String url = ImageStorage.resolveImageUrl(rutaFoto);
+        return url == null || url.isBlank() ? null : new Image(url, false);
     }
 
     private void actualizarFechaHora() {

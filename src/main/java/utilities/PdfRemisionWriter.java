@@ -25,10 +25,10 @@ public final class PdfRemisionWriter {
     private PdfRemisionWriter() {}
 
     public static Path guardarDosCopias(WritableImage imagen, String codigoRemision) throws IOException {
-        if (imagen == null) throw new IllegalArgumentException("La imagen de la remisión es obligatoria");
+        if (imagen == null) throw new IllegalArgumentException("La imagen de la remisiÃ³n es obligatoria");
         String codigoSeguro = codigoRemision == null ? "remision"
                 : codigoRemision.replaceAll("[^A-Za-z0-9_-]", "");
-        Path carpeta = Path.of("").toAbsolutePath().resolve("remisiones");
+        Path carpeta = AppConfig.getRemissionsFolder();
         Files.createDirectories(carpeta);
         Path destino = carpeta.resolve(codigoSeguro + ".pdf");
         Path temporal = carpeta.resolve(codigoSeguro + ".pdf.tmp");
@@ -65,7 +65,7 @@ public final class PdfRemisionWriter {
         byte[] streamContenido = contenido.getBytes(StandardCharsets.US_ASCII);
 
         ByteArrayOutputStream pdf = new ByteArrayOutputStream();
-        escribir(pdf, "%PDF-1.4\n%âãÏÓ\n");
+        escribir(pdf, "%PDF-1.4\n%Ã¢Ã£ÃÃ“\n");
         List<Integer> offsets = new ArrayList<>();
         offsets.add(0);
         escribirObjeto(pdf, offsets, 1, "<< /Type /Catalog /Pages 2 0 R >>");
