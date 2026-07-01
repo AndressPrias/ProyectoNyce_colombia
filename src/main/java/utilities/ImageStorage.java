@@ -15,6 +15,8 @@ import java.util.UUID;
 public final class ImageStorage {
 
     private static final DateTimeFormatter TIMESTAMP = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+    private static final String SAMPLE_PHOTOS_PREFIX = "fotos_muestras/";
+    private static final String USER_AVATARS_PREFIX = "avatar_usuarios/";
 
     private ImageStorage() {}
 
@@ -32,29 +34,50 @@ public final class ImageStorage {
         }
 
         String path = storedPath.trim();
-        if (path.startsWith("file:") || path.startsWith("http://") || path.startsWith("https://")) {
+        if (path.startsWith("http://") || path.startsWith("https://")) {
             return path;
+        }
+
+        if (path.startsWith("file:")) {
+            File file = resolveImageFile(path);
+            return file == null ? null : file.toURI().toString();
+        }
+
+        if (path.startsWith(SAMPLE_PHOTOS_PREFIX)) {
+            return resolveSharedFileUrl(AppConfig.getSamplePhotosFolder(), path.substring(SAMPLE_PHOTOS_PREFIX.length()));
+        }
+
+        if (path.startsWith(USER_AVATARS_PREFIX)) {
+            return resolveSharedFileUrl(AppConfig.getUserAvatarsFolder(), path.substring(USER_AVATARS_PREFIX.length()));
         }
 
         if (path.startsWith("/avatarUsuarios/") || path.startsWith("/avatar_usuarios/")) {
             String fileName = path.substring(path.lastIndexOf('/') + 1);
-            Path sharedAvatar = AppConfig.getUserAvatarsFolder().resolve(fileName).toAbsolutePath().normalize();
-            if (Files.exists(sharedAvatar)) {
-                return sharedAvatar.toUri().toString();
-            }
+            String sharedAvatarUrl = resolveSharedFileUrl(AppConfig.getUserAvatarsFolder(), fileName);
+            if (sharedAvatarUrl != null) return sharedAvatarUrl;
             URL resource = ImageStorage.class.getResource(path);
             return resource == null ? null : resource.toExternalForm();
         }
 
         if (!path.contains(File.separator) && !path.contains("/") && !path.contains("\\")) {
-            Path sharedAvatar = AppConfig.getUserAvatarsFolder().resolve(path).toAbsolutePath().normalize();
-            if (Files.exists(sharedAvatar)) {
-                return sharedAvatar.toUri().toString();
-            }
+            String sharedAvatarUrl = resolveSharedFileUrl(AppConfig.getUserAvatarsFolder(), path);
+            if (sharedAvatarUrl != null) return sharedAvatarUrl;
+            String sharedSampleUrl = resolveSharedFileUrl(AppConfig.getSamplePhotosFolder(), path);
+            if (sharedSampleUrl != null) return sharedSampleUrl;
         }
 
         File file = new File(path);
-        return file.exists() ? file.toURI().toString() : null;
+        if (file.exists()) {
+            return file.toURI().toString();
+        }
+
+        String fileName = file.getName();
+        if (fileName == null || fileName.isBlank()) {
+            return null;
+        }
+        String sharedSampleUrl = resolveSharedFileUrl(AppConfig.getSamplePhotosFolder(), fileName);
+        if (sharedSampleUrl != null) return sharedSampleUrl;
+        return resolveSharedFileUrl(AppConfig.getUserAvatarsFolder(), fileName);
     }
 
 
@@ -64,29 +87,40 @@ public final class ImageStorage {
         }
 
         String path = storedPath.trim();
+        if (path.startsWith(SAMPLE_PHOTOS_PREFIX)) {
+            return resolveSharedFile(AppConfig.getSamplePhotosFolder(), path.substring(SAMPLE_PHOTOS_PREFIX.length()));
+        }
+
+        if (path.startsWith(USER_AVATARS_PREFIX)) {
+            return resolveSharedFile(AppConfig.getUserAvatarsFolder(), path.substring(USER_AVATARS_PREFIX.length()));
+        }
+
         if (path.startsWith("/avatarUsuarios/") || path.startsWith("/avatar_usuarios/")) {
             String fileName = path.substring(path.lastIndexOf('/') + 1);
-            Path sharedAvatar = AppConfig.getUserAvatarsFolder().resolve(fileName).toAbsolutePath().normalize();
-            return Files.exists(sharedAvatar) ? sharedAvatar.toFile() : null;
+            return resolveSharedFile(AppConfig.getUserAvatarsFolder(), fileName);
         }
 
         if (!path.startsWith("file:") && !path.startsWith("http://") && !path.startsWith("https://")
                 && !path.contains(File.separator) && !path.contains("/") && !path.contains("\\")) {
-            Path sharedAvatar = AppConfig.getUserAvatarsFolder().resolve(path).toAbsolutePath().normalize();
-            return Files.exists(sharedAvatar) ? sharedAvatar.toFile() : null;
+            File sharedAvatar = resolveSharedFile(AppConfig.getUserAvatarsFolder(), path);
+            if (sharedAvatar != null) return sharedAvatar;
+            return resolveSharedFile(AppConfig.getSamplePhotosFolder(), path);
         }
 
         if (path.startsWith("file:")) {
             try {
                 File file = new File(java.net.URI.create(path));
-                return file.exists() ? file : null;
+                if (file.exists()) {
+                    return file;
+                }
+                return resolveSharedFileByName(file.getName());
             } catch (Exception ignored) {
                 return null;
             }
         }
 
         File file = new File(path);
-        return file.exists() ? file : null;
+        return file.exists() ? file : resolveSharedFileByName(file.getName());
     }
 
     public static File getUserAvatarsInitialDirectory(String currentAvatarPath) {
@@ -136,7 +170,37 @@ public final class ImageStorage {
         Path destination = destinationFolder.resolve(fileName).toAbsolutePath().normalize();
 
         Files.copy(sourceFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
-        return destination.toString();
+        return storedRelativePath(destinationFolder, destination);
+    }
+
+    private static String storedRelativePath(Path destinationFolder, Path destination) {
+        Path folder = destinationFolder.toAbsolutePath().normalize();
+        String fileName = destination.getFileName().toString();
+        if (folder.equals(AppConfig.getSamplePhotosFolder().toAbsolutePath().normalize())) {
+            return SAMPLE_PHOTOS_PREFIX + fileName;
+        }
+        if (folder.equals(AppConfig.getUserAvatarsFolder().toAbsolutePath().normalize())) {
+            return USER_AVATARS_PREFIX + fileName;
+        }
+        return fileName;
+    }
+
+    private static String resolveSharedFileUrl(Path folder, String fileName) {
+        File file = resolveSharedFile(folder, fileName);
+        return file == null ? null : file.toURI().toString();
+    }
+
+    private static File resolveSharedFile(Path folder, String fileName) {
+        if (fileName == null || fileName.isBlank()) {
+            return null;
+        }
+        Path sharedFile = folder.resolve(fileName).toAbsolutePath().normalize();
+        return Files.exists(sharedFile) ? sharedFile.toFile() : null;
+    }
+
+    private static File resolveSharedFileByName(String fileName) {
+        File sharedSample = resolveSharedFile(AppConfig.getSamplePhotosFolder(), fileName);
+        return sharedSample != null ? sharedSample : resolveSharedFile(AppConfig.getUserAvatarsFolder(), fileName);
     }
 
     private static String getExtension(String fileName) {

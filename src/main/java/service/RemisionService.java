@@ -56,11 +56,19 @@ public class RemisionService {
 
     public int siguienteConsecutivo() {
         try (Connection conn = Database.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT COALESCE(MAX(consecutivo), 0) + 1 FROM remisiones");
+             PreparedStatement ps = conn.prepareStatement(sqlSiguienteConsecutivo());
              ResultSet rs = ps.executeQuery()) {
-            return rs.next() ? rs.getInt(1) : 1;
+            return rs.next() ? rs.getInt(1) + 1 : 1;
         } catch (SQLException e) {
             throw new IllegalStateException("No se pudo calcular el consecutivo de la remisión", e);
+        }
+    }
+
+    public boolean consecutivoDisponible(int consecutivo) {
+        try (Connection conn = Database.getConnection()) {
+            return consecutivoDisponible(conn, consecutivo);
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo validar el consecutivo de la remisiÃ³n", e);
         }
     }
 
@@ -68,6 +76,14 @@ public class RemisionService {
                                  int numeroEmpaques, String observacionFinal, Usuario entregadoPor,
                                  String recibidoFirma, String recibidoCedula, String recibidoNombrePlaca,
                                  List<Muestra> muestras) {
+        return registrarRemision(fechaElaboracion, cliente, tipoSalida, numeroEmpaques, observacionFinal,
+                entregadoPor, recibidoFirma, recibidoCedula, recibidoNombrePlaca, muestras, null);
+    }
+
+    public int registrarRemision(LocalDate fechaElaboracion, String cliente, String tipoSalida,
+                                 int numeroEmpaques, String observacionFinal, Usuario entregadoPor,
+                                 String recibidoFirma, String recibidoCedula, String recibidoNombrePlaca,
+                                 List<Muestra> muestras, Integer consecutivoSolicitado) {
         if (entregadoPor == null || !entregadoPor.puedeControlarMuestras()) {
             throw new IllegalArgumentException("No tiene permiso para generar remisiones");
         }
@@ -78,7 +94,13 @@ public class RemisionService {
         try (Connection conn = Database.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                int consecutivo = siguienteConsecutivo(conn);
+                int consecutivo = consecutivoSolicitado == null ? siguienteConsecutivo(conn) : consecutivoSolicitado;
+                if (consecutivo < 1) {
+                    throw new IllegalArgumentException("El consecutivo debe ser mayor a cero");
+                }
+                if (!consecutivoDisponible(conn, consecutivo)) {
+                    throw new IllegalArgumentException("La remisiÃ³n R" + String.format("%04d", consecutivo) + " ya existe");
+                }
                 int remisionId = insertarRemision(conn, consecutivo, fechaElaboracion, cliente, tipoSalida,
                         numeroEmpaques, observacionFinal, entregadoPor, recibidoFirma,
                         recibidoCedula, recibidoNombrePlaca);
@@ -119,9 +141,31 @@ public class RemisionService {
     }
 
     private int siguienteConsecutivo(Connection conn) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COALESCE(MAX(consecutivo), 0) + 1 FROM remisiones");
+        try (PreparedStatement ps = conn.prepareStatement(sqlSiguienteConsecutivo());
              ResultSet rs = ps.executeQuery()) {
-            return rs.next() ? rs.getInt(1) : 1;
+            return rs.next() ? rs.getInt(1) + 1 : 1;
+        }
+    }
+
+    private String sqlSiguienteConsecutivo() {
+        return "SELECT MAX(valor) FROM (" +
+                "SELECT COALESCE(MAX(consecutivo), 0) AS valor FROM remisiones " +
+                "UNION ALL " +
+                "SELECT COALESCE(MAX(CAST(SUBSTR(remision, 2) AS INTEGER)), 0) AS valor " +
+                "FROM muestras WHERE remision GLOB 'R[0-9][0-9][0-9][0-9]*'" +
+                ")";
+    }
+
+    private boolean consecutivoDisponible(Connection conn, int consecutivo) throws SQLException {
+        String codigo = String.format("R%04d", consecutivo);
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT 1 FROM remisiones WHERE consecutivo=? " +
+                        "UNION ALL SELECT 1 FROM muestras WHERE remision=? LIMIT 1")) {
+            ps.setInt(1, consecutivo);
+            ps.setString(2, codigo);
+            try (ResultSet rs = ps.executeQuery()) {
+                return !rs.next();
+            }
         }
     }
 

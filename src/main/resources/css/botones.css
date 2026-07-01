@@ -240,3 +240,57 @@
 .btn-ready:hover {
     -fx-background-color: #318a5e;
 }
+
+.btn-primary-detail {
+    -fx-background-color: #008C84;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 18;
+    -fx-cursor: hand;
+    -fx-padding: 7 16 7 16;
+    -fx-alignment: CENTER;
+    -fx-content-display: LEFT;
+    -fx-graphic-text-gap: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 3);
+}
+
+.btn-primary-detail:hover {
+    -fx-background-color: #00A195;
+}
+
+.btn-danger-detail {
+    -fx-background-color: #E53935;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 18;
+    -fx-cursor: hand;
+    -fx-padding: 7 16 7 16;
+    -fx-alignment: CENTER;
+    -fx-content-display: LEFT;
+    -fx-graphic-text-gap: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 3);
+}
+
+.btn-danger-detail:hover {
+    -fx-background-color: #F44336;
+}
+
+.btn-ready-detail {
+    -fx-background-color: #26734d;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 18;
+    -fx-cursor: hand;
+    -fx-padding: 7 16 7 16;
+    -fx-alignment: CENTER;
+    -fx-content-display: LEFT;
+    -fx-graphic-text-gap: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 3);
+}
+
+.btn-ready-detail:hover {
+    -fx-background-color: #318a5e;
+}

@@ -9,13 +9,18 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import service.MuestraService;
 import utilities.ImageStorage;
 import utilities.UsuarioSesion;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.function.UnaryOperator;
 
@@ -51,6 +56,7 @@ public class EditarMuestraController {
                 cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null;
         txtNumeroInforme.setTextFormatter(new TextFormatter<>(filtroCuatroDigitos));
         txtNumeroCotizacion.setTextFormatter(new TextFormatter<>(filtroCuatroDigitos));
+        configurarArrastreImagen();
     }
 
     /** Establecer la muestra que se va a editar */
@@ -72,9 +78,9 @@ public class EditarMuestraController {
             rutaFotoSeleccionada = muestra.getRutaFoto();
 
             if (rutaFotoSeleccionada != null && !rutaFotoSeleccionada.isEmpty()) {
-                File archivo = new File(rutaFotoSeleccionada);
-                if (archivo.exists()) {
-                    imgProducto.setImage(new Image(archivo.toURI().toString()));
+                String url = ImageStorage.resolveImageUrl(rutaFotoSeleccionada);
+                if (url != null) {
+                    imgProducto.setImage(new Image(url));
                 }
             }
         }
@@ -94,16 +100,81 @@ public class EditarMuestraController {
         File selectedFile = fileChooser.showOpenDialog(btnSubirImagen.getScene().getWindow());
         if (selectedFile == null) return;
 
+        cargarImagenDesdeArchivo(selectedFile);
+    }
+
+    private void configurarArrastreImagen() {
+        imgProducto.setOnDragOver(evento -> {
+            Dragboard dragboard = evento.getDragboard();
+            if (dragboard.hasFiles() || dragboard.hasImage()) {
+                evento.acceptTransferModes(TransferMode.COPY);
+            }
+            evento.consume();
+        });
+
+        imgProducto.setOnDragDropped(evento -> {
+            Dragboard dragboard = evento.getDragboard();
+            boolean cargada = false;
+
+            if (dragboard.hasFiles() && !dragboard.getFiles().isEmpty()) {
+                cargada = cargarImagenDesdeArchivo(dragboard.getFiles().get(0));
+            } else if (dragboard.hasImage()) {
+                cargada = cargarImagenDesdeDragboard(dragboard);
+            }
+
+            evento.setDropCompleted(cargada);
+            evento.consume();
+        });
+    }
+
+    private boolean cargarImagenDesdeArchivo(File archivo) {
+        if (archivo == null) return false;
+
         try {
-            rutaFotoSeleccionada = ImageStorage.copySamplePhoto(selectedFile);
-            imgProducto.setImage(new Image(new File(rutaFotoSeleccionada).toURI().toString()));
+            rutaFotoSeleccionada = ImageStorage.copySamplePhoto(archivo);
+            String url = ImageStorage.resolveImageUrl(rutaFotoSeleccionada);
+            imgProducto.setImage(url == null ? null : new Image(url));
             System.out.println("Foto copiada a carpeta compartida: " + rutaFotoSeleccionada);
+            lblMensaje.setVisible(false);
+            return true;
         } catch (Exception e) {
             lblMensaje.setText("No se pudo copiar la foto a la carpeta configurada");
             lblMensaje.setVisible(true);
             e.printStackTrace();
+            return false;
         }
     }
+
+    private boolean cargarImagenDesdeDragboard(Dragboard dragboard) {
+        File temporal = null;
+        try {
+            temporal = File.createTempFile("muestra_arrastrada_", ".png");
+            guardarImagenPng(dragboard.getImage(), temporal);
+            return cargarImagenDesdeArchivo(temporal);
+        } catch (Exception e) {
+            lblMensaje.setText("No se pudo cargar la imagen arrastrada");
+            lblMensaje.setVisible(true);
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (temporal != null && temporal.exists()) {
+                temporal.delete();
+            }
+        }
+    }
+
+    private void guardarImagenPng(Image imagen, File destino) throws IOException {
+        int ancho = (int) imagen.getWidth();
+        int alto = (int) imagen.getHeight();
+        BufferedImage salida = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < alto; y++) {
+            for (int x = 0; x < ancho; x++) {
+                salida.setRGB(x, y, imagen.getPixelReader().getArgb(x, y));
+            }
+        }
+        ImageIO.write(salida, "png", destino);
+    }
+
     /** Actualizar la muestra existente */
     @FXML
     void actualizarMuestra(ActionEvent event) {

@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -17,138 +14,115 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="1006.0" prefWidth="1322.0" spacing="18.0" style="-fx-background-color: #EEF2F2; -fx-padding: 20;" stylesheets="@css/dashboard.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BuscarMuestrasController">
+<VBox prefHeight="1006.0" prefWidth="1322.0" spacing="8.0" style="-fx-background-color: #EEF2F2; -fx-padding: 10 14 14 14;" stylesheets="@css/dashboard.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BuscarMuestrasController">
     <children>
-        <VBox spacing="4.0">
-            <Text fill="#0a4d4a" style="-fx-font-size: 24; -fx-font-weight: bold;" text="Buscar y gestionar muestras" />
-            <Text style="-fx-font-size: 14;" text="Consulte y visualice las muestras registradas en el sistema." />
+        <VBox spacing="1.0">
+            <Text fill="#0a4d4a" style="-fx-font-size: 21; -fx-font-weight: bold;" text="Buscar y gestionar muestras" />
+            <Text style="-fx-font-size: 12;" text="Consulte y visualice las muestras registradas en el sistema." />
         </VBox>
 
-        <VBox spacing="8.0" style="-fx-background-color: #ffffff; -fx-padding: 14; -fx-background-radius: 5;">
-            <Label style="-fx-font-weight: bold;" text="Búsqueda general" textFill="#0a4d4a" />
+        <VBox spacing="6.0" style="-fx-background-color: #ffffff; -fx-padding: 8 10 8 10; -fx-background-radius: 5;">
             <HBox alignment="CENTER_LEFT" spacing="8.0">
                 <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                     <image><Image url="@icons/filtrar.png" /></image>
                 </ImageView>
-                <TextField fx:id="txtBusquedaGeneral" maxWidth="1.7976931348623157E308" onAction="#buscarMuestras" promptText="Buscar por código, descripción, cliente, marca, referencia, estado, ubicación, fecha o cualquier valor..." styleClass="text-field" stylesheets="@css/login.css" HBox.hgrow="ALWAYS" />
+                <TextField fx:id="txtBusquedaGeneral" maxWidth="1.7976931348623157E308" onAction="#buscarMuestras" promptText="Buscar por codigo, descripcion, cliente, marca, referencia, estado, ubicacion, fecha o cualquier valor..." styleClass="text-field" stylesheets="@css/login.css" HBox.hgrow="ALWAYS" />
             </HBox>
         </VBox>
 
-        <HBox spacing="18.0" VBox.vgrow="ALWAYS">
-            <TableView fx:id="tblResultados" minWidth="620.0" HBox.hgrow="ALWAYS">
+        <VBox spacing="8.0" VBox.vgrow="ALWAYS">
+            <HBox fx:id="vboxVistaMuestra" alignment="TOP_LEFT" spacing="12.0" styleClass="detail-panel">
+                <StackPane minHeight="160.0" minWidth="220.0" prefHeight="160.0" prefWidth="220.0" styleClass="detail-image-frame">
+                    <ImageView fx:id="imgDetalle" fitHeight="150.0" fitWidth="211.0" preserveRatio="true" smooth="true" />
+                </StackPane>
+
+                <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="8.0">
+                        <Label minWidth="140.0" style="-fx-font-size: 16; -fx-font-weight: bold;" text="Detalle de la muestra" textFill="#0a4d4a" />
+                        <VBox spacing="2.0" styleClass="detail-highlight-status" HBox.hgrow="ALWAYS">
+                            <Label styleClass="detail-highlight-title" text="ESTADO ACTUAL" />
+                            <Label fx:id="lblDetalleEstado" maxWidth="1.7976931348623157E308" styleClass="detail-highlight-value-status" wrapText="true" />
+                        </VBox>
+                        <VBox spacing="2.0" styleClass="detail-highlight-location" HBox.hgrow="ALWAYS">
+                            <Label fx:id="lblTituloDetalleUbicacion" styleClass="detail-highlight-title" text="UBICACION" />
+                            <Label fx:id="lblDetalleUbicacion" maxWidth="1.7976931348623157E308" styleClass="detail-highlight-value-location" wrapText="true" />
+                        </VBox>
+                    </HBox>
+
+                    <GridPane hgap="8.0" vgap="4.0">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="9.0" />
+                            <ColumnConstraints percentWidth="18.0" />
+                            <ColumnConstraints percentWidth="10.0" />
+                            <ColumnConstraints percentWidth="19.0" />
+                            <ColumnConstraints percentWidth="10.0" />
+                            <ColumnConstraints percentWidth="16.0" />
+                            <ColumnConstraints percentWidth="9.0" />
+                            <ColumnConstraints percentWidth="9.0" />
+                        </columnConstraints>
+                        <children>
+                            <Label styleClass="detail-label" text="ID" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <Label fx:id="lblDetalleCodigoInterno" styleClass="detail-value-strong" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <Label styleClass="detail-label" text="Fecha" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                            <Label fx:id="lblDetalleFecha" styleClass="detail-value" wrapText="true" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                            <Label styleClass="detail-label" text="Cliente" GridPane.columnIndex="4" GridPane.rowIndex="0" />
+                            <Label fx:id="lblDetalleCliente" styleClass="detail-value" wrapText="true" GridPane.columnIndex="5" GridPane.rowIndex="0" />
+                            <Label styleClass="detail-label" text="Marca" GridPane.columnIndex="6" GridPane.rowIndex="0" />
+                            <Label fx:id="lblDetalleMarca" styleClass="detail-value" wrapText="true" GridPane.columnIndex="7" GridPane.rowIndex="0" />
+
+                            <Label styleClass="detail-label" text="Tecnico" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Label fx:id="lblDetalleTecnico" styleClass="detail-value" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Label styleClass="detail-label" text="Responsable" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                            <Label fx:id="lblDetalleResponsable" styleClass="detail-value" wrapText="true" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                            <Label styleClass="detail-label" text="Informe" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+                            <Label fx:id="lblDetalleInforme" styleClass="detail-value" wrapText="true" GridPane.columnIndex="5" GridPane.rowIndex="1" />
+                            <Label styleClass="detail-label" text="Cotizacion" GridPane.columnIndex="6" GridPane.rowIndex="1" />
+                            <Label fx:id="lblDetalleCotizacion" styleClass="detail-value" wrapText="true" GridPane.columnIndex="7" GridPane.rowIndex="1" />
+
+                            <Label styleClass="detail-label" text="Descripcion" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <Label fx:id="lblDetalleDescripcion" maxWidth="1.7976931348623157E308" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="2" />
+                            <Label styleClass="detail-label" text="Observaciones" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                            <Label fx:id="lblDetalleObservaciones" maxWidth="1.7976931348623157E308" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="3" />
+                        </children>
+                    </GridPane>
+                </VBox>
+
+                <VBox minWidth="220.0" prefWidth="220.0" spacing="6.0">
+                    <Button fx:id="btnFinalizarEnsayos" managed="false" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#finalizarEnsayos" styleClass="btn-ready-detail" stylesheets="@css/botones.css" text="Finalizar ensayos" visible="false">
+                        <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconMuestraWhite.png" /></image></ImageView></graphic>
+                    </Button>
+                    <Button fx:id="btnEditarInformacion" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#editarInformacion" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Editar informacion">
+                        <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/lapiz.png" /></image></ImageView></graphic>
+                    </Button>
+                    <Button fx:id="btnAsignarTecnico" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#asignarTecnico" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Asignar tecnico">
+                        <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconRegistraUsuarioWhite.png" /></image></ImageView></graphic>
+                    </Button>
+                    <Button fx:id="btnAlmacenarMuestra" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#almacenarMuestra" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Almacenar">
+                        <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconMuestraWhite.png" /></image></ImageView></graphic>
+                    </Button>
+                    <Button fx:id="btnEliminarMuestra" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#eliminarMuestra" styleClass="btn-danger-detail" stylesheets="@css/botones.css" text="Eliminar">
+                        <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/basura.png" /></image></ImageView></graphic>
+                    </Button>
+                </VBox>
+            </HBox>
+
+            <TableView fx:id="tblResultados" minHeight="520.0" styleClass="samples-table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="colCodigoInterno" prefWidth="110.0" text="ID" />
-                    <TableColumn fx:id="colDescripcion" prefWidth="200.0" text="Descripción" />
-                    <TableColumn fx:id="colRotulo" prefWidth="110.0" text="Rótulo cliente" />
-                    <TableColumn fx:id="colCliente" prefWidth="140.0" text="Cliente" />
-                    <TableColumn fx:id="colMarca" prefWidth="100.0" text="Marca" />
-                    <TableColumn fx:id="colReferencia" prefWidth="110.0" text="Referencia" />
-                    <TableColumn fx:id="colEstado" prefWidth="125.0" text="Estado" />
-                    <TableColumn fx:id="colFecha" prefWidth="125.0" text="Fecha de recepción" />
-                    <TableColumn fx:id="colUbicacion" prefWidth="110.0" text="Ubicación" />
-                    <TableColumn fx:id="colTecnico" prefWidth="120.0" text="Técnico" />
-                    <TableColumn fx:id="colRemision" prefWidth="100.0" text="Remisión" />
+                    <TableColumn fx:id="colCodigoInterno" prefWidth="45.0" text="ID" />
+                    <TableColumn fx:id="colDescripcion" prefWidth="115.0" text="Descripcion" />
+                    <TableColumn fx:id="colRotulo" prefWidth="115.0" text="Rotulo cliente" />
+                    <TableColumn fx:id="colCliente" prefWidth="75.0" text="Cliente" />
+                    <TableColumn fx:id="colMarca" prefWidth="70.0" text="Marca" />
+                    <TableColumn fx:id="colReferencia" prefWidth="95.0" text="Referencia" />
+                    <TableColumn fx:id="colEstado" prefWidth="75.0" text="Estado" />
+                    <TableColumn fx:id="colFecha" prefWidth="130.0" text="Fecha de recepcion" />
+                    <TableColumn fx:id="colUbicacion" prefWidth="90.0" text="Ubicacion" />
+                    <TableColumn fx:id="colTecnico" prefWidth="75.0" text="Tecnico" />
+                    <TableColumn fx:id="colInforme" prefWidth="75.0" text="Informe" />
+                    <TableColumn fx:id="colCotizacion" prefWidth="90.0" text="Cotizacion" />
+                    <TableColumn fx:id="colRemision" prefWidth="85.0" text="Remision" />
                 </columns>
             </TableView>
-
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" minWidth="470.0" prefWidth="485.0">
-                <content>
-                    <VBox fx:id="vboxVistaMuestra" spacing="14.0" styleClass="detail-panel">
-                        <Label style="-fx-font-size: 18; -fx-font-weight: bold;" text="Detalle de la muestra" textFill="#0a4d4a" />
-
-                        <HBox spacing="10.0">
-                            <VBox spacing="3.0" styleClass="detail-highlight-status" HBox.hgrow="ALWAYS">
-                                <Label styleClass="detail-highlight-title" text="ESTADO ACTUAL" />
-                                <Label fx:id="lblDetalleEstado" maxWidth="1.7976931348623157E308" styleClass="detail-highlight-value-status" wrapText="true" />
-                            </VBox>
-                            <VBox spacing="3.0" styleClass="detail-highlight-location" HBox.hgrow="ALWAYS">
-                                <Label fx:id="lblTituloDetalleUbicacion" styleClass="detail-highlight-title" text="UBICACIÓN" />
-                                <Label fx:id="lblDetalleUbicacion" maxWidth="1.7976931348623157E308" styleClass="detail-highlight-value-location" wrapText="true" />
-                            </VBox>
-                        </HBox>
-
-                        <Button fx:id="btnFinalizarEnsayos" managed="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#finalizarEnsayos" styleClass="btn-ready" stylesheets="@css/botones.css" text="Finalizar ensayos" visible="false">
-                            <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconMuestraWhite.png" /></image></ImageView></graphic>
-                        </Button>
-
-                        <HBox alignment="TOP_LEFT" spacing="16.0">
-                            <StackPane minHeight="225.0" minWidth="225.0" prefHeight="225.0" prefWidth="225.0" styleClass="detail-image-frame">
-                                <ImageView fx:id="imgDetalle" fitHeight="213.0" fitWidth="213.0" preserveRatio="true" smooth="true" />
-                            </StackPane>
-
-                            <GridPane hgap="8.0" vgap="8.0" HBox.hgrow="ALWAYS">
-                                <columnConstraints>
-                                    <ColumnConstraints minWidth="64.0" percentWidth="36.0" />
-                                    <ColumnConstraints percentWidth="64.0" />
-                                </columnConstraints>
-                                <children>
-                                    <Label styleClass="detail-label" text="ID" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                    <Label fx:id="lblDetalleCodigoInterno" styleClass="detail-value-strong" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                                    <Label styleClass="detail-label" text="Fecha" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                    <Label fx:id="lblDetalleFecha" styleClass="detail-value" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                    <Label styleClass="detail-label" text="Técnico" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                                    <Label fx:id="lblDetalleTecnico" styleClass="detail-value" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                    <Label styleClass="detail-label" text="Responsable" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                                    <Label fx:id="lblDetalleResponsable" styleClass="detail-value" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                </children>
-                            </GridPane>
-                        </HBox>
-
-                        <Separator />
-
-                        <GridPane hgap="10.0" vgap="9.0">
-                            <columnConstraints>
-                                <ColumnConstraints percentWidth="18.0" />
-                                <ColumnConstraints percentWidth="32.0" />
-                                <ColumnConstraints percentWidth="18.0" />
-                                <ColumnConstraints percentWidth="32.0" />
-                            </columnConstraints>
-                            <children>
-                                <Label styleClass="detail-label" text="Cliente" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                <Label fx:id="lblDetalleCliente" styleClass="detail-value" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                                <Label styleClass="detail-label" text="Marca" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                                <Label fx:id="lblDetalleMarca" styleClass="detail-value" wrapText="true" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-
-                                <Label styleClass="detail-label" text="Informe" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                <Label fx:id="lblDetalleInforme" styleClass="detail-value" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                <Label styleClass="detail-label" text="Cotización" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                                <Label fx:id="lblDetalleCotizacion" styleClass="detail-value" wrapText="true" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                            </children>
-                        </GridPane>
-
-                        <VBox spacing="4.0">
-                            <Label styleClass="detail-label" text="Descripción" />
-                            <Label fx:id="lblDetalleDescripcion" maxWidth="1.7976931348623157E308" styleClass="detail-text-block" wrapText="true" />
-                        </VBox>
-
-                        <VBox spacing="4.0">
-                            <Label styleClass="detail-label" text="Observaciones de almacenamiento" />
-                            <Label fx:id="lblDetalleObservaciones" maxWidth="1.7976931348623157E308" styleClass="detail-text-block" wrapText="true" />
-                        </VBox>
-
-                        <GridPane hgap="10.0" vgap="10.0">
-                            <columnConstraints>
-                                <ColumnConstraints percentWidth="50.0" />
-                                <ColumnConstraints percentWidth="50.0" />
-                            </columnConstraints>
-                            <children>
-                                <Button fx:id="btnEditarInformacion" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#editarInformacion" styleClass="btn-primary" stylesheets="@css/botones.css" text="Editar información" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                                    <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/lapiz.png" /></image></ImageView></graphic>
-                                </Button>
-                                <Button fx:id="btnAsignarTecnico" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#asignarTecnico" styleClass="btn-primary" stylesheets="@css/botones.css" text="Asignar técnico" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                                    <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconRegistraUsuarioWhite.png" /></image></ImageView></graphic>
-                                </Button>
-                                <Button fx:id="btnAlmacenarMuestra" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#almacenarMuestra" styleClass="btn-primary" stylesheets="@css/botones.css" text="Almacenar muestra" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                                    <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconMuestraWhite.png" /></image></ImageView></graphic>
-                                </Button>
-                                <Button fx:id="btnEliminarMuestra" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#eliminarMuestra" styleClass="btn-danger" stylesheets="@css/botones.css" text="Eliminar muestra" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                    <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/basura.png" /></image></ImageView></graphic>
-                                </Button>
-                            </children>
-                        </GridPane>
-                    </VBox>
-                </content>
-            </ScrollPane>
-        </HBox>
+        </VBox>
     </children>
 </VBox>

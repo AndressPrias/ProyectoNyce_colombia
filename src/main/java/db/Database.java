@@ -1,24 +1,16 @@
 package db;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import utilities.AppConfig;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
 
 public class Database {
-
-    private static final String LEGACY_DB_FOLDER = "./data";
 
     public static Connection getConnection() throws SQLException {
         try {
@@ -48,7 +40,6 @@ public class Database {
         try (Connection conn = getConnection()) {
             crearTablas(conn);
             migrarColumnas(conn);
-            migrarDesdeH2SiAplica(conn);
             migrarRemisionesEnMuestras(conn);
             migrarEstados(conn);
             asegurarUsuarioAdmin(conn);
@@ -180,143 +171,6 @@ public class Database {
             }
         }
         return false;
-    }
-
-    private static void migrarDesdeH2SiAplica(Connection sqliteConn) {
-        File h2File = resolveLegacyH2File();
-        if (!h2File.exists()) return;
-        if (!tablaVacia(sqliteConn, "usuarios") || !tablaVacia(sqliteConn, "muestras")) return;
-
-        try {
-            Class.forName("org.h2.Driver");
-        } catch (ClassNotFoundException e) {
-            System.err.println("Existe una base H2 anterior, pero no est\u00e1 disponible el driver H2 para migrarla.");
-            return;
-        }
-
-        boolean autoCommitOriginal = true;
-        try (Connection h2Conn = DriverManager.getConnection(resolveLegacyH2JdbcUrl(h2File), "sa", "")) {
-            autoCommitOriginal = sqliteConn.getAutoCommit();
-            sqliteConn.setAutoCommit(false);
-
-            copiarTabla(h2Conn, sqliteConn, "usuarios", List.of(
-                    "id", "nombre", "rol", "password", "rutaFoto", "controlMuestras", "controlTotal"));
-            copiarTabla(h2Conn, sqliteConn, "muestras", List.of(
-                    "id", "codigoInterno", "rotuloCliente", "nombreCliente", "descripcion", "marca", "referencia",
-                    "estado", "ubicacion", "observacionAlmacenamiento", "custodioId", "tecnicoId", "responsableId",
-                    "fechaRecepcion", "rutaFoto", "numeroInforme", "numeroCotizacion", "remision"));
-            copiarTabla(h2Conn, sqliteConn, "movimientos", List.of(
-                    "id", "muestraId", "usuarioId", "estadoAnterior", "estadoNuevo", "ubicacionAnterior",
-                    "ubicacionNueva", "fechaHora", "observacion"));
-            copiarTabla(h2Conn, sqliteConn, "remisiones", List.of(
-                    "id", "consecutivo", "fechaElaboracion", "cliente", "tipoSalida", "numeroEmpaques",
-                    "observacionFinal", "entregadoPorId", "recibidoFirma", "recibidoCedula",
-                    "recibidoNombrePlaca", "rutaArchivo", "fechaCreacion"));
-            copiarTabla(h2Conn, sqliteConn, "remision_muestras", List.of(
-                    "remisionId", "muestraId", "fechaEntrega", "observaciones"));
-
-            sqliteConn.commit();
-            System.out.println("Migraci\u00f3n desde H2 a SQLite completada.");
-        } catch (Exception e) {
-            try { sqliteConn.rollback(); } catch (SQLException ignored) {}
-            System.err.println("No se pudo migrar la base H2 a SQLite: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try { sqliteConn.setAutoCommit(autoCommitOriginal); } catch (SQLException ignored) {}
-        }
-    }
-    private static File resolveLegacyH2File() {
-        Path selectedFolderH2 = AppConfig.getStorageFolder().resolve("lencdb.mv.db");
-        if (Files.exists(selectedFolderH2)) {
-            return selectedFolderH2.toFile();
-        }
-        return new File(LEGACY_DB_FOLDER + "/lencdb.mv.db");
-    }
-
-    private static String resolveLegacyH2JdbcUrl(File h2File) {
-        String absolutePath = h2File.getAbsolutePath();
-        String withoutExtension = absolutePath.endsWith(".mv.db")
-                ? absolutePath.substring(0, absolutePath.length() - ".mv.db".length())
-                : absolutePath;
-        return "jdbc:h2:" + withoutExtension;
-    }
-
-    private static boolean tablaVacia(Connection conn, String tabla) {
-        try (Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM " + tabla)) {
-            return rs.next() && rs.getInt(1) == 0;
-        } catch (SQLException e) {
-            return true;
-        }
-    }
-
-    private static void copiarTabla(Connection origen, Connection destino, String tabla, List<String> columnasDeseadas) throws SQLException {
-        if (!existeTabla(origen, tabla)) return;
-
-        List<String> columnasOrigen = columnasExistentes(origen, tabla, columnasDeseadas);
-        List<String> columnasDestino = columnasExistentes(destino, tabla, columnasOrigen);
-        if (columnasDestino.isEmpty()) return;
-
-        StringJoiner selectCols = new StringJoiner(", ");
-        StringJoiner insertCols = new StringJoiner(", ");
-        StringJoiner placeholders = new StringJoiner(", ");
-        for (String columna : columnasDestino) {
-            selectCols.add(columna);
-            insertCols.add(columna);
-            placeholders.add("?");
-        }
-
-        String selectSql = "SELECT " + selectCols + " FROM " + tabla;
-        String insertSql = "INSERT OR IGNORE INTO " + tabla + " (" + insertCols + ") VALUES (" + placeholders + ")";
-
-        try (Statement select = origen.createStatement();
-             ResultSet rs = select.executeQuery(selectSql);
-             PreparedStatement insert = destino.prepareStatement(insertSql)) {
-            ResultSetMetaData md = rs.getMetaData();
-            int columnas = md.getColumnCount();
-            while (rs.next()) {
-                for (int i = 1; i <= columnas; i++) {
-                    insert.setObject(i, rs.getObject(i));
-                }
-                insert.executeUpdate();
-            }
-        }
-    }
-
-    private static boolean existeTabla(Connection conn, String tabla) throws SQLException {
-        DatabaseMetaData metaData = conn.getMetaData();
-        try (ResultSet rs = metaData.getTables(null, null, tabla.toUpperCase(), null)) {
-            if (rs.next()) return true;
-        }
-        try (ResultSet rs = metaData.getTables(null, null, tabla, null)) {
-            return rs.next();
-        }
-    }
-
-    private static List<String> columnasExistentes(Connection conn, String tabla, List<String> columnasDeseadas) throws SQLException {
-        List<String> existentes = new ArrayList<>();
-        for (String columna : columnasDeseadas) {
-            if (esSqlite(conn)) {
-                if (existeColumna(conn, tabla, columna)) existentes.add(columna);
-            } else if (existeColumnaJdbc(conn, tabla, columna)) {
-                existentes.add(columna);
-            }
-        }
-        return existentes;
-    }
-
-    private static boolean esSqlite(Connection conn) throws SQLException {
-        return conn.getMetaData().getURL().startsWith("jdbc:sqlite:");
-    }
-
-    private static boolean existeColumnaJdbc(Connection conn, String tabla, String columna) throws SQLException {
-        DatabaseMetaData metaData = conn.getMetaData();
-        try (ResultSet rs = metaData.getColumns(null, null, tabla.toUpperCase(), columna.toUpperCase())) {
-            if (rs.next()) return true;
-        }
-        try (ResultSet rs = metaData.getColumns(null, null, tabla, columna)) {
-            return rs.next();
-        }
     }
 
     private static void migrarRemisionesEnMuestras(Connection conn) throws SQLException {

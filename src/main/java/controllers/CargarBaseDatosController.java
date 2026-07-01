@@ -37,6 +37,8 @@ public class CargarBaseDatosController {
     @FXML private TableColumn<Muestra, Estado> colEstado;
     @FXML private TableColumn<Muestra, LocalDate> colFecha;
     @FXML private TableColumn<Muestra, String> colUbicacion;
+    @FXML private TableColumn<Muestra, String> colNumeroInforme;
+    @FXML private TableColumn<Muestra, String> colNumeroCotizacion;
     @FXML private TableColumn<Muestra, String> colRutaFoto;
 
     private Usuario usuario;
@@ -53,6 +55,8 @@ public class CargarBaseDatosController {
         colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fechaRecepcion"));
         colUbicacion.setCellValueFactory(new PropertyValueFactory<>("ubicacion"));
+        colNumeroInforme.setCellValueFactory(new PropertyValueFactory<>("numeroInforme"));
+        colNumeroCotizacion.setCellValueFactory(new PropertyValueFactory<>("numeroCotizacion"));
         colRutaFoto.setCellValueFactory(new PropertyValueFactory<>("rutaFoto"));
         btnImportar.setDisable(true);
     }
@@ -138,7 +142,9 @@ public class CargarBaseDatosController {
                     usuarioActual,
                     muestra.getRutaFoto(),
                     muestra.getEstado(),
-                    muestra.getFechaRecepcion()
+                    muestra.getFechaRecepcion(),
+                    muestra.getNumeroInforme(),
+                    muestra.getNumeroCotizacion()
             );
             if (guardada) {
                 cargadas++;

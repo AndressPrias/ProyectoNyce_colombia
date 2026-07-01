@@ -4,6 +4,7 @@ import db.Database;
 import domain.Estado;
 import domain.Muestra;
 import domain.Usuario;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -15,7 +16,9 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Text;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,7 +27,6 @@ import java.time.LocalDate;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.io.File;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -32,11 +34,14 @@ import java.util.Optional;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
 import service.MuestraService;
+import utilities.ImageStorage;
 import utilities.UsuarioSesion;
 
 public class BuscarMuestrasController {
 
     private static final String IMAGEN_PRODUCTO_DEFECTO = "/images/default_image.png";
+    private static final double ANCHO_MINIMO_COLUMNA = 45.0;
+    private static final double MARGEN_TEXTO_COLUMNA = 30.0;
 
     @FXML private TextField txtBusquedaGeneral;
 
@@ -51,6 +56,8 @@ public class BuscarMuestrasController {
     @FXML private TableColumn<Muestra, LocalDate> colFecha;
     @FXML private TableColumn<Muestra, String> colUbicacion;
     @FXML private TableColumn<Muestra, Usuario> colTecnico;
+    @FXML private TableColumn<Muestra, String> colInforme;
+    @FXML private TableColumn<Muestra, String> colCotizacion;
     @FXML private TableColumn<Muestra, String> colRemision;
 
     @FXML private ImageView imgDetalle;
@@ -91,6 +98,8 @@ public class BuscarMuestrasController {
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fechaRecepcion"));
         colUbicacion.setCellValueFactory(new PropertyValueFactory<>("ubicacion"));
         colTecnico.setCellValueFactory(new PropertyValueFactory<>("tecnico"));
+        colInforme.setCellValueFactory(new PropertyValueFactory<>("numeroInforme"));
+        colCotizacion.setCellValueFactory(new PropertyValueFactory<>("numeroCotizacion"));
         colRemision.setCellValueFactory(new PropertyValueFactory<>("remision"));
 
         tblResultados.setItems(listaMuestras);
@@ -102,10 +111,52 @@ public class BuscarMuestrasController {
                 mostrarDetalle(newSel);
             }
         });
+        tblResultados.setRowFactory(tabla -> {
+            TableRow<Muestra> fila = new TableRow<>();
+            fila.itemProperty().addListener((obs, muestraAnterior, muestraNueva) -> {
+                fila.getStyleClass().removeAll(
+                        "estado-almacenado",
+                        "estado-disposicion",
+                        "estado-custodia",
+                        "estado-curso",
+                        "estado-lista",
+                        "estado-externo",
+                        "estado-enviado",
+                        "estado-destruccion"
+                );
+                if (muestraNueva != null && !fila.isEmpty()) {
+                    fila.getStyleClass().add(estiloEstadoFila(muestraNueva.getEstado()));
+                }
+            });
+            fila.setOnMouseClicked(evento -> {
+                if (evento.getButton() == MouseButton.PRIMARY && evento.getClickCount() == 2 && !fila.isEmpty()) {
+                    tblResultados.getSelectionModel().select(fila.getItem());
+                    editarInformacion();
+                }
+            });
+            return fila;
+        });
 
         cargarImagenDetalle(null);
         // Cargar todos los datos inicialmente
         buscarMuestras();
+    }
+
+    private String estiloEstadoFila(Estado estado) {
+        if (estado == null) {
+            return "estado-custodia";
+        }
+
+        return switch (estado) {
+            case ALMACENADO -> "estado-almacenado";
+            case REALIZAR_DISPOSICION_FINAL -> "estado-disposicion";
+            case EN_CUSTODIA -> "estado-custodia";
+            case EN_CURSO -> "estado-curso";
+            case LISTA_PARA_ALMACENAR -> "estado-lista";
+            case LABORATORIO_EXTERNO -> "estado-externo";
+            case ENVIADO -> "estado-enviado";
+            case DESTRUCCION -> "estado-destruccion";
+        };
     }
 
     @FXML
@@ -189,11 +240,31 @@ public class BuscarMuestrasController {
             }
 
             actualizarSeleccionYDetalle(idSeleccionado);
+            ajustarColumnasPorContenido();
 
         } catch (Exception e) {
             e.printStackTrace();
             limpiarDetalle();
+            ajustarColumnasPorContenido();
         }
+    }
+
+    private void ajustarColumnasPorContenido() {
+        Platform.runLater(() -> {
+            for (TableColumn<Muestra, ?> columna : tblResultados.getColumns()) {
+                double anchoMayor = medirTexto(columna.getText());
+                for (Muestra muestra : listaMuestras) {
+                    Object valor = columna.getCellData(muestra);
+                    anchoMayor = Math.max(anchoMayor, medirTexto(valor == null ? "" : valor.toString()));
+                }
+                columna.setPrefWidth(Math.ceil(Math.max(ANCHO_MINIMO_COLUMNA, anchoMayor + MARGEN_TEXTO_COLUMNA)));
+            }
+        });
+    }
+
+    private double medirTexto(String texto) {
+        Text medidor = new Text(texto == null ? "" : texto);
+        return medidor.getLayoutBounds().getWidth();
     }
 
     private Estado leerEstadoSeguro(String estado) {
@@ -322,11 +393,12 @@ public class BuscarMuestrasController {
         }
 
         try {
-            File archivo = new File(rutaFoto);
-            Image img = archivo.exists()
-                    ? new Image(archivo.toURI().toString())
-                    : new Image(rutaFoto);
-
+            String url = ImageStorage.resolveImageUrl(rutaFoto);
+            if (url == null) {
+                imgDetalle.setImage(cargarImagenProductoDefecto());
+                return;
+            }
+            Image img = new Image(url);
             imgDetalle.setImage(img.isError() ? cargarImagenProductoDefecto() : img);
         } catch (Exception e) {
             imgDetalle.setImage(cargarImagenProductoDefecto());

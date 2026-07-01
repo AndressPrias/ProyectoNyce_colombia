@@ -47,6 +47,8 @@ public final class ExcelHelper {
             "estado",
             "fechaRecepcion",
             "ubicacion",
+            "numeroInforme",
+            "numeroCotizacion",
             "rutaFoto"
     };
 
@@ -145,11 +147,16 @@ public final class ExcelHelper {
             cell.setCellValue(ENCABEZADOS[i]);
             cell.setCellStyle(estilo);
             sheet.setColumnWidth(i, switch (i) {
-                case 1, 2, 7, 8 -> 28 * 256;
+                case 1, 2, 7, 10 -> 28 * 256;
+                case 8, 9 -> 22 * 256;
                 default -> 20 * 256;
             });
         }
 
+        CellStyle texto = workbook.createCellStyle();
+        texto.setDataFormat(workbook.createDataFormat().getFormat("@"));
+        sheet.setDefaultColumnStyle(8, texto);
+        sheet.setDefaultColumnStyle(9, texto);
         sheet.createFreezePane(0, 1);
         sheet.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, ENCABEZADOS.length - 1));
     }
@@ -172,6 +179,7 @@ public final class ExcelHelper {
                 "Campos obligatorios: rotuloCliente * y descripcion *.",
                 "estado: seleccione un valor de la lista disponible.",
                 "fechaRecepcion: use una fecha de Excel o el formato dd/MM/yyyy.",
+                "numeroInforme y numeroCotizacion son opcionales; si los diligencia deben tener exactamente 4 digitos, por ejemplo 0304.",
                 "rutaFoto es opcional y debe contener la ruta completa de una imagen existente.",
                 "El código interno y el custodio se asignan automáticamente al importar."
         };
@@ -236,6 +244,8 @@ public final class ExcelHelper {
         muestra.setMarca(valor(row, columnas, "marca", formatter, evaluator));
         muestra.setReferencia(valor(row, columnas, "referencia", formatter, evaluator));
         muestra.setUbicacion(valor(row, columnas, "ubicacion", formatter, evaluator));
+        muestra.setNumeroInforme(leerCodigoCuatroDigitos(row, columnas, "numeroinforme", "numeroInforme", formatter, evaluator, numeroFila, errores));
+        muestra.setNumeroCotizacion(leerCodigoCuatroDigitos(row, columnas, "numerocotizacion", "numeroCotizacion", formatter, evaluator, numeroFila, errores));
         muestra.setRutaFoto(valor(row, columnas, "rutafoto", formatter, evaluator));
 
         if (muestra.getRotuloCliente().isBlank()) {
@@ -264,6 +274,20 @@ public final class ExcelHelper {
         }
 
         return muestra;
+    }
+
+    private static String leerCodigoCuatroDigitos(Row row, Map<String, Integer> columnas, String nombreColumna,
+                                                  String etiqueta, DataFormatter formatter, FormulaEvaluator evaluator,
+                                                  int numeroFila, List<String> errores) {
+        String valor = valor(row, columnas, nombreColumna, formatter, evaluator);
+        if (valor.isBlank()) {
+            return null;
+        }
+        if (!valor.matches("\\d{4}")) {
+            errores.add("Fila " + numeroFila + ": " + etiqueta + " debe contener exactamente 4 digitos.");
+            return null;
+        }
+        return valor;
     }
 
     private static LocalDate leerFecha(Cell cell, DataFormatter formatter, FormulaEvaluator evaluator) {

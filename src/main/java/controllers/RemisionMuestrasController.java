@@ -24,6 +24,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -64,6 +65,7 @@ public class RemisionMuestrasController {
 
     @FXML private DatePicker dpFechaElaboracion;
     @FXML private Label lblConsecutivo;
+    @FXML private TextField txtConsecutivo;
     @FXML private TextField txtCliente;
     @FXML private ComboBox<String> cmbTipoSalida;
     @FXML private Spinner<Integer> spnEmpaques;
@@ -106,7 +108,10 @@ public class RemisionMuestrasController {
                 "Solicitado por el cliente", "Envío a laboratorio externo", "Disposición final", "Otro"));
         cmbTipoSalida.getSelectionModel().selectFirst();
         txtObservacionFinal.setText(OBSERVACION_PREDETERMINADA);
-        lblConsecutivo.setText(formatearConsecutivo(remisionService.siguienteConsecutivo()));
+        txtConsecutivo.setText(formatearConsecutivo(remisionService.siguienteConsecutivo()));
+        txtConsecutivo.setTextFormatter(new TextFormatter<>(cambio ->
+                cambio.getControlNewText().matches("\\d{0,9}") ? cambio : null));
+        lblConsecutivo.setText(txtConsecutivo.getText());
 
         tblDisponibles.setEditable(true);
         tblDisponibles.setItems(muestrasFiltradas);
@@ -117,6 +122,7 @@ public class RemisionMuestrasController {
         cmbTipoSalida.valueProperty().addListener((obs, anterior, actual) -> actualizarDocumento());
         spnEmpaques.valueProperty().addListener((obs, anterior, actual) -> actualizarDocumento());
         txtObservacionFinal.textProperty().addListener((obs, anterior, actual) -> actualizarDocumento());
+        txtConsecutivo.textProperty().addListener((obs, anterior, actual) -> actualizarDocumento());
 
         cargarMuestrasDisponibles();
         actualizarDocumento();
@@ -218,6 +224,7 @@ public class RemisionMuestrasController {
     private void actualizarDocumento() {
         LocalDate fecha = dpFechaElaboracion.getValue();
         lblFechaDocumento.setText(formatearFecha(fecha));
+        lblConsecutivo.setText(formatearConsecutivo(leerConsecutivoActual()));
         lblClienteDocumento.setText(texto(txtCliente.getText(), "—"));
         lblTipoSalidaDocumento.setText(texto(cmbTipoSalida.getValue(), "—"));
         lblTotalMuestras.setText(String.valueOf(muestrasSeleccionadas.size()));
@@ -243,11 +250,22 @@ public class RemisionMuestrasController {
         }
 
         try {
-            int consecutivo = remisionService.registrarRemision(
+            int consecutivo = leerConsecutivoActual();
+            if (consecutivo < 1) {
+                mostrarAlerta(Alert.AlertType.WARNING, "Remisión incompleta", "Ingrese un consecutivo de remisión válido.");
+                return;
+            }
+            if (!remisionService.consecutivoDisponible(consecutivo)) {
+                mostrarAlerta(Alert.AlertType.WARNING, "Consecutivo no disponible",
+                        "La remisión R" + formatearConsecutivo(consecutivo) + " ya existe. Ingrese otro consecutivo.");
+                return;
+            }
+
+            consecutivo = remisionService.registrarRemision(
                     dpFechaElaboracion.getValue(), txtCliente.getText().trim(), cmbTipoSalida.getValue(),
                     spnEmpaques.getValue(), txtObservacionFinal.getText().trim(), actual,
                     txtFirma.getText().trim(), txtCedula.getText().trim(), txtNombrePlaca.getText().trim(),
-                    List.copyOf(muestrasSeleccionadas));
+                    List.copyOf(muestrasSeleccionadas), consecutivo);
 
             String codigoRemision = "R" + formatearConsecutivo(consecutivo);
             lblConsecutivo.setText(formatearConsecutivo(consecutivo));
@@ -452,7 +470,8 @@ public class RemisionMuestrasController {
         txtCedula.clear();
         txtNombrePlaca.clear();
         txtCliente.clear();
-        lblConsecutivo.setText(formatearConsecutivo(remisionService.siguienteConsecutivo()));
+        txtConsecutivo.setText(formatearConsecutivo(remisionService.siguienteConsecutivo()));
+        lblConsecutivo.setText(txtConsecutivo.getText());
         cargarMuestrasDisponibles();
         actualizarDocumento();
     }
@@ -468,6 +487,17 @@ public class RemisionMuestrasController {
 
     private String formatearConsecutivo(int consecutivo) {
         return String.format("%04d", consecutivo);
+    }
+
+    private int leerConsecutivoActual() {
+        if (txtConsecutivo == null || txtConsecutivo.getText() == null || txtConsecutivo.getText().isBlank()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(txtConsecutivo.getText().trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     private String formatearFecha(LocalDate fecha) {

@@ -65,22 +65,34 @@ public class MuestraService {
                                     Estado estadoUI, LocalDate fechaRecepcionUI) {
         return registrarMuestra(
                 rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
-                custodio, rutaFoto, estadoUI, fechaRecepcionUI, false
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, null, null, false
         );
     }
 
     public boolean registrarMuestraExterna(String rotuloCliente, String nombreCliente, String descripcion, String marca,
                                            String referencia, String ubicacion, Usuario custodio, String rutaFoto,
                                            Estado estadoUI, LocalDate fechaRecepcionUI) {
+        return registrarMuestraExterna(
+                rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, null, null
+        );
+    }
+
+    public boolean registrarMuestraExterna(String rotuloCliente, String nombreCliente, String descripcion, String marca,
+                                           String referencia, String ubicacion, Usuario custodio, String rutaFoto,
+                                           Estado estadoUI, LocalDate fechaRecepcionUI,
+                                           String numeroInforme, String numeroCotizacion) {
         return registrarMuestra(
                 rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
-                custodio, rutaFoto, estadoUI, fechaRecepcionUI, true
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, numeroInforme, numeroCotizacion, true
         );
     }
 
     private boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,
                                      String referencia, String ubicacion, Usuario custodio, String rutaFoto,
-                                     Estado estadoUI, LocalDate fechaRecepcionUI, boolean codigoDesdeFechaRecepcion) {
+                                     Estado estadoUI, LocalDate fechaRecepcionUI,
+                                     String numeroInforme, String numeroCotizacion,
+                                     boolean codigoDesdeFechaRecepcion) {
 
         if (custodio == null) {
             throw new IllegalArgumentException("No hay un usuario autenticado para registrar la muestra");
@@ -94,11 +106,13 @@ public class MuestraService {
         String codigo = codigoDesdeFechaRecepcion
                 ? generarCodigoInternoParaFecha(fecha)
                 : generarCodigoInterno();
+        String informe = validarCodigoCuatroDigitos(numeroInforme, "informe");
+        String cotizacion = validarCodigoCuatroDigitos(numeroCotizacion, "cotizaciÃ³n");
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
-                     "INSERT INTO muestras (codigoInterno, rotuloCliente, nombreCliente, descripcion, marca, referencia, estado, ubicacion, custodioId, fechaRecepcion, rutaFoto) " +
-                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+                     "INSERT INTO muestras (codigoInterno, rotuloCliente, nombreCliente, descripcion, marca, referencia, estado, ubicacion, custodioId, fechaRecepcion, rutaFoto, numeroInforme, numeroCotizacion) " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, codigo);
             ps.setString(2, rotuloCliente);
@@ -111,6 +125,8 @@ public class MuestraService {
             ps.setInt(9, custodio.getId());
             ps.setString(10, fecha.toString());
             ps.setString(11, rutaFoto);
+            ps.setString(12, informe);
+            ps.setString(13, cotizacion);
 
             ps.executeUpdate();
 

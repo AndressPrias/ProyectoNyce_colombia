@@ -47,9 +47,9 @@ public class RegistrarMuestraController {
             // Si no hay imagen seleccionada, carga la imagen por defecto
             imagen = new Image(getClass().getResourceAsStream(IMAGEN_PRODUCTO_DEFECTO));
         } else {
-            File archivo = new File(rutaFotoSeleccionada);
-            if (archivo.exists()) {
-                imagen = new Image(archivo.toURI().toString());
+            String url = ImageStorage.resolveImageUrl(rutaFotoSeleccionada);
+            if (url != null) {
+                imagen = new Image(url);
             } else {
                 // si el archivo no existe, tambiÃƒÂ©n carga la imagen por defecto
                 imagen = new Image(getClass().getResourceAsStream(IMAGEN_PRODUCTO_DEFECTO));
@@ -92,7 +92,7 @@ public class RegistrarMuestraController {
 
         try {
             rutaFotoSeleccionada = ImageStorage.copySamplePhoto(selectedFile);
-            imgProducto.setImage(new Image(new File(rutaFotoSeleccionada).toURI().toString()));
+            cargarImagenProducto();
             System.out.println("Foto copiada a carpeta compartida: " + rutaFotoSeleccionada);
         } catch (Exception e) {
             txtInformativos.setText("No se pudo copiar la foto a la carpeta configurada");
