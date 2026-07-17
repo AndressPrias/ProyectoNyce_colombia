@@ -6,10 +6,12 @@ import domain.Muestra;
 import domain.Usuario;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -18,8 +20,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,12 +35,18 @@ import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
+import java.util.prefs.Preferences;
 
 import javafx.stage.Stage;
 import javafx.stage.Modality;
 import service.MuestraService;
+import service.RemisionService;
 import utilities.ImageStorage;
 import utilities.UsuarioSesion;
 
@@ -42,6 +55,18 @@ public class BuscarMuestrasController {
     private static final String IMAGEN_PRODUCTO_DEFECTO = "/images/default_image.png";
     private static final double ANCHO_MINIMO_COLUMNA = 45.0;
     private static final double MARGEN_TEXTO_COLUMNA = 30.0;
+    private static final String PREF_ORDER = "buscarMuestras.columnOrder";
+    private static final String PREF_WIDTH_PREFIX = "buscarMuestras.columnWidth.";
+    private static final List<String> ESTILOS_ESTADO_FILA = List.of(
+            "estado-almacenado",
+            "estado-disposicion",
+            "estado-custodia",
+            "estado-curso",
+            "estado-lista",
+            "estado-externo",
+            "estado-enviado",
+            "estado-destruccion"
+    );
 
     @FXML private TextField txtBusquedaGeneral;
 
@@ -76,12 +101,19 @@ public class BuscarMuestrasController {
     @FXML private Label lblDetalleObservaciones;
     @FXML private Button btnFinalizarEnsayos;
     @FXML private Button btnEditarInformacion;
+    @FXML private Button btnAsignarInformeCotizacion;
     @FXML private Button btnAsignarTecnico;
     @FXML private Button btnAlmacenarMuestra;
     @FXML private Button btnEliminarMuestra;
 
 
     private ObservableList<Muestra> listaMuestras = FXCollections.observableArrayList();
+    private final Preferences preferencias = Preferences.userNodeForPackage(BuscarMuestrasController.class);
+    private final Map<String, TableColumn<Muestra, ?>> columnasPorId = new LinkedHashMap<>();
+    private final RemisionService remisionService = new RemisionService();
+    private boolean restaurandoDisposicionTabla;
+    private boolean usuarioConfiguroTabla;
+    private boolean tieneDisposicionGuardada;
 
     private Usuario usuario;
 
@@ -101,8 +133,11 @@ public class BuscarMuestrasController {
         colInforme.setCellValueFactory(new PropertyValueFactory<>("numeroInforme"));
         colCotizacion.setCellValueFactory(new PropertyValueFactory<>("numeroCotizacion"));
         colRemision.setCellValueFactory(new PropertyValueFactory<>("remision"));
+        configurarColumnaRemision();
+        configurarPersistenciaColumnas();
 
         tblResultados.setItems(listaMuestras);
+        tblResultados.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         txtBusquedaGeneral.textProperty().addListener((obs, textoAnterior, textoNuevo) -> buscarMuestras());
 
         // Listener para actualizar panel de detalle al seleccionar una fila
@@ -112,22 +147,16 @@ public class BuscarMuestrasController {
             }
         });
         tblResultados.setRowFactory(tabla -> {
-            TableRow<Muestra> fila = new TableRow<>();
-            fila.itemProperty().addListener((obs, muestraAnterior, muestraNueva) -> {
-                fila.getStyleClass().removeAll(
-                        "estado-almacenado",
-                        "estado-disposicion",
-                        "estado-custodia",
-                        "estado-curso",
-                        "estado-lista",
-                        "estado-externo",
-                        "estado-enviado",
-                        "estado-destruccion"
-                );
-                if (muestraNueva != null && !fila.isEmpty()) {
-                    fila.getStyleClass().add(estiloEstadoFila(muestraNueva.getEstado()));
+            TableRow<Muestra> fila = new TableRow<>() {
+                @Override
+                protected void updateItem(Muestra muestra, boolean empty) {
+                    super.updateItem(muestra, empty);
+                    getStyleClass().removeAll(ESTILOS_ESTADO_FILA);
+                    if (!empty && muestra != null) {
+                        getStyleClass().add(estiloEstadoFila(muestra.getEstado()));
+                    }
                 }
-            });
+            };
             fila.setOnMouseClicked(evento -> {
                 if (evento.getButton() == MouseButton.PRIMARY && evento.getClickCount() == 2 && !fila.isEmpty()) {
                     tblResultados.getSelectionModel().select(fila.getItem());
@@ -157,6 +186,98 @@ public class BuscarMuestrasController {
             case ENVIADO -> "estado-enviado";
             case DESTRUCCION -> "estado-destruccion";
         };
+    }
+
+    private void configurarColumnaRemision() {
+        colRemision.setCellFactory(columna -> new TableCell<>() {
+            private final Label etiqueta = new Label();
+            private final Button boton = crearBotonVerRemision();
+            private final HBox contenido = new HBox(6, etiqueta, boton);
+
+            {
+                contenido.setAlignment(Pos.CENTER_LEFT);
+                etiqueta.getStyleClass().add("table-remision-label");
+                etiqueta.setMaxWidth(Double.MAX_VALUE);
+                HBox.setHgrow(etiqueta, javafx.scene.layout.Priority.ALWAYS);
+                boton.setOnAction(evento -> abrirPdfRemision(getItem()));
+            }
+
+            @Override
+            protected void updateItem(String remision, boolean empty) {
+                super.updateItem(remision, empty);
+                if (empty || remision == null || remision.isBlank()) {
+                    setGraphic(null);
+                    return;
+                }
+                etiqueta.setText(remision.trim());
+                setGraphic(contenido);
+            }
+        });
+    }
+
+    private Button crearBotonVerRemision() {
+        Button boton = new Button();
+        boton.setMinSize(24, 24);
+        boton.setPrefSize(24, 24);
+        boton.setMaxSize(24, 24);
+        boton.setTooltip(new Tooltip("Ver PDF de remision"));
+        boton.getStyleClass().add("table-icon-button");
+        SVGPath icono = new SVGPath();
+        icono.setContent("M9 17A8 8 0 1 1 9 1A8 8 0 0 1 9 17M15 15L22 22");
+        icono.setStyle("-fx-stroke: #063f3b; -fx-stroke-width: 2; -fx-fill: transparent;");
+        boton.setGraphic(icono);
+        return boton;
+    }
+
+    private void abrirPdfRemision(String remision) {
+        int consecutivo = extraerConsecutivoRemision(remision);
+        if (consecutivo < 1) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Ver PDF", "La remision seleccionada no tiene un consecutivo valido.");
+            return;
+        }
+
+        try {
+            String rutaArchivo = remisionService.obtenerRutaArchivo(consecutivo);
+            if (rutaArchivo == null || rutaArchivo.isBlank()) {
+                mostrarAlerta(Alert.AlertType.WARNING, "Ver PDF",
+                        "La remision " + remision + " no tiene PDF registrado.");
+                return;
+            }
+
+            File archivo = new File(rutaArchivo);
+            if (!archivo.exists() || !archivo.isFile()) {
+                mostrarAlerta(Alert.AlertType.WARNING, "Ver PDF",
+                        "No se encontro el PDF en la ruta registrada:\n" + rutaArchivo);
+                return;
+            }
+
+            if (!Desktop.isDesktopSupported()) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Ver PDF",
+                        "Windows no permitio abrir el PDF automaticamente.\nRuta: " + rutaArchivo);
+                return;
+            }
+
+            Desktop.getDesktop().open(archivo);
+        } catch (IOException e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Ver PDF", "No se pudo abrir el PDF:\n" + mensajeRaiz(e));
+        } catch (Exception e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Ver PDF", mensajeRaiz(e));
+        }
+    }
+
+    private int extraerConsecutivoRemision(String remision) {
+        if (remision == null) {
+            return 0;
+        }
+        String digitos = remision.replaceAll("\\D", "");
+        if (digitos.isBlank()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(digitos);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     @FXML
@@ -240,17 +361,116 @@ public class BuscarMuestrasController {
             }
 
             actualizarSeleccionYDetalle(idSeleccionado);
-            ajustarColumnasPorContenido();
+            Platform.runLater(tblResultados::refresh);
+            ajustarColumnasPorContenidoSiCorresponde();
 
         } catch (Exception e) {
             e.printStackTrace();
             limpiarDetalle();
+            ajustarColumnasPorContenidoSiCorresponde();
+        }
+    }
+
+    private void configurarPersistenciaColumnas() {
+        registrarColumna("codigoInterno", colCodigoInterno);
+        registrarColumna("descripcion", colDescripcion);
+        registrarColumna("rotuloCliente", colRotulo);
+        registrarColumna("cliente", colCliente);
+        registrarColumna("marca", colMarca);
+        registrarColumna("referencia", colReferencia);
+        registrarColumna("estado", colEstado);
+        registrarColumna("fecha", colFecha);
+        registrarColumna("ubicacion", colUbicacion);
+        registrarColumna("tecnico", colTecnico);
+        registrarColumna("informe", colInforme);
+        registrarColumna("cotizacion", colCotizacion);
+        registrarColumna("remision", colRemision);
+
+        tieneDisposicionGuardada = preferencias.get(PREF_ORDER, null) != null;
+        restaurarDisposicionColumnas();
+        for (TableColumn<Muestra, ?> columna : columnasPorId.values()) {
+            columna.widthProperty().addListener((obs, anterior, actual) -> guardarDisposicionColumnas());
+        }
+        tblResultados.getColumns().addListener((ListChangeListener<TableColumn<Muestra, ?>>) cambio -> {
+            while (cambio.next()) {
+                if (cambio.wasPermutated() || cambio.wasAdded() || cambio.wasRemoved() || cambio.wasReplaced()) {
+                    guardarDisposicionColumnas();
+                }
+            }
+        });
+    }
+
+    private void registrarColumna(String id, TableColumn<Muestra, ?> columna) {
+        columna.setId(id);
+        columnasPorId.put(id, columna);
+    }
+
+    private void restaurarDisposicionColumnas() {
+        restaurandoDisposicionTabla = true;
+        try {
+            String ordenGuardado = preferencias.get(PREF_ORDER, "");
+            List<TableColumn<Muestra, ?>> columnasOrdenadas = new ArrayList<>();
+            if (!ordenGuardado.isBlank()) {
+                for (String id : ordenGuardado.split(",")) {
+                    TableColumn<Muestra, ?> columna = columnasPorId.get(id);
+                    if (columna != null && !columnasOrdenadas.contains(columna)) {
+                        columnasOrdenadas.add(columna);
+                    }
+                }
+            }
+            for (TableColumn<Muestra, ?> columna : columnasPorId.values()) {
+                if (!columnasOrdenadas.contains(columna)) {
+                    columnasOrdenadas.add(columna);
+                }
+            }
+            if (!columnasOrdenadas.isEmpty()) {
+                tblResultados.getColumns().setAll(columnasOrdenadas);
+            }
+
+            for (Map.Entry<String, TableColumn<Muestra, ?>> entrada : columnasPorId.entrySet()) {
+                double ancho = preferencias.getDouble(PREF_WIDTH_PREFIX + entrada.getKey(), -1);
+                if (ancho >= ANCHO_MINIMO_COLUMNA) {
+                    entrada.getValue().setPrefWidth(ancho);
+                }
+            }
+        } finally {
+            restaurandoDisposicionTabla = false;
+        }
+    }
+
+    private void guardarDisposicionColumnas() {
+        if (restaurandoDisposicionTabla) {
+            return;
+        }
+        usuarioConfiguroTabla = true;
+        tieneDisposicionGuardada = true;
+
+        StringBuilder orden = new StringBuilder();
+        for (TableColumn<Muestra, ?> columna : tblResultados.getColumns()) {
+            if (columna.getId() == null || columna.getId().isBlank()) {
+                continue;
+            }
+            if (!orden.isEmpty()) {
+                orden.append(',');
+            }
+            orden.append(columna.getId());
+            preferencias.putDouble(PREF_WIDTH_PREFIX + columna.getId(), columna.getWidth());
+        }
+        preferencias.put(PREF_ORDER, orden.toString());
+    }
+
+    private void ajustarColumnasPorContenidoSiCorresponde() {
+        if (!tieneDisposicionGuardada && !usuarioConfiguroTabla) {
             ajustarColumnasPorContenido();
         }
     }
 
     private void ajustarColumnasPorContenido() {
         Platform.runLater(() -> {
+            if (tieneDisposicionGuardada || usuarioConfiguroTabla) {
+                return;
+            }
+            restaurandoDisposicionTabla = true;
             for (TableColumn<Muestra, ?> columna : tblResultados.getColumns()) {
                 double anchoMayor = medirTexto(columna.getText());
                 for (Muestra muestra : listaMuestras) {
@@ -259,6 +479,7 @@ public class BuscarMuestrasController {
                 }
                 columna.setPrefWidth(Math.ceil(Math.max(ANCHO_MINIMO_COLUMNA, anchoMayor + MARGEN_TEXTO_COLUMNA)));
             }
+            restaurandoDisposicionTabla = false;
         });
     }
 
@@ -380,7 +601,7 @@ public class BuscarMuestrasController {
     private void actualizarAccionesControlMuestras() {
         Usuario usuarioActual = usuario != null ? usuario : UsuarioSesion.getUsuario();
         boolean permitido = usuarioActual != null && usuarioActual.puedeControlarMuestras();
-        for (Button boton : List.of(btnEditarInformacion, btnAsignarTecnico, btnAlmacenarMuestra, btnEliminarMuestra)) {
+        for (Button boton : List.of(btnEditarInformacion, btnAsignarInformeCotizacion, btnAsignarTecnico, btnAlmacenarMuestra, btnEliminarMuestra)) {
             boton.setVisible(permitido);
             boton.setManaged(permitido);
         }
@@ -437,7 +658,13 @@ public class BuscarMuestrasController {
             stage.setTitle("Editar Muestra");
             stage.initOwner(tblResultados.getScene().getWindow());
             stage.initModality(Modality.WINDOW_MODAL);
-            stage.setScene(new Scene(root));
+            ScrollPane scroll = new ScrollPane(root);
+            scroll.setFitToWidth(true);
+            scroll.setPannable(true);
+            scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            scroll.setStyle("-fx-background-color: transparent; -fx-background: #EEF2F2;");
+            stage.setScene(new Scene(scroll));
             stage.setMaximized(true);
             stage.show();
         } catch (Exception e) {
@@ -490,14 +717,86 @@ public class BuscarMuestrasController {
     }
 
     @FXML
+    void asignarInformeCotizacion() {
+        if (!verificarControlMuestras()) return;
+        List<Muestra> muestras = obtenerMuestrasSeleccionadas();
+        if (muestras.isEmpty()) return;
+
+        TextField txtInforme = new TextField();
+        TextField txtCotizacion = new TextField();
+        UnaryOperator<TextFormatter.Change> filtroCuatroDigitos = cambio ->
+                cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null;
+        txtInforme.setTextFormatter(new TextFormatter<>(filtroCuatroDigitos));
+        txtCotizacion.setTextFormatter(new TextFormatter<>(filtroCuatroDigitos));
+        txtInforme.setPromptText("4 digitos");
+        txtCotizacion.setPromptText("4 digitos");
+
+        if (muestras.size() == 1) {
+            txtInforme.setText(textoSeguro(muestras.get(0).getNumeroInforme()));
+            txtCotizacion.setText(textoSeguro(muestras.get(0).getNumeroCotizacion()));
+        }
+
+        Dialog<ButtonType> dialogo = crearDialogo("Asignar informe / cotizacion");
+        GridPane contenido = crearFormulario();
+        Label ayuda = new Label("Se aplicara a " + muestras.size()
+                + " muestra(s). Deje un campo vacio para no modificarlo.");
+        ayuda.setWrapText(true);
+        contenido.add(ayuda, 0, 0, 2, 1);
+        contenido.add(new Label("Informe"), 0, 1);
+        contenido.add(txtInforme, 1, 1);
+        contenido.add(new Label("Cotizacion"), 0, 2);
+        contenido.add(txtCotizacion, 1, 2);
+        dialogo.getDialogPane().setContent(contenido);
+
+        Optional<ButtonType> resultado = dialogo.showAndWait();
+        if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
+
+        String informe = normalizarCodigoAsignacion(txtInforme.getText());
+        String cotizacion = normalizarCodigoAsignacion(txtCotizacion.getText());
+        boolean actualizarInforme = informe != null;
+        boolean actualizarCotizacion = cotizacion != null;
+        if (!actualizarInforme && !actualizarCotizacion) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Asignar informe / cotizacion",
+                    "Digite el informe, la cotizacion o ambos campos");
+            return;
+        }
+
+        MuestraService service = new MuestraService();
+        int actualizadas = 0;
+        for (Muestra muestra : muestras) {
+            if (service.actualizarInformeCotizacion(
+                    muestra.getId(),
+                    informe,
+                    cotizacion,
+                    usuarioActual(),
+                    actualizarInforme,
+                    actualizarCotizacion)) {
+                actualizadas++;
+            }
+        }
+
+        buscarMuestras();
+        if (actualizadas == muestras.size()) {
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Asignar informe / cotizacion",
+                    "Se actualizaron " + actualizadas + " muestra(s)");
+        } else {
+            mostrarAlerta(Alert.AlertType.WARNING, "Asignar informe / cotizacion",
+                    "Se actualizaron " + actualizadas + " de " + muestras.size() + " muestra(s)");
+        }
+    }
+
+    @FXML
     void almacenarMuestra() {
         if (!verificarControlMuestras()) return;
-        Muestra muestra = obtenerMuestraSeleccionada();
-        if (muestra == null) return;
+        List<Muestra> muestras = obtenerMuestrasSeleccionadas();
+        if (muestras.isEmpty()) return;
+        Muestra muestraBase = muestras.get(0);
 
         // Crear los campos de texto para el diálogo
-        TextField txtUbicacion = new TextField(textoSeguro(muestra.getUbicacion()));
-        TextArea txtObservaciones = new TextArea(textoSeguro(muestra.getObservacionAlmacenamiento()));
+        TextField txtUbicacion = new TextField(muestras.size() == 1 ? textoSeguro(muestraBase.getUbicacion()) : "");
+        TextArea txtObservaciones = new TextArea(muestras.size() == 1
+                ? textoSeguro(muestraBase.getObservacionAlmacenamiento())
+                : "");
         txtObservaciones.setPrefRowCount(3);
         List<Usuario> usuariosResponsables = UsuarioSesion.obtenerTodosUsuarios();
         if (usuariosResponsables.isEmpty()) {
@@ -507,15 +806,15 @@ public class BuscarMuestrasController {
         ComboBox<Usuario> comboResponsable = new ComboBox<>(FXCollections.observableArrayList(usuariosResponsables));
         comboResponsable.setMaxWidth(Double.MAX_VALUE);
         comboResponsable.setPromptText("Seleccione un responsable");
-        if (muestra.getResponsableAlmacenamiento() != null) {
+        if (muestras.size() == 1 && muestraBase.getResponsableAlmacenamiento() != null) {
             usuariosResponsables.stream()
-                    .filter(responsable -> responsable.getId() == muestra.getResponsableAlmacenamiento().getId())
+                    .filter(responsable -> responsable.getId() == muestraBase.getResponsableAlmacenamiento().getId())
                     .findFirst()
                     .ifPresent(comboResponsable::setValue);
         }
 
         // Crear el diálogo
-        Dialog<ButtonType> dialogo = crearDialogo("Almacenar muestra");
+        Dialog<ButtonType> dialogo = crearDialogo(muestras.size() == 1 ? "Almacenar muestra" : "Almacenar muestras");
         GridPane contenido = crearFormulario();
         contenido.add(new Label("Ubicación *"), 0, 0);
         contenido.add(txtUbicacion, 1, 0);
@@ -537,16 +836,26 @@ public class BuscarMuestrasController {
         }
 
         // Guardar la información
-        if (new MuestraService().almacenarMuestra(
-                muestra.getId(),
-                txtUbicacion.getText(),
-                txtObservaciones.getText(),
-                comboResponsable.getValue(),
-                UsuarioSesion.getUsuario())) {
-            buscarMuestras();
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Almacenar muestra", "Muestra almacenada correctamente");
+        MuestraService service = new MuestraService();
+        int almacenadas = 0;
+        for (Muestra muestra : muestras) {
+            if (service.almacenarMuestra(
+                    muestra.getId(),
+                    txtUbicacion.getText(),
+                    txtObservaciones.getText(),
+                    comboResponsable.getValue(),
+                    UsuarioSesion.getUsuario())) {
+                almacenadas++;
+            }
+        }
+
+        buscarMuestras();
+        if (almacenadas == muestras.size()) {
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Almacenar muestra",
+                    "Se almacenaron " + almacenadas + " muestra(s) correctamente");
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Almacenar muestra", "No se pudo almacenar la muestra");
+            mostrarAlerta(Alert.AlertType.WARNING, "Almacenar muestra",
+                    "Se almacenaron " + almacenadas + " de " + muestras.size() + " muestra(s)");
         }
     }
 
@@ -583,6 +892,21 @@ public class BuscarMuestrasController {
         return muestra;
     }
 
+    private List<Muestra> obtenerMuestrasSeleccionadas() {
+        List<Muestra> muestras = new ArrayList<>(tblResultados.getSelectionModel().getSelectedItems());
+        if (muestras.isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Muestras", "Seleccione una o mas muestras");
+        }
+        return muestras;
+    }
+
+    private String normalizarCodigoAsignacion(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+        return valor.trim();
+    }
+
     private Dialog<ButtonType> crearDialogo(String titulo) {
         Dialog<ButtonType> dialogo = new Dialog<>();
         dialogo.setTitle(titulo);
@@ -606,6 +930,14 @@ public class BuscarMuestrasController {
         alerta.setHeaderText(null);
         alerta.setContentText(mensaje);
         alerta.showAndWait();
+    }
+
+    private String mensajeRaiz(Throwable error) {
+        Throwable actual = error;
+        while (actual.getCause() != null) {
+            actual = actual.getCause();
+        }
+        return textoSeguro(actual.getMessage()).isBlank() ? "Ocurrio un error inesperado." : actual.getMessage();
     }
 
     private String textoSeguro(String texto) {
@@ -712,7 +1044,7 @@ public class BuscarMuestrasController {
         btnFinalizarEnsayos.setVisible(false);
         btnFinalizarEnsayos.setManaged(false);
         btnFinalizarEnsayos.setTooltip(new Tooltip("Seleccione una muestra"));
-        for (Button boton : List.of(btnEditarInformacion, btnAsignarTecnico, btnAlmacenarMuestra, btnEliminarMuestra)) {
+        for (Button boton : List.of(btnEditarInformacion, btnAsignarInformeCotizacion, btnAsignarTecnico, btnAlmacenarMuestra, btnEliminarMuestra)) {
             boton.setVisible(false);
             boton.setManaged(false);
         }

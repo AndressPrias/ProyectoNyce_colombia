@@ -49,8 +49,8 @@ public class LoginController {
 
     @FXML
     void iniciarSesion(ActionEvent event) {
-        String nombre = txtUsuario.getText();
-        String password = txtPassword.getText();
+        String nombre = txtUsuario.getText() == null ? "" : txtUsuario.getText().trim();
+        String password = txtPassword.getText() == null ? "" : txtPassword.getText().trim();
 
         if (nombre.isEmpty() || password.isEmpty()) {
             lblMensaje.setText("Debe completar todos los campos");
@@ -74,6 +74,8 @@ public class LoginController {
                 Stage stage = (Stage) txtUsuario.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("Sistema NYCE");
+                stage.setMaximized(true);
+                stage.setResizable(false);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -89,7 +91,7 @@ public class LoginController {
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
                      "SELECT id, nombre, rol, rutaFoto, controlMuestras, controlTotal " +
-                             "FROM usuarios WHERE nombre = ? AND password = ?")) {
+                             "FROM usuarios WHERE LOWER(nombre) = LOWER(?) AND password = ?")) {
 
             ps.setString(1, nombre);
             ps.setString(2, password);

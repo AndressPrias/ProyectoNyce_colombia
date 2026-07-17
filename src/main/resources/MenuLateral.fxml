@@ -101,7 +101,7 @@
                   <Font name="System Bold" size="12.0" />
                </font>
             </Text>
-            <Text fill="WHITE" layoutX="24.0" layoutY="59.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Version 1.0" textAlignment="CENTER" wrappingWidth="125.5" />
+            <Text fx:id="txtVersion" fill="WHITE" layoutX="24.0" layoutY="59.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Version 1.0" textAlignment="CENTER" wrappingWidth="125.5" />
          </children>
       </AnchorPane>
    </children>

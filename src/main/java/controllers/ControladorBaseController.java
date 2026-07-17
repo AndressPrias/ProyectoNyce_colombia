@@ -10,9 +10,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import utilities.Navegacion;
@@ -51,7 +53,8 @@ public class ControladorBaseController {
             }
 
             ajustarVistaAlContenedor(vista, fxmlPath);
-            mostrarVistaConTransicion(vista);
+            Node vistaResponsive = crearContenedorResponsive(vista, fxmlPath);
+            mostrarVistaConTransicion(vistaResponsive);
             actualizarVisibilidadMenuLateral(fxmlPath);
             programarAjusteVentana(fxmlPath, tituloVentana);
         } catch (Exception e) {
@@ -88,7 +91,40 @@ public class ControladorBaseController {
         StackPane.setAlignment(vista, Pos.TOP_LEFT);
     }
 
-    private void mostrarVistaConTransicion(Parent vista) {
+    private Node crearContenedorResponsive(Parent vista, String fxmlPath) {
+        Node contenidoScroll = vista;
+        if (Paths.MENU_PRINCIPAL.equals(fxmlPath)) {
+            VBox centrado = new VBox(vista);
+            centrado.setAlignment(Pos.CENTER);
+            centrado.setFillWidth(false);
+            centrado.setStyle("-fx-background-color: #f5f5f5;");
+            centrado.prefWidthProperty().bind(areaContenido.widthProperty());
+            centrado.prefHeightProperty().bind(areaContenido.heightProperty());
+            contenidoScroll = centrado;
+        }
+
+        ScrollPane scroll = new ScrollPane(contenidoScroll);
+        scroll.setFitToWidth(true);
+        scroll.setFitToHeight(false);
+        scroll.setPannable(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setStyle("-fx-background-color: transparent; -fx-background: #f5f5f5;");
+        scroll.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        StackPane.setAlignment(scroll, Pos.TOP_LEFT);
+
+        if (vista instanceof Region region && !Paths.MENU_PRINCIPAL.equals(fxmlPath) && !(vista instanceof AnchorPane)) {
+            region.prefWidthProperty().bind(scroll.viewportBoundsProperty().map(bounds ->
+                    Math.max(bounds.getWidth(), region.getMinWidth())
+            ));
+            region.prefHeightProperty().bind(scroll.viewportBoundsProperty().map(bounds ->
+                    Math.max(bounds.getHeight(), region.getMinHeight())
+            ));
+        }
+        return scroll;
+    }
+
+    private void mostrarVistaConTransicion(Node vista) {
         if (areaContenido.getChildren().isEmpty()) {
             vista.setOpacity(1);
             vista.setTranslateX(0);
@@ -126,6 +162,7 @@ public class ControladorBaseController {
     }
 
     private void ajustarTamanoVentana(Stage stage, String fxmlPath) {
+        stage.setResizable(false);
         if (Paths.MENU_PRINCIPAL.equals(fxmlPath)) {
             stage.setMinWidth(0);
             stage.setMinHeight(0);

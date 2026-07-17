@@ -140,6 +140,19 @@ public class RemisionService {
         }
     }
 
+    public String obtenerRutaArchivo(int consecutivo) {
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT rutaArchivo FROM remisiones WHERE consecutivo=?")) {
+            ps.setInt(1, consecutivo);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getString("rutaArchivo") : null;
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo consultar el PDF de la remision", e);
+        }
+    }
+
     private int siguienteConsecutivo(Connection conn) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(sqlSiguienteConsecutivo());
              ResultSet rs = ps.executeQuery()) {

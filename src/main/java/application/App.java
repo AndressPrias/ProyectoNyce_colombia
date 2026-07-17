@@ -24,6 +24,8 @@ public class App extends Application {
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle("Login NYCE");
+        stage.setResizable(false);
         stage.show();
+        stage.centerOnScreen();
     }
 }

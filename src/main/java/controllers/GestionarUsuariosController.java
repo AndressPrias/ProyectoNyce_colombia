@@ -241,6 +241,8 @@ public class GestionarUsuariosController {
 
     private void actualizarUsuario(Connection conn, String nombre, String rolStr, String password,
                                    boolean controlMuestras, boolean controlTotal) throws SQLException {
+        String rutaFotoAnterior = usuarioSeleccionado.getRutaFoto();
+        String rutaFotoNueva = rutaFotoSeleccionada.isBlank() ? null : rutaFotoSeleccionada;
         String sql = password.isEmpty()
                 ? "UPDATE usuarios SET nombre=?, rol=?, rutaFoto=?, controlMuestras=?, controlTotal=? WHERE id=?"
                 : "UPDATE usuarios SET nombre=?, rol=?, rutaFoto=?, controlMuestras=?, controlTotal=?, password=? WHERE id=?";
@@ -248,7 +250,7 @@ public class GestionarUsuariosController {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nombre);
             ps.setString(2, rolStr);
-            ps.setString(3, rutaFotoSeleccionada.isBlank() ? null : rutaFotoSeleccionada);
+            ps.setString(3, rutaFotoNueva);
             ps.setBoolean(4, controlMuestras);
             ps.setBoolean(5, controlTotal);
             if (password.isEmpty()) {
@@ -259,6 +261,7 @@ public class GestionarUsuariosController {
             }
             ps.executeUpdate();
         }
+        eliminarAvatarAnteriorSiNoSeUsa(conn, rutaFotoAnterior, rutaFotoNueva);
     }
 
     private void cargarUsuarios() {
@@ -375,6 +378,7 @@ public class GestionarUsuariosController {
         }
         String password = txtPassword.getText();
         boolean cambiarPassword = password != null && !password.isBlank();
+        String rutaFotoAnterior = usuarioSeleccionado.getRutaFoto();
         String rutaFoto = rutaFotoSeleccionada == null || rutaFotoSeleccionada.isBlank()
                 ? null
                 : rutaFotoSeleccionada;
@@ -392,6 +396,7 @@ public class GestionarUsuariosController {
                 ps.setInt(2, usuario.getId());
             }
             ps.executeUpdate();
+            eliminarAvatarAnteriorSiNoSeUsa(conn, rutaFotoAnterior, rutaFoto);
 
             usuario.setRutaFoto(rutaFoto);
             usuarioSeleccionado.setRutaFoto(rutaFoto);
@@ -404,6 +409,21 @@ public class GestionarUsuariosController {
         } catch (SQLException e) {
             e.printStackTrace();
             mostrarMensaje("No se pudo actualizar el perfil");
+        }
+    }
+
+    private void eliminarAvatarAnteriorSiNoSeUsa(Connection conn, String rutaAnterior, String rutaNueva) throws SQLException {
+        if (rutaAnterior == null || rutaAnterior.isBlank() || rutaAnterior.equals(rutaNueva)) {
+            return;
+        }
+
+        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM usuarios WHERE rutaFoto = ?")) {
+            ps.setString(1, rutaAnterior);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    ImageStorage.deleteUserAvatarIfManaged(rutaAnterior);
+                }
+            }
         }
     }
 

@@ -24,8 +24,67 @@ public final class ImageStorage {
         return copyImageToFolder(sourceFile, AppConfig.getSamplePhotosFolder(), "muestra");
     }
 
+    public static String copySamplePhoto(File sourceFile, String baseName) throws IOException {
+        return copyImageToFolder(sourceFile, AppConfig.getSamplePhotosFolder(), baseName);
+    }
+
     public static String copyUserAvatar(File sourceFile) throws IOException {
         return copyImageToFolder(sourceFile, AppConfig.getUserAvatarsFolder(), "avatar");
+    }
+
+    public static void deleteUserAvatarIfManaged(String storedPath) {
+        if (storedPath == null || storedPath.isBlank()) {
+            return;
+        }
+
+        String path = storedPath.trim();
+        if (!path.startsWith(USER_AVATARS_PREFIX)) {
+            return;
+        }
+
+        String fileName = path.substring(USER_AVATARS_PREFIX.length());
+        if (fileName.matches("Avatar_\\d+\\.png")) {
+            return;
+        }
+
+        try {
+            File avatar = resolveSharedFile(AppConfig.getUserAvatarsFolder(), fileName);
+            if (avatar != null) {
+                Files.deleteIfExists(avatar.toPath());
+            }
+        } catch (IOException ignored) {
+            // La limpieza de archivos antiguos no debe impedir guardar el usuario.
+        }
+    }
+
+    public static String normalizeSamplePhotoName(String storedPath, String baseName) throws IOException {
+        if (storedPath == null || storedPath.isBlank() || baseName == null || baseName.isBlank()) {
+            return storedPath;
+        }
+
+        File sourceFile = resolveImageFile(storedPath);
+        if (sourceFile == null || !sourceFile.exists() || !sourceFile.isFile()) {
+            return storedPath;
+        }
+
+        String extension = getExtension(sourceFile.getName());
+        String safeBaseName = sanitizeBaseName(baseName, "muestra");
+        String fileName = safeBaseName + extension;
+        Path destinationFolder = AppConfig.getSamplePhotosFolder();
+        Path destination = destinationFolder.resolve(fileName).toAbsolutePath().normalize();
+        Path source = sourceFile.toPath().toAbsolutePath().normalize();
+
+        if (!source.equals(destination)) {
+            deleteSamplePhotosWithBaseName(safeBaseName, fileName);
+            Files.createDirectories(destinationFolder);
+            if (source.startsWith(destinationFolder.toAbsolutePath().normalize())) {
+                Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+
+        return storedRelativePath(destinationFolder, destination);
     }
 
     public static String resolveImageUrl(String storedPath) {
@@ -163,14 +222,39 @@ public final class ImageStorage {
             throw new IOException("La imagen seleccionada no existe: " + sourceFile);
         }
 
+        Path folder = destinationFolder.toAbsolutePath().normalize();
+        Path source = sourceFile.toPath().toAbsolutePath().normalize();
+        Files.createDirectories(folder);
+        if (source.startsWith(folder)) {
+            return storedRelativePath(destinationFolder, source);
+        }
+
         String extension = getExtension(sourceFile.getName());
         String safeBaseName = sanitizeBaseName(sourceFile.getName(), defaultBaseName);
         String fileName = safeBaseName + "_" + LocalDateTime.now().format(TIMESTAMP)
                 + "_" + UUID.randomUUID().toString().substring(0, 8) + extension;
-        Path destination = destinationFolder.resolve(fileName).toAbsolutePath().normalize();
+        Path destination = folder.resolve(fileName).toAbsolutePath().normalize();
 
-        Files.copy(sourceFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
         return storedRelativePath(destinationFolder, destination);
+    }
+
+    private static void deleteSamplePhotosWithBaseName(String safeBaseName, String exceptFileName) throws IOException {
+        Path folder = AppConfig.getSamplePhotosFolder();
+        if (!Files.isDirectory(folder)) {
+            return;
+        }
+
+        try (var files = Files.list(folder)) {
+            for (Path file : files.toList()) {
+                String fileName = file.getFileName().toString();
+                int dot = fileName.lastIndexOf('.');
+                String currentBaseName = dot > 0 ? fileName.substring(0, dot) : fileName;
+                if (currentBaseName.equals(safeBaseName) && !fileName.equals(exceptFileName)) {
+                    Files.deleteIfExists(file);
+                }
+            }
+        }
     }
 
     private static String storedRelativePath(Path destinationFolder, Path destination) {

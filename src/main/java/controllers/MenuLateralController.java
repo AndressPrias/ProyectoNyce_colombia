@@ -3,7 +3,9 @@ package controllers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import utilities.AppVersion;
 import utilities.Navegacion;
 import utilities.SeccionApp;
 
@@ -33,8 +35,12 @@ public class MenuLateralController {
     private Button btnCerrarSesion;
 
     @FXML
+    private Text txtVersion;
+
+    @FXML
     public void initialize() {
         btnCerrarSesion.getStyleClass().add("menu-cerrar");
+        txtVersion.setText(AppVersion.getShortDisplayVersion());
         Navegacion.registrarMenuLateral(this);
         marcarActivo(SeccionApp.INICIO);
     }
