@@ -3,7 +3,9 @@ package controllers;
 import domain.Usuario;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
@@ -13,6 +15,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import utilities.AppVersion;
 import utilities.ImageStorage;
 import utilities.Navegacion;
 import utilities.UsuarioSesion;
@@ -46,6 +49,7 @@ public class MenuPrincipalController {
         configurarTarjetaRestringida(cardRegistrarMuestra, controlMuestras);
         configurarTarjetaRestringida(cardCargarDatos, controlMuestras);
         configurarTarjetaRestringida(cardRemisionMuestras, controlMuestras);
+        notificarNuevaVersionSiAplica();
     }
 
     private void configurarTarjetaRestringida(VBox tarjeta, boolean habilitada) {
@@ -96,6 +100,21 @@ public class MenuPrincipalController {
         );
         timelineFechaHora.setCycleCount(Timeline.INDEFINITE);
         timelineFechaHora.play();
+    }
+
+    private void notificarNuevaVersionSiAplica() {
+        if (!AppVersion.shouldNotifyCurrentVersion()) {
+            return;
+        }
+
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Version actualizada");
+            alert.setHeaderText("Control Muestras LENC actualizado");
+            alert.setContentText(AppVersion.getDisplayVersion() + "\n\n" + AppVersion.getNotes());
+            alert.showAndWait();
+            AppVersion.markCurrentVersionSeen();
+        });
     }
 
     @FXML

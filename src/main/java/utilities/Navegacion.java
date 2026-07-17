@@ -117,6 +117,7 @@ public final class Navegacion {
             stage.setScene(new Scene(root));
             stage.setTitle("Login NYCE");
             stage.setMaximized(false);
+            stage.setResizable(false);
             stage.sizeToScene();
             stage.centerOnScreen();
         } catch (IOException e) {

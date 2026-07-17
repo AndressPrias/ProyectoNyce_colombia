@@ -5,7 +5,9 @@ import domain.Estado;
 import domain.Muestra;
 import domain.Usuario;
 import db.Database;
+import utilities.ImageStorage;
 
+import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -108,6 +110,7 @@ public class MuestraService {
                 : generarCodigoInterno();
         String informe = validarCodigoCuatroDigitos(numeroInforme, "informe");
         String cotizacion = validarCodigoCuatroDigitos(numeroCotizacion, "cotizaciÃ³n");
+        String rutaFotoNormalizada = normalizarFotoMuestra(rutaFoto, codigo);
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
@@ -124,7 +127,7 @@ public class MuestraService {
             ps.setString(8, ubicacion);
             ps.setInt(9, custodio.getId());
             ps.setString(10, fecha.toString());
-            ps.setString(11, rutaFoto);
+            ps.setString(11, rutaFotoNormalizada);
             ps.setString(12, informe);
             ps.setString(13, cotizacion);
 
@@ -242,6 +245,12 @@ public class MuestraService {
         }
         String numeroInforme = validarCodigoCuatroDigitos(muestra.getNumeroInforme(), "informe");
         String numeroCotizacion = validarCodigoCuatroDigitos(muestra.getNumeroCotizacion(), "cotización");
+        String rutaFoto = normalizarFotoMuestra(
+                muestra.getRutaFoto(),
+                muestra.getCodigoInterno() == null || muestra.getCodigoInterno().isBlank()
+                        ? String.valueOf(muestra.getId())
+                        : muestra.getCodigoInterno()
+        );
         String sql = "UPDATE muestras SET descripcion=?, rotuloCliente=?, nombreCliente=?, marca=?, referencia=?, estado=?, " +
                 "fechaRecepcion=?, ubicacion=?, tecnicoId=?, rutaFoto=?, numeroInforme=?, numeroCotizacion=? WHERE id=?";
 
@@ -257,7 +266,7 @@ public class MuestraService {
             ps.setString(7, muestra.getFechaRecepcion() == null ? null : muestra.getFechaRecepcion().toString());
             ps.setString(8, muestra.getUbicacion());
             setUsuarioIdNullable(ps, 9, muestra.getTecnico());
-            ps.setString(10, muestra.getRutaFoto());
+            ps.setString(10, rutaFoto);
             ps.setString(11, numeroInforme);
             ps.setString(12, numeroCotizacion);
             ps.setInt(13, muestra.getId());
@@ -266,6 +275,46 @@ public class MuestraService {
 
         } catch (SQLException e) {
             System.err.println("Error al actualizar muestra " + muestra.getId() + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean actualizarInformeCotizacion(int muestraId, String numeroInforme, String numeroCotizacion,
+                                               Usuario usuarioAccion, boolean actualizarInforme,
+                                               boolean actualizarCotizacion) {
+        if (usuarioAccion == null || !usuarioAccion.puedeControlarMuestras()
+                || (!actualizarInforme && !actualizarCotizacion)) {
+            return false;
+        }
+
+        List<String> campos = new ArrayList<>();
+        String informe = null;
+        String cotizacion = null;
+        if (actualizarInforme) {
+            informe = validarCodigoCuatroDigitos(numeroInforme, "informe");
+            campos.add("numeroInforme=?");
+        }
+        if (actualizarCotizacion) {
+            cotizacion = validarCodigoCuatroDigitos(numeroCotizacion, "cotizacion");
+            campos.add("numeroCotizacion=?");
+        }
+
+        String sql = "UPDATE muestras SET " + String.join(", ", campos) + " WHERE id=?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int indice = 1;
+            if (actualizarInforme) {
+                ps.setString(indice++, informe);
+            }
+            if (actualizarCotizacion) {
+                ps.setString(indice++, cotizacion);
+            }
+            ps.setInt(indice, muestraId);
+            return ps.executeUpdate() == 1;
+
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Error al actualizar informe/cotizacion de muestra " + muestraId + ": " + e.getMessage());
             return false;
         }
     }
@@ -527,6 +576,16 @@ public class MuestraService {
 
     private String limitarLongitud(String valor, int maximo) {
         return valor != null && valor.length() > maximo ? valor.substring(0, maximo) : valor;
+    }
+
+    private String normalizarFotoMuestra(String rutaFoto, String codigoInterno) {
+        try {
+            return ImageStorage.normalizeSamplePhotoName(rutaFoto, codigoInterno);
+        } catch (IOException e) {
+            System.err.println("No se pudo normalizar el nombre de la foto de la muestra "
+                    + codigoInterno + ": " + e.getMessage());
+            return rutaFoto;
+        }
     }
 
     private String validarCodigoCuatroDigitos(String valor, String campo) {
