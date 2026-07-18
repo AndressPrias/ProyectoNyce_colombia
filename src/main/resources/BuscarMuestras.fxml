@@ -51,35 +51,35 @@
                         </VBox>
                     </HBox>
 
-                    <GridPane hgap="10.0" prefHeight="150.0" vgap="9.0">
+                    <GridPane hgap="8.0" maxWidth="1.7976931348623157E308" prefHeight="150.0" vgap="9.0">
                         <columnConstraints>
-                            <ColumnConstraints minWidth="92.0" prefWidth="105.0" />
-                            <ColumnConstraints minWidth="98.0" percentWidth="18.0" />
-                            <ColumnConstraints minWidth="92.0" prefWidth="115.0" />
-                            <ColumnConstraints minWidth="98.0" percentWidth="18.0" />
-                            <ColumnConstraints minWidth="82.0" prefWidth="95.0" />
-                            <ColumnConstraints minWidth="98.0" percentWidth="18.0" />
-                            <ColumnConstraints minWidth="88.0" prefWidth="105.0" />
-                            <ColumnConstraints minWidth="98.0" percentWidth="18.0" />
+                            <ColumnConstraints minWidth="72.0" prefWidth="82.0" />
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="105.0" percentWidth="18.0" prefWidth="170.0" />
+                            <ColumnConstraints minWidth="72.0" prefWidth="78.0" />
+                            <ColumnConstraints minWidth="82.0" percentWidth="10.0" prefWidth="105.0" />
+                            <ColumnConstraints minWidth="70.0" prefWidth="78.0" />
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="100.0" percentWidth="18.0" prefWidth="165.0" />
+                            <ColumnConstraints minWidth="82.0" prefWidth="88.0" />
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="100.0" percentWidth="18.0" prefWidth="165.0" />
                         </columnConstraints>
                         <children>
                             <Label styleClass="detail-label" text="ID" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                            <Label fx:id="lblDetalleCodigoInterno" styleClass="detail-value-strong" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <Label fx:id="lblDetalleCodigoInterno" maxWidth="1.7976931348623157E308" styleClass="detail-value-strong" textOverrun="ELLIPSIS" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                             <Label styleClass="detail-label" text="Fecha" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                            <Label fx:id="lblDetalleFecha" styleClass="detail-value" wrapText="true" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                            <Label fx:id="lblDetalleFecha" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="3" GridPane.rowIndex="0" />
                             <Label styleClass="detail-label" text="Cliente" GridPane.columnIndex="4" GridPane.rowIndex="0" />
-                            <Label fx:id="lblDetalleCliente" styleClass="detail-value" wrapText="true" GridPane.columnIndex="5" GridPane.rowIndex="0" />
+                            <Label fx:id="lblDetalleCliente" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="5" GridPane.rowIndex="0" />
                             <Label styleClass="detail-label" text="Marca" GridPane.columnIndex="6" GridPane.rowIndex="0" />
-                            <Label fx:id="lblDetalleMarca" styleClass="detail-value" wrapText="true" GridPane.columnIndex="7" GridPane.rowIndex="0" />
+                            <Label fx:id="lblDetalleMarca" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="7" GridPane.rowIndex="0" />
 
                             <Label styleClass="detail-label" text="Tecnico" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                            <Label fx:id="lblDetalleTecnico" styleClass="detail-value" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Label fx:id="lblDetalleTecnico" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                             <Label styleClass="detail-label" text="Responsable" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                            <Label fx:id="lblDetalleResponsable" styleClass="detail-value" wrapText="true" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                            <Label fx:id="lblDetalleResponsable" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="3" GridPane.rowIndex="1" />
                             <Label styleClass="detail-label" text="Informe" GridPane.columnIndex="4" GridPane.rowIndex="1" />
-                            <Label fx:id="lblDetalleInforme" styleClass="detail-value" wrapText="true" GridPane.columnIndex="5" GridPane.rowIndex="1" />
+                            <Label fx:id="lblDetalleInforme" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="5" GridPane.rowIndex="1" />
                             <Label styleClass="detail-label" text="Cotizacion" GridPane.columnIndex="6" GridPane.rowIndex="1" />
-                            <Label fx:id="lblDetalleCotizacion" styleClass="detail-value" wrapText="true" GridPane.columnIndex="7" GridPane.rowIndex="1" />
+                            <Label fx:id="lblDetalleCotizacion" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="7" GridPane.rowIndex="1" />
 
                             <Label minWidth="92.0" styleClass="detail-label" text="Descripcion" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                             <Label fx:id="lblDetalleDescripcion" maxWidth="1.7976931348623157E308" minHeight="32.0" prefHeight="32.0" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="2" />
