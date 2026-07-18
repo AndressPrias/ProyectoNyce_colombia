@@ -47,6 +47,7 @@ import javafx.stage.Stage;
 import javafx.stage.Modality;
 import service.MuestraService;
 import service.RemisionService;
+import utilities.AppWindow;
 import utilities.ImageStorage;
 import utilities.UsuarioSesion;
 
@@ -667,8 +668,8 @@ public class BuscarMuestrasController {
             scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             scroll.setStyle("-fx-background-color: transparent; -fx-background: #EEF2F2;");
             stage.setScene(new Scene(scroll));
-            stage.setMaximized(true);
             stage.show();
+            AppWindow.ocuparAreaVisible(stage);
         } catch (Exception e) {
             e.printStackTrace();
             mostrarAlerta(Alert.AlertType.ERROR, "Editar muestra", "No se pudo abrir la ventana de edicion");

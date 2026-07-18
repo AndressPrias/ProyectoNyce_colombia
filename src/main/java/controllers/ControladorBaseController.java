@@ -17,6 +17,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import utilities.AppWindow;
 import utilities.Navegacion;
 import utilities.Paths;
 import utilities.UsuarioSesion;
@@ -162,17 +163,9 @@ public class ControladorBaseController {
     }
 
     private void ajustarTamanoVentana(Stage stage, String fxmlPath) {
-        stage.setResizable(false);
-        if (Paths.MENU_PRINCIPAL.equals(fxmlPath)) {
-            stage.setMinWidth(0);
-            stage.setMinHeight(0);
-            stage.setMaximized(true);
-            return;
-        }
-
         stage.setMinWidth(0);
         stage.setMinHeight(0);
-        stage.setMaximized(true);
+        AppWindow.ocuparAreaVisible(stage);
     }
 
     private void programarAjusteVentana(String fxmlPath, String tituloVentana) {

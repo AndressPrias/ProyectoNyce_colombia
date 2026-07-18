@@ -15,6 +15,7 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import utilities.AppWindow;
 import utilities.Paths;
 
 import java.io.IOException;
@@ -74,8 +75,7 @@ public class LoginController {
                 Stage stage = (Stage) txtUsuario.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("Sistema NYCE");
-                stage.setMaximized(true);
-                stage.setResizable(false);
+                AppWindow.ocuparAreaVisible(stage);
 
             } catch (IOException e) {
                 e.printStackTrace();
