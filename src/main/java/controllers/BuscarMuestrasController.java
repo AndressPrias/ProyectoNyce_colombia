@@ -192,7 +192,7 @@ public class BuscarMuestrasController {
         colRemision.setCellFactory(columna -> new TableCell<>() {
             private final Label etiqueta = new Label();
             private final Button boton = crearBotonVerRemision();
-            private final HBox contenido = new HBox(6, etiqueta, boton);
+            private final HBox contenido = new HBox(4, etiqueta, boton);
 
             {
                 contenido.setAlignment(Pos.CENTER_LEFT);
@@ -217,14 +217,16 @@ public class BuscarMuestrasController {
 
     private Button crearBotonVerRemision() {
         Button boton = new Button();
-        boton.setMinSize(24, 24);
-        boton.setPrefSize(24, 24);
-        boton.setMaxSize(24, 24);
+        boton.setMinSize(18, 18);
+        boton.setPrefSize(18, 18);
+        boton.setMaxSize(18, 18);
         boton.setTooltip(new Tooltip("Ver PDF de remision"));
         boton.getStyleClass().add("table-icon-button");
         SVGPath icono = new SVGPath();
         icono.setContent("M9 17A8 8 0 1 1 9 1A8 8 0 0 1 9 17M15 15L22 22");
-        icono.setStyle("-fx-stroke: #063f3b; -fx-stroke-width: 2; -fx-fill: transparent;");
+        icono.setScaleX(0.72);
+        icono.setScaleY(0.72);
+        icono.setStyle("-fx-stroke: #063f3b; -fx-stroke-width: 1.8; -fx-fill: transparent;");
         boton.setGraphic(icono);
         return boton;
     }

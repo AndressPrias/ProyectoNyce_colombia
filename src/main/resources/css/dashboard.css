@@ -288,7 +288,7 @@
 
 .samples-table .table-icon-button {
     -fx-background-color: transparent;
-    -fx-padding: 2;
+    -fx-padding: 1;
     -fx-cursor: hand;
 }
 
@@ -299,7 +299,7 @@
 
 .samples-table .table-icon-button:hover {
     -fx-background-color: #d7efeb;
-    -fx-background-radius: 12;
+    -fx-background-radius: 9;
 }
 
 .samples-table .table-row-cell:selected .table-cell {
