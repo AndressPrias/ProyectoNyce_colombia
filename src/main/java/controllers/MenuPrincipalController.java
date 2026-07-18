@@ -2,6 +2,7 @@ package controllers;
 
 import domain.Usuario;
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -137,6 +138,7 @@ public class MenuPrincipalController {
             if (alert.showAndWait().filter(ButtonType.OK::equals).isPresent()) {
                 try {
                     AppUpdateService.openInstaller(info);
+                    cerrarAplicacionParaActualizar();
                 } catch (Exception e) {
                     Alert error = new Alert(Alert.AlertType.ERROR);
                     error.setTitle("No se pudo abrir el instalador");
@@ -146,6 +148,18 @@ public class MenuPrincipalController {
                 }
             }
         });
+    }
+
+    private void cerrarAplicacionParaActualizar() {
+        if (timelineFechaHora != null) {
+            timelineFechaHora.stop();
+        }
+        PauseTransition espera = new PauseTransition(Duration.millis(800));
+        espera.setOnFinished(event -> {
+            Platform.exit();
+            System.exit(0);
+        });
+        espera.play();
     }
 
     @FXML
