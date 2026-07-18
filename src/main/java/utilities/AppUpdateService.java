@@ -3,6 +3,7 @@ package utilities;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,11 +55,22 @@ public final class AppUpdateService {
             return;
         }
 
-        Path path = Path.of(installer);
+        Path path = toInstallerPath(installer);
         if (!path.isAbsolute()) {
             path = AppConfig.getUpdatesFolder().resolve(installer);
         }
         Desktop.getDesktop().open(path.toFile());
+    }
+
+    private static Path toInstallerPath(String installer) throws IOException {
+        if (installer.startsWith("file:/")) {
+            try {
+                return Path.of(new URI(installer));
+            } catch (IllegalArgumentException | URISyntaxException e) {
+                throw new IOException("Ruta del instalador no valida: " + installer, e);
+            }
+        }
+        return Path.of(installer);
     }
 
     private static boolean isNewerBuild(String candidate, String current) {
