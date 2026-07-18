@@ -33,34 +33,34 @@
         </VBox>
 
         <VBox spacing="22.0" VBox.vgrow="ALWAYS">
-            <HBox fx:id="vboxVistaMuestra" alignment="TOP_LEFT" minHeight="350.0" minWidth="1230.0" prefHeight="350.0" spacing="20.0" styleClass="detail-panel">
-                <StackPane minHeight="310.0" minWidth="367.0" prefHeight="312.0" prefWidth="367.0" styleClass="detail-image-frame">
-                    <ImageView fx:id="imgDetalle" fitHeight="300.0" fitWidth="354.0" preserveRatio="true" smooth="true" />
+            <HBox fx:id="vboxVistaMuestra" alignment="TOP_LEFT" minHeight="330.0" minWidth="0.0" prefHeight="340.0" spacing="16.0" styleClass="detail-panel">
+                <StackPane minHeight="292.0" minWidth="292.0" prefHeight="300.0" prefWidth="315.0" styleClass="detail-image-frame">
+                    <ImageView fx:id="imgDetalle" fitHeight="288.0" fitWidth="305.0" preserveRatio="true" smooth="true" />
                 </StackPane>
 
-                <VBox minWidth="660.0" spacing="14.0" HBox.hgrow="ALWAYS">
+                <VBox minWidth="0.0" spacing="13.0" HBox.hgrow="ALWAYS">
                     <HBox alignment="CENTER_LEFT" spacing="12.0">
-                        <Label minWidth="220.0" prefWidth="220.0" style="-fx-font-size: 20; -fx-font-weight: bold;" text="Detalle de la muestra" textFill="#0a4d4a" />
-                        <VBox minWidth="190.0" spacing="2.0" styleClass="detail-highlight-status" HBox.hgrow="ALWAYS">
+                        <Label minWidth="205.0" prefWidth="205.0" style="-fx-font-size: 20; -fx-font-weight: bold;" text="Detalle de la muestra" textFill="#0a4d4a" />
+                        <VBox minWidth="150.0" spacing="2.0" styleClass="detail-highlight-status" HBox.hgrow="ALWAYS">
                             <Label styleClass="detail-highlight-title" text="ESTADO ACTUAL" />
                             <Label fx:id="lblDetalleEstado" maxWidth="1.7976931348623157E308" styleClass="detail-highlight-value-status" wrapText="true" />
                         </VBox>
-                        <VBox minWidth="190.0" spacing="2.0" styleClass="detail-highlight-location" HBox.hgrow="ALWAYS">
+                        <VBox minWidth="150.0" spacing="2.0" styleClass="detail-highlight-location" HBox.hgrow="ALWAYS">
                             <Label fx:id="lblTituloDetalleUbicacion" styleClass="detail-highlight-title" text="UBICACION" />
                             <Label fx:id="lblDetalleUbicacion" maxWidth="1.7976931348623157E308" styleClass="detail-highlight-value-location" wrapText="true" />
                         </VBox>
                     </HBox>
 
-                    <GridPane hgap="12.0" prefHeight="123.0" vgap="9.0">
+                    <GridPane hgap="10.0" prefHeight="150.0" vgap="9.0">
                         <columnConstraints>
-                            <ColumnConstraints percentWidth="7.0" />
-                            <ColumnConstraints percentWidth="17.0" />
-                            <ColumnConstraints percentWidth="9.0" />
-                            <ColumnConstraints percentWidth="15.0" />
-                            <ColumnConstraints percentWidth="9.0" />
-                            <ColumnConstraints percentWidth="17.0" />
-                            <ColumnConstraints percentWidth="10.0" />
-                            <ColumnConstraints percentWidth="16.0" />
+                            <ColumnConstraints minWidth="92.0" prefWidth="105.0" />
+                            <ColumnConstraints minWidth="98.0" percentWidth="18.0" />
+                            <ColumnConstraints minWidth="92.0" prefWidth="115.0" />
+                            <ColumnConstraints minWidth="98.0" percentWidth="18.0" />
+                            <ColumnConstraints minWidth="82.0" prefWidth="95.0" />
+                            <ColumnConstraints minWidth="98.0" percentWidth="18.0" />
+                            <ColumnConstraints minWidth="88.0" prefWidth="105.0" />
+                            <ColumnConstraints minWidth="98.0" percentWidth="18.0" />
                         </columnConstraints>
                         <children>
                             <Label styleClass="detail-label" text="ID" GridPane.columnIndex="0" GridPane.rowIndex="0" />
@@ -81,10 +81,10 @@
                             <Label styleClass="detail-label" text="Cotizacion" GridPane.columnIndex="6" GridPane.rowIndex="1" />
                             <Label fx:id="lblDetalleCotizacion" styleClass="detail-value" wrapText="true" GridPane.columnIndex="7" GridPane.rowIndex="1" />
 
-                            <Label styleClass="detail-label" text="Descripcion" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                            <Label fx:id="lblDetalleDescripcion" maxWidth="1.7976931348623157E308" prefHeight="30.0" prefWidth="539.0" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="2" />
-                            <Label styleClass="detail-label" text="Observaciones" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                            <Label fx:id="lblDetalleObservaciones" maxWidth="1.7976931348623157E308" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="3" />
+                            <Label minWidth="92.0" styleClass="detail-label" text="Descripcion" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <Label fx:id="lblDetalleDescripcion" maxWidth="1.7976931348623157E308" minHeight="32.0" prefHeight="32.0" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="2" />
+                            <Label minWidth="92.0" styleClass="detail-label" text="Observaciones" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                            <Label fx:id="lblDetalleObservaciones" maxWidth="1.7976931348623157E308" minHeight="32.0" prefHeight="32.0" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="3" />
                         </children>
                   <rowConstraints>
                      <RowConstraints />
@@ -95,7 +95,7 @@
                     </GridPane>
                 </VBox>
 
-                <VBox alignment="TOP_CENTER" minWidth="180.0" prefHeight="312.0" prefWidth="180.0" spacing="8.0">
+                <VBox alignment="TOP_CENTER" minWidth="170.0" prefHeight="300.0" prefWidth="170.0" spacing="8.0">
                     <Button fx:id="btnFinalizarEnsayos" managed="false" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#finalizarEnsayos" styleClass="btn-ready-detail" stylesheets="@css/botones.css" text="Finalizar ensayos" visible="false">
                         <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconMuestraWhite.png" /></image></ImageView></graphic>
                     </Button>
