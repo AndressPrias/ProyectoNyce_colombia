@@ -97,14 +97,17 @@
             </children>
         </HBox>
 
-        <Label fx:id="lblMensaje" textFill="red" visible="false" />
-
         <HBox alignment="CENTER_LEFT" spacing="20.0">
             <children>
                 <Button fx:id="btnLimpiar" onAction="#limpiarCampos" prefHeight="31.0" prefWidth="90.0" styleClass="btn-secondary" stylesheets="@css/botones.css" text="Limpiar" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Button fx:id="btnCancelar" onAction="#cerrarVentana" prefHeight="31.0" prefWidth="111.0" styleClass="btn-secondary" stylesheets="@css/botones.css" text="Cancelar" />
-                <Button fx:id="btnActualizarMuestra" onAction="#actualizarMuestra" prefHeight="31.0" prefWidth="176.0" style="-fx-background-color: #009180; -fx-text-fill: white;" styleClass="btn-primary" stylesheets="@css/botones.css" text="Actualizar Muestra" />
+                <VBox alignment="TOP_RIGHT" spacing="6.0">
+                    <children>
+                        <Button fx:id="btnActualizarMuestra" onAction="#actualizarMuestra" prefHeight="31.0" prefWidth="176.0" style="-fx-background-color: #009180; -fx-text-fill: white;" styleClass="btn-primary" stylesheets="@css/botones.css" text="Actualizar Muestra" />
+                        <Label fx:id="lblMensaje" alignment="CENTER_RIGHT" maxWidth="260.0" textAlignment="RIGHT" textFill="red" visible="false" wrapText="true" />
+                    </children>
+                </VBox>
             </children>
         </HBox>
     </children>
