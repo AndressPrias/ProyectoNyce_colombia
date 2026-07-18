@@ -16,6 +16,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={localappdata}\Programs\ControlMuestrasLENC
 UsePreviousAppDir=no
 DefaultGroupName={#MyAppName}
+DisableDirPage=yes
 DisableProgramGroupPage=yes
 LicenseFile=
 OutputDir=..\dist\installer
