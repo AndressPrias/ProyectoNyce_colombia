@@ -196,7 +196,7 @@ public class EditarMuestraController {
 
         if (!esCodigoCuatroDigitosValido(txtNumeroInforme.getText())
                 || !esCodigoCuatroDigitosValido(txtNumeroCotizacion.getText())) {
-            lblMensaje.setText("Informe y cotizaciÃƒÂ³n deben contener exactamente 4 dÃƒÂ­gitos");
+            lblMensaje.setText("Informe y cotización deben contener exactamente 4 dígitos");
             lblMensaje.setVisible(true);
             return;
         }
@@ -226,9 +226,9 @@ public class EditarMuestraController {
                     return;
                 }
 
-                // Mostrar alerta de ÃƒÂ©xito
+                // Mostrar alerta de éxito
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("ActualizaciÃƒÂ³n de Muestra");
+                alert.setTitle("Actualización de Muestra");
                 alert.setHeaderText(null);
                 alert.setContentText("La muestra se ha actualizado correctamente.");
                 alert.showAndWait();
@@ -237,7 +237,7 @@ public class EditarMuestraController {
                     alActualizar.run();
                 }
 
-                // Cerrar la ventana despuÃƒÂ©s de actualizar
+                // Cerrar la ventana después de actualizar
                 Stage stage = (Stage) txtDescripcion.getScene().getWindow();
                 stage.close();
 

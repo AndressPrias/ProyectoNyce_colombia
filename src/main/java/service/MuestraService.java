@@ -109,7 +109,7 @@ public class MuestraService {
                 ? generarCodigoInternoParaFecha(fecha)
                 : generarCodigoInterno();
         String informe = validarCodigoCuatroDigitos(numeroInforme, "informe");
-        String cotizacion = validarCodigoCuatroDigitos(numeroCotizacion, "cotizaciÃ³n");
+        String cotizacion = validarCodigoCuatroDigitos(numeroCotizacion, "cotización");
         String rutaFotoNormalizada = normalizarFotoMuestra(rutaFoto, codigo);
 
         try (Connection conn = Database.getConnection();

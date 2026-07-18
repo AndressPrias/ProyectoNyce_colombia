@@ -51,7 +51,7 @@ public class RegistrarMuestraController {
             if (url != null) {
                 imagen = new Image(url);
             } else {
-                // si el archivo no existe, tambiÃƒÂ©n carga la imagen por defecto
+                // si el archivo no existe, también carga la imagen por defecto
                 imagen = new Image(getClass().getResourceAsStream(IMAGEN_PRODUCTO_DEFECTO));
             }
         }

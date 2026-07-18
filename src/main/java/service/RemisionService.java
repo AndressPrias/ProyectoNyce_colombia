@@ -68,7 +68,7 @@ public class RemisionService {
         try (Connection conn = Database.getConnection()) {
             return consecutivoDisponible(conn, consecutivo);
         } catch (SQLException e) {
-            throw new IllegalStateException("No se pudo validar el consecutivo de la remisiÃ³n", e);
+            throw new IllegalStateException("No se pudo validar el consecutivo de la remisión", e);
         }
     }
 
@@ -99,7 +99,7 @@ public class RemisionService {
                     throw new IllegalArgumentException("El consecutivo debe ser mayor a cero");
                 }
                 if (!consecutivoDisponible(conn, consecutivo)) {
-                    throw new IllegalArgumentException("La remisiÃ³n R" + String.format("%04d", consecutivo) + " ya existe");
+                    throw new IllegalArgumentException("La remisión R" + String.format("%04d", consecutivo) + " ya existe");
                 }
                 int remisionId = insertarRemision(conn, consecutivo, fechaElaboracion, cliente, tipoSalida,
                         numeroEmpaques, observacionFinal, entregadoPor, recibidoFirma,
