@@ -20,6 +20,7 @@ public final class AppConfig {
     private static final String PHOTOS_FOLDER_NAME = "fotos_muestras";
     private static final String REMISSIONS_FOLDER_NAME = "remisiones";
     private static final String USER_AVATARS_FOLDER_NAME = "avatar_usuarios";
+    private static final String UPDATES_FOLDER_NAME = "actualizaciones";
 
     private static Path storageFolder;
 
@@ -102,6 +103,16 @@ public final class AppConfig {
         return folder;
     }
 
+    public static Path getUpdatesFolder() {
+        Path folder = getStorageFolder().resolve(UPDATES_FOLDER_NAME);
+        try {
+            Files.createDirectories(folder);
+        } catch (IOException e) {
+            throw new IllegalStateException("No se pudo crear la carpeta de actualizaciones: " + folder, e);
+        }
+        return folder;
+    }
+
     public static Path getConfigPath() {
         return getAppFolder().resolve(CONFIG_FILE_NAME);
     }
@@ -134,6 +145,7 @@ public final class AppConfig {
         Files.createDirectories(folder.resolve(PHOTOS_FOLDER_NAME));
         Files.createDirectories(folder.resolve(REMISSIONS_FOLDER_NAME));
         Files.createDirectories(folder.resolve(USER_AVATARS_FOLDER_NAME));
+        Files.createDirectories(folder.resolve(UPDATES_FOLDER_NAME));
         if (!Files.isWritable(folder)) {
             throw new IOException("La carpeta seleccionada no permite escritura: " + folder);
         }

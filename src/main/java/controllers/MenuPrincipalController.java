@@ -6,6 +6,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
@@ -15,13 +16,13 @@ import javafx.scene.shape.Circle;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import utilities.AppUpdateService;
 import utilities.AppVersion;
 import utilities.ImageStorage;
 import utilities.Navegacion;
 import utilities.UsuarioSesion;
 
-import java.io.File;
-import java.net.URL;
+import java.util.Optional;
 
 public class MenuPrincipalController {
 
@@ -49,6 +50,7 @@ public class MenuPrincipalController {
         configurarTarjetaRestringida(cardRegistrarMuestra, controlMuestras);
         configurarTarjetaRestringida(cardCargarDatos, controlMuestras);
         configurarTarjetaRestringida(cardRemisionMuestras, controlMuestras);
+        verificarActualizacionDisponible();
         notificarNuevaVersionSiAplica();
     }
 
@@ -114,6 +116,35 @@ public class MenuPrincipalController {
             alert.setContentText(AppVersion.getDisplayVersion() + "\n\n" + AppVersion.getNotes());
             alert.showAndWait();
             AppVersion.markCurrentVersionSeen();
+        });
+    }
+
+    private void verificarActualizacionDisponible() {
+        Optional<AppUpdateService.UpdateInfo> update = AppUpdateService.findAvailableUpdate();
+        if (update.isEmpty()) {
+            return;
+        }
+
+        Platform.runLater(() -> {
+            AppUpdateService.UpdateInfo info = update.get();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Actualizacion disponible");
+            alert.setHeaderText("Hay una version mas reciente de Control Muestras LENC");
+            alert.setContentText("Version " + info.version() + "\nBuild: " + info.build()
+                    + "\n\n" + info.notes()
+                    + "\n\nDesea abrir el instalador ahora?");
+
+            if (alert.showAndWait().filter(ButtonType.OK::equals).isPresent()) {
+                try {
+                    AppUpdateService.openInstaller(info);
+                } catch (Exception e) {
+                    Alert error = new Alert(Alert.AlertType.ERROR);
+                    error.setTitle("No se pudo abrir el instalador");
+                    error.setHeaderText("Revise la carpeta de actualizaciones");
+                    error.setContentText(e.getMessage());
+                    error.showAndWait();
+                }
+            }
         });
     }
 
