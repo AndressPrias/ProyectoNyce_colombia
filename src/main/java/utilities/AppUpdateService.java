@@ -59,7 +59,10 @@ public final class AppUpdateService {
         if (!path.isAbsolute()) {
             path = AppConfig.getUpdatesFolder().resolve(installer);
         }
-        Desktop.getDesktop().open(path.toFile());
+        if (!Files.isRegularFile(path)) {
+            throw new IOException("No se encontro el instalador: " + path);
+        }
+        new ProcessBuilder(path.toString()).start();
     }
 
     private static Path toInstallerPath(String installer) throws IOException {
