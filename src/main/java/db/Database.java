@@ -126,6 +126,22 @@ public class Database {
                     "FOREIGN KEY (remisionId) REFERENCES remisiones(id)," +
                     "FOREIGN KEY (muestraId) REFERENCES muestras(id)" +
                     ");");
+
+            st.execute("CREATE TABLE IF NOT EXISTS muestra_informes (" +
+                    "muestraId INTEGER NOT NULL," +
+                    "numero TEXT NOT NULL CHECK(length(numero) = 4 AND numero NOT GLOB '*[^0-9]*')," +
+                    "anio INTEGER NOT NULL CHECK(anio BETWEEN 2000 AND 9999)," +
+                    "PRIMARY KEY (muestraId, numero, anio)," +
+                    "FOREIGN KEY (muestraId) REFERENCES muestras(id) ON DELETE CASCADE" +
+                    ");");
+
+            st.execute("CREATE TABLE IF NOT EXISTS muestra_cotizaciones (" +
+                    "muestraId INTEGER NOT NULL," +
+                    "numero TEXT NOT NULL CHECK(length(numero) = 4 AND numero NOT GLOB '*[^0-9]*')," +
+                    "anio INTEGER NOT NULL CHECK(anio BETWEEN 2000 AND 9999)," +
+                    "PRIMARY KEY (muestraId, numero, anio)," +
+                    "FOREIGN KEY (muestraId) REFERENCES muestras(id) ON DELETE CASCADE" +
+                    ");");
         }
     }
 
@@ -151,6 +167,14 @@ public class Database {
 
         try (Statement st = conn.createStatement()) {
             st.execute("UPDATE usuarios SET password = nombre WHERE password IS NULL");
+            st.execute("INSERT OR IGNORE INTO muestra_informes (muestraId, numero, anio) " +
+                    "SELECT id, TRIM(numeroInforme), CAST(substr(fechaRecepcion, 1, 4) AS INTEGER) FROM muestras " +
+                    "WHERE TRIM(COALESCE(numeroInforme, '')) GLOB '[0-9][0-9][0-9][0-9]' " +
+                    "AND CAST(substr(fechaRecepcion, 1, 4) AS INTEGER) BETWEEN 2000 AND 9999");
+            st.execute("INSERT OR IGNORE INTO muestra_cotizaciones (muestraId, numero, anio) " +
+                    "SELECT id, TRIM(numeroCotizacion), CAST(substr(fechaRecepcion, 1, 4) AS INTEGER) FROM muestras " +
+                    "WHERE TRIM(COALESCE(numeroCotizacion, '')) GLOB '[0-9][0-9][0-9][0-9]' " +
+                    "AND CAST(substr(fechaRecepcion, 1, 4) AS INTEGER) BETWEEN 2000 AND 9999");
         }
     }
 

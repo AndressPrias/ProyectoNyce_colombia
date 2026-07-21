@@ -2,6 +2,7 @@ package utilities;
 
 import domain.Estado;
 import domain.Muestra;
+import domain.ReferenciaDocumento;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
@@ -35,10 +36,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class ExcelHelper {
 
     private static final String[] ENCABEZADOS = {
+            "idCarga *",
             "rotuloCliente *",
             "nombreCliente",
             "descripcion *",
@@ -47,10 +51,10 @@ public final class ExcelHelper {
             "estado",
             "fechaRecepcion",
             "ubicacion",
-            "numeroInforme",
-            "numeroCotizacion",
             "rutaFoto"
     };
+
+    private static final String[] ENCABEZADOS_DOCUMENTOS = {"idCargaMuestra *", "numero *", "anio *"};
 
     private static final DateTimeFormatter FECHA_DIA_MES_ANIO = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -60,10 +64,14 @@ public final class ExcelHelper {
     public static void crearPlantilla(File destino) throws Exception {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet datos = workbook.createSheet("Datos");
+            Sheet informes = workbook.createSheet("Informes");
+            Sheet cotizaciones = workbook.createSheet("Cotizaciones");
             Sheet instrucciones = workbook.createSheet("Instrucciones");
             Sheet catalogos = workbook.createSheet("Catalogos");
 
             crearEncabezados(workbook, datos);
+            crearEncabezadosDocumentos(workbook, informes);
+            crearEncabezadosDocumentos(workbook, cotizaciones);
             crearInstrucciones(workbook, instrucciones);
             crearCatalogoEstados(catalogos);
             agregarValidacionEstados(workbook, datos);
@@ -120,6 +128,17 @@ public final class ExcelHelper {
                 }
             }
 
+            Map<String, Muestra> muestrasPorIdCarga = new HashMap<>();
+            for (Muestra muestra : muestras) {
+                if (muestrasPorIdCarga.putIfAbsent(muestra.getIdCarga(), muestra) != null) {
+                    errores.add("El idCarga '" + muestra.getIdCarga() + "' está repetido en la hoja Datos.");
+                }
+            }
+            leerRelaciones(workbook.getSheet("Informes"), "Informes", muestrasPorIdCarga, true,
+                    formatter, evaluator, errores);
+            leerRelaciones(workbook.getSheet("Cotizaciones"), "Cotizaciones", muestrasPorIdCarga, false,
+                    formatter, evaluator, errores);
+
             if (muestras.isEmpty() && errores.isEmpty()) {
                 errores.add("La plantilla no contiene filas de datos.");
             }
@@ -147,18 +166,39 @@ public final class ExcelHelper {
             cell.setCellValue(ENCABEZADOS[i]);
             cell.setCellStyle(estilo);
             sheet.setColumnWidth(i, switch (i) {
-                case 1, 2, 7, 10 -> 28 * 256;
-                case 8, 9 -> 22 * 256;
+                case 2, 3, 8, 9 -> 28 * 256;
                 default -> 20 * 256;
             });
         }
 
         CellStyle texto = workbook.createCellStyle();
         texto.setDataFormat(workbook.createDataFormat().getFormat("@"));
-        sheet.setDefaultColumnStyle(8, texto);
-        sheet.setDefaultColumnStyle(9, texto);
+        sheet.setDefaultColumnStyle(0, texto);
         sheet.createFreezePane(0, 1);
         sheet.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, ENCABEZADOS.length - 1));
+    }
+
+    private static void crearEncabezadosDocumentos(Workbook workbook, Sheet sheet) {
+        Row row = sheet.createRow(0);
+        CellStyle estilo = workbook.createCellStyle();
+        estilo.setFillForegroundColor(IndexedColors.TEAL.getIndex());
+        estilo.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        Font fuente = workbook.createFont();
+        fuente.setBold(true);
+        fuente.setColor(IndexedColors.WHITE.getIndex());
+        estilo.setFont(fuente);
+        for (int i = 0; i < ENCABEZADOS_DOCUMENTOS.length; i++) {
+            Cell cell = row.createCell(i);
+            cell.setCellValue(ENCABEZADOS_DOCUMENTOS[i]);
+            cell.setCellStyle(estilo);
+            sheet.setColumnWidth(i, 22 * 256);
+        }
+        CellStyle texto = workbook.createCellStyle();
+        texto.setDataFormat(workbook.createDataFormat().getFormat("@"));
+        sheet.setDefaultColumnStyle(0, texto);
+        sheet.setDefaultColumnStyle(1, texto);
+        sheet.createFreezePane(0, 1);
+        sheet.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 2));
     }
 
     private static void crearInstrucciones(Workbook workbook, Sheet sheet) {
@@ -174,12 +214,14 @@ public final class ExcelHelper {
         encabezado.getCell(0).setCellStyle(titulo);
 
         String[] lineas = {
-                "Complete una muestra por fila en la hoja Datos.",
+                "Complete una muestra por fila en la hoja Datos y asigne un idCarga único, por ejemplo M001.",
                 "No cambie los nombres de los encabezados.",
                 "Campos obligatorios: rotuloCliente * y descripcion *.",
                 "estado: seleccione un valor de la lista disponible.",
                 "fechaRecepcion: use una fecha de Excel o el formato dd/MM/yyyy.",
-                "numeroInforme y numeroCotizacion son opcionales; si los diligencia deben tener exactamente 4 digitos, por ejemplo 0304.",
+                "Registre todos los informes en la hoja Informes y todas las cotizaciones en la hoja Cotizaciones.",
+                "Cada número debe tener exactamente 4 dígitos, por ejemplo 0304; repita el idCargaMuestra para agregar varios.",
+                "El año corresponde al año propio del informe o de la cotización.",
                 "rutaFoto es opcional y debe contener la ruta completa de una imagen existente.",
                 "El código interno y el custodio se asignan automáticamente al importar."
         };
@@ -199,7 +241,7 @@ public final class ExcelHelper {
     }
 
     private static void agregarValidacionEstados(Workbook workbook, Sheet datos) {
-        int columnaEstado = 5;
+        int columnaEstado = 6;
         int ultimaFilaCatalogo = Estado.values().length + 1;
         Name rangoEstados = workbook.createName();
         rangoEstados.setNameName("EstadosValidos");
@@ -238,15 +280,21 @@ public final class ExcelHelper {
                                        DataFormatter formatter, FormulaEvaluator evaluator,
                                        int numeroFila, List<String> errores) {
         Muestra muestra = new Muestra();
+        boolean plantillaNueva = columnas.containsKey("idcarga");
+        muestra.setIdCarga(plantillaNueva
+                ? valor(row, columnas, "idcarga", formatter, evaluator)
+                : String.format("FILA-%04d", numeroFila));
         muestra.setRotuloCliente(valor(row, columnas, "rotulocliente", formatter, evaluator));
         muestra.setNombreCliente(valor(row, columnas, "nombrecliente", formatter, evaluator));
         muestra.setDescripcion(valor(row, columnas, "descripcion", formatter, evaluator));
         muestra.setMarca(valor(row, columnas, "marca", formatter, evaluator));
         muestra.setReferencia(valor(row, columnas, "referencia", formatter, evaluator));
         muestra.setUbicacion(valor(row, columnas, "ubicacion", formatter, evaluator));
-        muestra.setNumeroInforme(leerCodigoCuatroDigitos(row, columnas, "numeroinforme", "numeroInforme", formatter, evaluator, numeroFila, errores));
-        muestra.setNumeroCotizacion(leerCodigoCuatroDigitos(row, columnas, "numerocotizacion", "numeroCotizacion", formatter, evaluator, numeroFila, errores));
         muestra.setRutaFoto(valor(row, columnas, "rutafoto", formatter, evaluator));
+
+        if (plantillaNueva && muestra.getIdCarga().isBlank()) {
+            errores.add("Fila " + numeroFila + ": idCarga es obligatorio.");
+        }
 
         if (muestra.getRotuloCliente().isBlank()) {
             errores.add("Fila " + numeroFila + ": rotuloCliente es obligatorio.");
@@ -273,21 +321,87 @@ public final class ExcelHelper {
             errores.add("Fila " + numeroFila + ": " + e.getMessage());
         }
 
+        int anioPredeterminado = muestra.getFechaRecepcion() != null
+                && muestra.getFechaRecepcion().getYear() >= 2000
+                ? muestra.getFechaRecepcion().getYear() : LocalDate.now().getYear();
+        muestra.setInformes(leerCodigosLegacy(row, columnas, "numeroinforme", "numeroInforme",
+                anioPredeterminado, formatter, evaluator, numeroFila, errores));
+        muestra.setCotizaciones(leerCodigosLegacy(row, columnas, "numerocotizacion", "numeroCotizacion",
+                anioPredeterminado, formatter, evaluator, numeroFila, errores));
+
         return muestra;
     }
 
-    private static String leerCodigoCuatroDigitos(Row row, Map<String, Integer> columnas, String nombreColumna,
-                                                  String etiqueta, DataFormatter formatter, FormulaEvaluator evaluator,
-                                                  int numeroFila, List<String> errores) {
+    private static void leerRelaciones(Sheet sheet, String nombreHoja, Map<String, Muestra> muestrasPorIdCarga,
+                                       boolean informes, DataFormatter formatter, FormulaEvaluator evaluator,
+                                       List<String> errores) {
+        if (sheet == null) {
+            return;
+        }
+        Row encabezado = sheet.getRow(0);
+        if (encabezado == null) {
+            errores.add("La hoja " + nombreHoja + " no contiene encabezados.");
+            return;
+        }
+        Map<String, Integer> columnas = obtenerColumnas(encabezado);
+        if (!columnas.keySet().containsAll(List.of("idcargamuestra", "numero", "anio"))) {
+            errores.add("La hoja " + nombreHoja + " debe contener idCargaMuestra *, numero * y anio *.");
+            return;
+        }
+        Map<String, List<ReferenciaDocumento>> referencias = new HashMap<>();
+        for (int indice = 1; indice <= sheet.getLastRowNum(); indice++) {
+            Row row = sheet.getRow(indice);
+            if (row == null || filaVacia(row, formatter, evaluator)) continue;
+            int numeroFila = indice + 1;
+            String idCarga = valor(row, columnas, "idcargamuestra", formatter, evaluator);
+            String numero = valor(row, columnas, "numero", formatter, evaluator);
+            String anioTexto = valor(row, columnas, "anio", formatter, evaluator);
+            if (!muestrasPorIdCarga.containsKey(idCarga)) {
+                errores.add(nombreHoja + " fila " + numeroFila + ": idCargaMuestra '" + idCarga + "' no existe en Datos.");
+                continue;
+            }
+            if (!numero.matches("\\d{4}")) {
+                errores.add(nombreHoja + " fila " + numeroFila + ": numero debe contener exactamente 4 dígitos.");
+                continue;
+            }
+            if (!anioTexto.matches("\\d{4}")) {
+                errores.add(nombreHoja + " fila " + numeroFila + ": anio debe contener exactamente 4 dígitos.");
+                continue;
+            }
+            try {
+                ReferenciaDocumento referencia = new ReferenciaDocumento(numero, Integer.parseInt(anioTexto));
+                List<ReferenciaDocumento> lista = referencias.computeIfAbsent(idCarga, clave -> new ArrayList<>());
+                if (lista.contains(referencia)) {
+                    errores.add(nombreHoja + " fila " + numeroFila + ": la relación está duplicada.");
+                } else {
+                    lista.add(referencia);
+                }
+            } catch (IllegalArgumentException e) {
+                errores.add(nombreHoja + " fila " + numeroFila + ": " + e.getMessage());
+            }
+        }
+        referencias.forEach((id, lista) -> {
+            if (informes) muestrasPorIdCarga.get(id).setInformes(lista);
+            else muestrasPorIdCarga.get(id).setCotizaciones(lista);
+        });
+    }
+
+    private static List<ReferenciaDocumento> leerCodigosLegacy(Row row, Map<String, Integer> columnas,
+                                                                String nombreColumna, String etiqueta, int anio,
+                                                                DataFormatter formatter, FormulaEvaluator evaluator,
+                                                                int numeroFila, List<String> errores) {
         String valor = valor(row, columnas, nombreColumna, formatter, evaluator);
-        if (valor.isBlank()) {
-            return null;
+        if (valor.isBlank()) return List.of();
+        List<ReferenciaDocumento> referencias = new ArrayList<>();
+        Matcher matcher = Pattern.compile("(?<!\\d)\\d{4}(?!\\d)").matcher(valor);
+        while (matcher.find()) {
+            ReferenciaDocumento referencia = new ReferenciaDocumento(matcher.group(), anio);
+            if (!referencias.contains(referencia)) referencias.add(referencia);
         }
-        if (!valor.matches("\\d{4}")) {
-            errores.add("Fila " + numeroFila + ": " + etiqueta + " debe contener exactamente 4 digitos.");
-            return null;
+        if (referencias.isEmpty()) {
+            errores.add("Fila " + numeroFila + ": " + etiqueta + " debe contener códigos de exactamente 4 dígitos.");
         }
-        return valor;
+        return referencias;
     }
 
     private static LocalDate leerFecha(Cell cell, DataFormatter formatter, FormulaEvaluator evaluator) {

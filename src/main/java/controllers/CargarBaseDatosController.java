@@ -55,8 +55,8 @@ public class CargarBaseDatosController {
         colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fechaRecepcion"));
         colUbicacion.setCellValueFactory(new PropertyValueFactory<>("ubicacion"));
-        colNumeroInforme.setCellValueFactory(new PropertyValueFactory<>("numeroInforme"));
-        colNumeroCotizacion.setCellValueFactory(new PropertyValueFactory<>("numeroCotizacion"));
+        colNumeroInforme.setCellValueFactory(new PropertyValueFactory<>("informesTexto"));
+        colNumeroCotizacion.setCellValueFactory(new PropertyValueFactory<>("cotizacionesTexto"));
         colRutaFoto.setCellValueFactory(new PropertyValueFactory<>("rutaFoto"));
         btnImportar.setDisable(true);
     }
@@ -143,8 +143,8 @@ public class CargarBaseDatosController {
                     muestra.getRutaFoto(),
                     muestra.getEstado(),
                     muestra.getFechaRecepcion(),
-                    muestra.getNumeroInforme(),
-                    muestra.getNumeroCotizacion()
+                    muestra.getInformes(),
+                    muestra.getCotizaciones()
             );
             if (guardada) {
                 cargadas++;

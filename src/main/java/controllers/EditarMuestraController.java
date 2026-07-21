@@ -2,6 +2,7 @@ package controllers;
 
 import domain.Estado;
 import domain.Muestra;
+import domain.ReferenciaDocumento;
 import domain.Usuario;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -22,7 +23,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.function.UnaryOperator;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EditarMuestraController {
 
@@ -34,8 +36,8 @@ public class EditarMuestraController {
     @FXML private ComboBox<Estado> comboEstado;
     @FXML private TextField txtUbicacion;
     @FXML private ComboBox<Usuario> comboTecnico;
-    @FXML private TextField txtNumeroInforme;
-    @FXML private TextField txtNumeroCotizacion;
+    @FXML private TextArea txtNumeroInforme;
+    @FXML private TextArea txtNumeroCotizacion;
     @FXML private TextField txtRemision;
     @FXML private DatePicker fechaRecepcionPicker;
     @FXML private Label lblMensaje;
@@ -52,10 +54,6 @@ public class EditarMuestraController {
         comboEstado.setItems(FXCollections.observableArrayList(Estado.values()));
         comboTecnico.setItems(FXCollections.observableArrayList(UsuarioSesion.obtenerUsuariosAsignables()));
 
-        UnaryOperator<TextFormatter.Change> filtroCuatroDigitos = cambio ->
-                cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null;
-        txtNumeroInforme.setTextFormatter(new TextFormatter<>(filtroCuatroDigitos));
-        txtNumeroCotizacion.setTextFormatter(new TextFormatter<>(filtroCuatroDigitos));
         configurarArrastreImagen();
     }
 
@@ -72,8 +70,8 @@ public class EditarMuestraController {
             txtUbicacion.setText(muestra.getUbicacion());
             seleccionarTecnico(muestra.getTecnico());
             fechaRecepcionPicker.setValue(muestra.getFechaRecepcion());
-            txtNumeroInforme.setText(muestra.getNumeroInforme());
-            txtNumeroCotizacion.setText(muestra.getNumeroCotizacion());
+            txtNumeroInforme.setText(formatoEdicion(muestra.getInformes()));
+            txtNumeroCotizacion.setText(formatoEdicion(muestra.getCotizaciones()));
             txtRemision.setText(muestra.getRemision());
             rutaFotoSeleccionada = muestra.getRutaFoto();
 
@@ -196,7 +194,7 @@ public class EditarMuestraController {
 
         if (!esCodigoCuatroDigitosValido(txtNumeroInforme.getText())
                 || !esCodigoCuatroDigitosValido(txtNumeroCotizacion.getText())) {
-            lblMensaje.setText("Informe y cotización deben contener exactamente 4 dígitos");
+            lblMensaje.setText("Use una línea por registro con el formato 0335/2026");
             lblMensaje.setVisible(true);
             return;
         }
@@ -204,6 +202,8 @@ public class EditarMuestraController {
         try {
             Estado estado = comboEstado.getValue();
             LocalDate fecha = fechaRecepcionPicker.getValue();
+            List<ReferenciaDocumento> informes = leerReferencias(txtNumeroInforme.getText());
+            List<ReferenciaDocumento> cotizaciones = leerReferencias(txtNumeroCotizacion.getText());
 
             if (muestraEditando != null) {
                 muestraEditando.setDescripcion(txtDescripcion.getText());
@@ -216,12 +216,15 @@ public class EditarMuestraController {
                 muestraEditando.setTecnico(comboTecnico.getValue());
                 muestraEditando.setFechaRecepcion(fecha);
                 muestraEditando.setRutaFoto(rutaFotoSeleccionada);
-                muestraEditando.setNumeroInforme(normalizarCodigo(txtNumeroInforme.getText()));
-                muestraEditando.setNumeroCotizacion(normalizarCodigo(txtNumeroCotizacion.getText()));
-
                 MuestraService service = new MuestraService();
                 if (!service.actualizarMuestra(muestraEditando, usuario)) {
                     lblMensaje.setText("No se pudo actualizar la muestra");
+                    lblMensaje.setVisible(true);
+                    return;
+                }
+                if (!service.reemplazarInformesCotizaciones(muestraEditando.getId(), informes, cotizaciones,
+                        usuario, true, true)) {
+                    lblMensaje.setText("No se pudieron actualizar los informes y cotizaciones");
                     lblMensaje.setVisible(true);
                     return;
                 }
@@ -302,11 +305,33 @@ public class EditarMuestraController {
     }
 
     private boolean esCodigoCuatroDigitosValido(String valor) {
-        return valor == null || valor.isBlank() || valor.trim().matches("\\d{4}");
+        try {
+            leerReferencias(valor);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
-    private String normalizarCodigo(String valor) {
-        return valor == null || valor.isBlank() ? null : valor.trim();
+    private List<ReferenciaDocumento> leerReferencias(String texto) {
+        List<ReferenciaDocumento> referencias = new ArrayList<>();
+        if (texto == null || texto.isBlank()) return referencias;
+        for (String linea : texto.split("\\R")) {
+            if (linea.isBlank()) continue;
+            String[] partes = linea.trim().split("/");
+            if (partes.length != 2 || !partes[0].matches("\\d{4}") || !partes[1].matches("\\d{4}")) {
+                throw new IllegalArgumentException("Use una línea por registro con el formato 0335/2026");
+            }
+            ReferenciaDocumento referencia = new ReferenciaDocumento(partes[0], Integer.parseInt(partes[1]));
+            if (referencias.contains(referencia)) throw new IllegalArgumentException("Hay registros duplicados");
+            referencias.add(referencia);
+        }
+        return referencias;
+    }
+
+    private String formatoEdicion(List<ReferenciaDocumento> referencias) {
+        return referencias.stream().map(ReferenciaDocumento::formatoEdicion)
+                .collect(java.util.stream.Collectors.joining(System.lineSeparator()));
     }
 
 

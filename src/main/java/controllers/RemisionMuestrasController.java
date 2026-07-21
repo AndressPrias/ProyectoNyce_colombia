@@ -40,7 +40,6 @@ import utilities.PdfRemisionWriter;
 
 import java.time.LocalDate;
 import java.nio.file.Path;
-import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.text.Normalizer;
 import java.util.LinkedHashMap;
@@ -196,8 +195,8 @@ public class RemisionMuestrasController {
                 texto(muestra.getMarca(), ""),
                 texto(muestra.getReferencia(), ""),
                 texto(muestra.getUbicacion(), ""),
-                texto(muestra.getNumeroInforme(), ""),
-                texto(muestra.getNumeroCotizacion(), ""),
+                texto(muestra.getInformesTexto(), ""),
+                texto(muestra.getCotizacionesTexto(), ""),
                 muestra.getEstado() == null ? "" : muestra.getEstado().toString(),
                 formatearFecha(muestra.getFechaRecepcion()),
                 muestra.getFechaRecepcion() == null ? "" : muestra.getFechaRecepcion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
@@ -478,9 +477,10 @@ public class RemisionMuestrasController {
 
     private String identificacionInterna(Muestra muestra) {
         String informe = "Sin informe";
-        if (muestra.getNumeroInforme() != null && !muestra.getNumeroInforme().isBlank()) {
-            int anio = muestra.getFechaRecepcion() == null ? Year.now().getValue() : muestra.getFechaRecepcion().getYear();
-            informe = "LENC - " + String.format("%02d", anio % 100) + " - I " + muestra.getNumeroInforme().trim();
+        if (!muestra.getInformes().isEmpty()) {
+            informe = muestra.getInformes().stream()
+                    .map(ref -> "LENC - " + String.format("%02d", ref.anio() % 100) + " - I " + ref.numero())
+                    .collect(java.util.stream.Collectors.joining(" / "));
         }
         return informe + "\nID: " + texto(muestra.getCodigoInterno(), "Sin ID");
     }

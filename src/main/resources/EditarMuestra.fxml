@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
@@ -74,18 +75,18 @@
                      </font></Button>
                         <Label style="-fx-font-size: 10" text="Formatos permitidos: JPG, PNG, JPEG" />
                         <Label style="-fx-font-size: 10" text="Tamaño máximo: 5 MB" />
-                  <Label text="Número de informe (4 dígitos)" textFill="#0a4d4a">
+                  <Label text="Informes (uno por línea: 0335/2026)" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="txtNumeroInforme" promptText="Ejemplo: 0304" />
-                  <Label text="Número de cotización (4 dígitos)" textFill="#0a4d4a">
+                  <TextArea fx:id="txtNumeroInforme" maxHeight="58.0" prefRowCount="2" promptText="Ejemplo: 0304/2026" wrapText="true" />
+                  <Label text="Cotizaciones (una por línea: 0580/2026)" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="txtNumeroCotizacion" promptText="Ejemplo: 0580" />
+                  <TextArea fx:id="txtNumeroCotizacion" maxHeight="58.0" prefRowCount="2" promptText="Ejemplo: 0580/2026" wrapText="true" />
                   <Label text="Remisión" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />

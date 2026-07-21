@@ -3,6 +3,7 @@ package service;
 
 import domain.Estado;
 import domain.Muestra;
+import domain.ReferenciaDocumento;
 import domain.Usuario;
 import db.Database;
 import utilities.ImageStorage;
@@ -15,6 +16,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class MuestraService {
 
@@ -76,7 +79,7 @@ public class MuestraService {
                                            Estado estadoUI, LocalDate fechaRecepcionUI) {
         return registrarMuestraExterna(
                 rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
-                custodio, rutaFoto, estadoUI, fechaRecepcionUI, null, null
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, (String) null, (String) null
         );
     }
 
@@ -88,6 +91,37 @@ public class MuestraService {
                 rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
                 custodio, rutaFoto, estadoUI, fechaRecepcionUI, numeroInforme, numeroCotizacion, true
         );
+    }
+
+    public boolean registrarMuestraExterna(String rotuloCliente, String nombreCliente, String descripcion, String marca,
+                                           String referencia, String ubicacion, Usuario custodio, String rutaFoto,
+                                           Estado estadoUI, LocalDate fechaRecepcionUI,
+                                           List<ReferenciaDocumento> informes,
+                                           List<ReferenciaDocumento> cotizaciones) {
+        List<ReferenciaDocumento> informesValidos = normalizarReferencias(informes);
+        List<ReferenciaDocumento> cotizacionesValidas = normalizarReferencias(cotizaciones);
+        boolean registrada = registrarMuestra(
+                rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion, custodio, rutaFoto,
+                estadoUI, fechaRecepcionUI,
+                informesValidos.isEmpty() ? null : informesValidos.get(0).numero(),
+                cotizacionesValidas.isEmpty() ? null : cotizacionesValidas.get(0).numero(), true);
+        if (!registrada) return false;
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT id FROM muestras WHERE custodioId=? AND fechaRecepcion=? AND rotuloCliente=? ORDER BY id DESC LIMIT 1")) {
+            ps.setInt(1, custodio.getId());
+            ps.setString(2, (fechaRecepcionUI == null ? LocalDate.now() : fechaRecepcionUI).toString());
+            ps.setString(3, rotuloCliente);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return false;
+                return reemplazarInformesCotizaciones(rs.getInt("id"), informesValidos, cotizacionesValidas,
+                        custodio, true, true);
+            }
+        } catch (SQLException e) {
+            System.err.println("No se pudieron guardar las relaciones de la muestra: " + e.getMessage());
+            return false;
+        }
     }
 
     private boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,
@@ -208,6 +242,7 @@ public class MuestraService {
                 m.setNumeroCotizacion(rs.getString("numeroCotizacion"));
                 m.setRemision(rs.getString("remision"));
                 m.setFechaRecepcion(leerFechaSeguro(rs, "fechaRecepcion"));
+                cargarReferencias(conn, m);
 
                 m.setRutaFoto(rs.getString("rutaFoto"));
                 lista.add(m);
@@ -317,6 +352,85 @@ public class MuestraService {
             System.err.println("Error al actualizar informe/cotizacion de muestra " + muestraId + ": " + e.getMessage());
             return false;
         }
+    }
+
+    public boolean reemplazarInformesCotizaciones(int muestraId, List<ReferenciaDocumento> informes,
+                                                   List<ReferenciaDocumento> cotizaciones,
+                                                   Usuario usuarioAccion, boolean actualizarInformes,
+                                                   boolean actualizarCotizaciones) {
+        if (usuarioAccion == null || !usuarioAccion.puedeControlarMuestras()
+                || (!actualizarInformes && !actualizarCotizaciones)) return false;
+        try (Connection conn = Database.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                if (actualizarInformes) {
+                    reemplazarReferencias(conn, "muestra_informes", "numeroInforme", muestraId,
+                            normalizarReferencias(informes));
+                }
+                if (actualizarCotizaciones) {
+                    reemplazarReferencias(conn, "muestra_cotizaciones", "numeroCotizacion", muestraId,
+                            normalizarReferencias(cotizaciones));
+                }
+                conn.commit();
+                return true;
+            } catch (Exception e) {
+                conn.rollback();
+                System.err.println("Error al actualizar informes/cotizaciones: " + e.getMessage());
+                return false;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    public void cargarReferencias(Connection conn, Muestra muestra) throws SQLException {
+        muestra.setInformes(leerReferencias(conn, "muestra_informes", muestra.getId()));
+        muestra.setCotizaciones(leerReferencias(conn, "muestra_cotizaciones", muestra.getId()));
+    }
+
+    private List<ReferenciaDocumento> leerReferencias(Connection conn, String tabla, int muestraId) throws SQLException {
+        List<ReferenciaDocumento> resultado = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT numero, anio FROM " + tabla + " WHERE muestraId=? ORDER BY anio, numero")) {
+            ps.setInt(1, muestraId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    resultado.add(new ReferenciaDocumento(rs.getString("numero"), rs.getInt("anio")));
+                }
+            }
+        }
+        return resultado;
+    }
+
+    private void reemplazarReferencias(Connection conn, String tabla, String columnaLegacy, int muestraId,
+                                        List<ReferenciaDocumento> referencias) throws SQLException {
+        try (PreparedStatement borrar = conn.prepareStatement("DELETE FROM " + tabla + " WHERE muestraId=?")) {
+            borrar.setInt(1, muestraId);
+            borrar.executeUpdate();
+        }
+        try (PreparedStatement insertar = conn.prepareStatement(
+                "INSERT INTO " + tabla + " (muestraId, numero, anio) VALUES (?, ?, ?)")) {
+            for (ReferenciaDocumento referencia : referencias) {
+                insertar.setInt(1, muestraId);
+                insertar.setString(2, referencia.numero());
+                insertar.setInt(3, referencia.anio());
+                insertar.addBatch();
+            }
+            insertar.executeBatch();
+        }
+        try (PreparedStatement legacy = conn.prepareStatement(
+                "UPDATE muestras SET " + columnaLegacy + "=? WHERE id=?")) {
+            legacy.setString(1, referencias.isEmpty() ? null : referencias.get(0).numero());
+            legacy.setInt(2, muestraId);
+            legacy.executeUpdate();
+        }
+    }
+
+    private List<ReferenciaDocumento> normalizarReferencias(List<ReferenciaDocumento> referencias) {
+        Set<ReferenciaDocumento> unicas = new LinkedHashSet<>(referencias == null ? List.of() : referencias);
+        return new ArrayList<>(unicas);
     }
 
     public boolean asignarTecnico(int muestraId, Usuario tecnico, Usuario usuarioAccion) {

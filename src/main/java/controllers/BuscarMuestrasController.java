@@ -3,6 +3,7 @@ package controllers;
 import db.Database;
 import domain.Estado;
 import domain.Muestra;
+import domain.ReferenciaDocumento;
 import domain.Usuario;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -31,7 +32,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
-import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.net.URL;
@@ -40,7 +40,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.UnaryOperator;
 import java.util.prefs.Preferences;
 
 import javafx.stage.Stage;
@@ -131,8 +130,8 @@ public class BuscarMuestrasController {
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fechaRecepcion"));
         colUbicacion.setCellValueFactory(new PropertyValueFactory<>("ubicacion"));
         colTecnico.setCellValueFactory(new PropertyValueFactory<>("tecnico"));
-        colInforme.setCellValueFactory(new PropertyValueFactory<>("numeroInforme"));
-        colCotizacion.setCellValueFactory(new PropertyValueFactory<>("numeroCotizacion"));
+        colInforme.setCellValueFactory(new PropertyValueFactory<>("informesTexto"));
+        colCotizacion.setCellValueFactory(new PropertyValueFactory<>("cotizacionesTexto"));
         colRemision.setCellValueFactory(new PropertyValueFactory<>("remision"));
         configurarColumnaRemision();
         configurarPersistenciaColumnas();
@@ -309,13 +308,15 @@ public class BuscarMuestrasController {
                              "LOWER(COALESCE(r.nombre, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.numeroInforme, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.numeroCotizacion, '')) LIKE ? OR " +
+                             "EXISTS (SELECT 1 FROM muestra_informes mi WHERE mi.muestraId=m.id AND (mi.numero LIKE ? OR CAST(mi.anio AS TEXT) LIKE ?)) OR " +
+                             "EXISTS (SELECT 1 FROM muestra_cotizaciones mc WHERE mc.muestraId=m.id AND (mc.numero LIKE ? OR CAST(mc.anio AS TEXT) LIKE ?)) OR " +
                              "LOWER(COALESCE(m.remision, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.observacionAlmacenamiento, '')) LIKE ? OR " +
                              "CAST(m.fechaRecepcion AS VARCHAR) LIKE ?")) {
 
             String textoBusqueda = txtBusquedaGeneral.getText().trim();
             String busqueda = "%" + textoBusqueda.toLowerCase() + "%";
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 19; i++) {
                 ps.setString(i, busqueda);
             }
             try {
@@ -340,6 +341,7 @@ public class BuscarMuestrasController {
                 m.setObservacionAlmacenamiento(rs.getString("observacionAlmacenamiento"));
                 m.setNumeroInforme(rs.getString("numeroInforme"));
                 m.setNumeroCotizacion(rs.getString("numeroCotizacion"));
+                new MuestraService().cargarReferencias(conn, m);
                 m.setRemision(rs.getString("remision"));
                 int tecnicoId = rs.getInt("tecnico_id");
                 if (!rs.wasNull()) {
@@ -725,52 +727,62 @@ public class BuscarMuestrasController {
         List<Muestra> muestras = obtenerMuestrasSeleccionadas();
         if (muestras.isEmpty()) return;
 
-        TextField txtInforme = new TextField();
-        TextField txtCotizacion = new TextField();
-        UnaryOperator<TextFormatter.Change> filtroCuatroDigitos = cambio ->
-                cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null;
-        txtInforme.setTextFormatter(new TextFormatter<>(filtroCuatroDigitos));
-        txtCotizacion.setTextFormatter(new TextFormatter<>(filtroCuatroDigitos));
-        txtInforme.setPromptText("4 digitos");
-        txtCotizacion.setPromptText("4 digitos");
+        TextArea txtInforme = new TextArea();
+        TextArea txtCotizacion = new TextArea();
+        txtInforme.setPrefRowCount(4);
+        txtCotizacion.setPrefRowCount(4);
+        txtInforme.setPromptText("Un registro por línea: 0335/2026");
+        txtCotizacion.setPromptText("Un registro por línea: 0287/2026");
+        CheckBox chkInformes = new CheckBox("Reemplazar informes");
+        CheckBox chkCotizaciones = new CheckBox("Reemplazar cotizaciones");
 
         if (muestras.size() == 1) {
-            txtInforme.setText(textoSeguro(muestras.get(0).getNumeroInforme()));
-            txtCotizacion.setText(textoSeguro(muestras.get(0).getNumeroCotizacion()));
+            txtInforme.setText(formatoEdicion(muestras.get(0).getInformes()));
+            txtCotizacion.setText(formatoEdicion(muestras.get(0).getCotizaciones()));
+            chkInformes.setSelected(true);
+            chkCotizaciones.setSelected(true);
         }
 
         Dialog<ButtonType> dialogo = crearDialogo("Asignar informe / cotizacion");
         GridPane contenido = crearFormulario();
-        Label ayuda = new Label("Se aplicara a " + muestras.size()
-                + " muestra(s). Deje un campo vacio para no modificarlo.");
+        Label ayuda = new Label("Se aplicará a " + muestras.size()
+                + " muestra(s). Use un número de 4 dígitos y su año: 0335/2026.");
         ayuda.setWrapText(true);
         contenido.add(ayuda, 0, 0, 2, 1);
-        contenido.add(new Label("Informe"), 0, 1);
+        contenido.add(chkInformes, 0, 1);
         contenido.add(txtInforme, 1, 1);
-        contenido.add(new Label("Cotizacion"), 0, 2);
+        contenido.add(chkCotizaciones, 0, 2);
         contenido.add(txtCotizacion, 1, 2);
         dialogo.getDialogPane().setContent(contenido);
 
         Optional<ButtonType> resultado = dialogo.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
 
-        String informe = normalizarCodigoAsignacion(txtInforme.getText());
-        String cotizacion = normalizarCodigoAsignacion(txtCotizacion.getText());
-        boolean actualizarInforme = informe != null;
-        boolean actualizarCotizacion = cotizacion != null;
+        boolean actualizarInforme = chkInformes.isSelected();
+        boolean actualizarCotizacion = chkCotizaciones.isSelected();
         if (!actualizarInforme && !actualizarCotizacion) {
             mostrarAlerta(Alert.AlertType.WARNING, "Asignar informe / cotizacion",
-                    "Digite el informe, la cotizacion o ambos campos");
+                    "Seleccione al menos una categoría para actualizar.");
+            return;
+        }
+
+        List<ReferenciaDocumento> informes;
+        List<ReferenciaDocumento> cotizaciones;
+        try {
+            informes = actualizarInforme ? leerReferencias(txtInforme.getText()) : List.of();
+            cotizaciones = actualizarCotizacion ? leerReferencias(txtCotizacion.getText()) : List.of();
+        } catch (IllegalArgumentException e) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Formato no válido", e.getMessage());
             return;
         }
 
         MuestraService service = new MuestraService();
         int actualizadas = 0;
         for (Muestra muestra : muestras) {
-            if (service.actualizarInformeCotizacion(
+            if (service.reemplazarInformesCotizaciones(
                     muestra.getId(),
-                    informe,
-                    cotizacion,
+                    informes,
+                    cotizaciones,
                     usuarioActual(),
                     actualizarInforme,
                     actualizarCotizacion)) {
@@ -786,6 +798,28 @@ public class BuscarMuestrasController {
             mostrarAlerta(Alert.AlertType.WARNING, "Asignar informe / cotizacion",
                     "Se actualizaron " + actualizadas + " de " + muestras.size() + " muestra(s)");
         }
+    }
+
+    private List<ReferenciaDocumento> leerReferencias(String texto) {
+        List<ReferenciaDocumento> referencias = new ArrayList<>();
+        if (texto == null || texto.isBlank()) return referencias;
+        for (String linea : texto.split("\\R")) {
+            if (linea.isBlank()) continue;
+            String[] partes = linea.trim().split("/");
+            if (partes.length != 2 || !partes[0].matches("\\d{4}") || !partes[1].matches("\\d{4}")) {
+                throw new IllegalArgumentException("Cada línea debe usar el formato 0335/2026.");
+            }
+            ReferenciaDocumento referencia = new ReferenciaDocumento(partes[0], Integer.parseInt(partes[1]));
+            if (referencias.contains(referencia)) {
+                throw new IllegalArgumentException("El registro " + linea.trim() + " está duplicado.");
+            }
+            referencias.add(referencia);
+        }
+        return referencias;
+    }
+
+    private String formatoEdicion(List<ReferenciaDocumento> referencias) {
+        return referencias.stream().map(ReferenciaDocumento::formatoEdicion).collect(java.util.stream.Collectors.joining(System.lineSeparator()));
     }
 
     @FXML
@@ -1006,26 +1040,21 @@ public class BuscarMuestrasController {
     }
 
     private String formatearInforme(Muestra muestra) {
-        String codigo = muestra.getNumeroInforme();
-        if (codigo == null || codigo.isBlank()) {
+        if (muestra.getInformes().isEmpty()) {
             return "Sin datos";
         }
-        return "LENC - " + obtenerAnioCorto(muestra) + " - I " + codigo.trim();
+        return muestra.getInformes().stream()
+                .map(ref -> "LENC - " + String.format("%02d", ref.anio() % 100) + " - I " + ref.numero())
+                .collect(java.util.stream.Collectors.joining(System.lineSeparator()));
     }
 
     private String formatearCotizacion(Muestra muestra) {
-        String codigo = muestra.getNumeroCotizacion();
-        if (codigo == null || codigo.isBlank()) {
+        if (muestra.getCotizaciones().isEmpty()) {
             return "Sin datos";
         }
-        return "LENC-" + obtenerAnioCorto(muestra) + "-C" + codigo.trim();
-    }
-
-    private String obtenerAnioCorto(Muestra muestra) {
-        int anio = muestra.getFechaRecepcion() == null
-                ? Year.now().getValue()
-                : muestra.getFechaRecepcion().getYear();
-        return String.format("%02d", anio % 100);
+        return muestra.getCotizaciones().stream()
+                .map(ref -> "LENC-" + String.format("%02d", ref.anio() % 100) + "-C" + ref.numero())
+                .collect(java.util.stream.Collectors.joining(System.lineSeparator()));
     }
 
     private void limpiarDetalle() {
