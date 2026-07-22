@@ -3,6 +3,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -18,7 +21,7 @@
          <Text fill="#0a4d4a" text="Cargar Base de Datos">
             <font><Font name="System Bold" size="24.0" /></font>
          </Text>
-         <Text fill="#456372" text="Descargue la plantilla, complete los datos y seleccione el archivo para revisarlo." />
+         <Text fill="#456372" text="Descargue la plantilla, complete los datos y valide el archivo antes de importarlo." />
       </VBox>
 
       <HBox alignment="CENTER_LEFT" spacing="16.0" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 6;">
@@ -35,13 +38,40 @@
          <Button mnemonicParsing="false" onAction="#seleccionarArchivo" prefWidth="175.0" styleClass="btn-primary" text="Seleccionar Excel" />
       </HBox>
 
-      <VBox alignment="CENTER" spacing="12.0" style="-fx-background-color: white; -fx-padding: 34; -fx-background-radius: 6;" VBox.vgrow="ALWAYS">
-         <Label style="-fx-font-size: 18; -fx-font-weight: bold;" text="La vista previa se abrirá en una ventana emergente" textFill="#0a4d4a" />
-         <Label maxWidth="560.0" text="Después de seleccionar el Excel podrá revisar todas las filas, consultar los errores de validación y confirmar la importación." textAlignment="CENTER" textFill="#456372" wrapText="true" />
+      <HBox alignment="CENTER_LEFT" spacing="12.0">
+         <Label style="-fx-font-size: 16; -fx-font-weight: bold;" text="Vista previa" textFill="#0a4d4a" />
+         <Label fx:id="lblResumen" text="Seleccione un archivo para comenzar" textFill="#456372" />
+      </HBox>
+
+      <TableView fx:id="tblVistaPrevia" VBox.vgrow="ALWAYS">
+         <placeholder>
+            <Label text="No hay datos para mostrar" />
+         </placeholder>
+         <columns>
+            <TableColumn fx:id="colRotulo" minWidth="110.0" text="Rótulo cliente *" />
+            <TableColumn fx:id="colCliente" minWidth="130.0" text="Cliente" />
+            <TableColumn fx:id="colDescripcion" minWidth="180.0" text="Descripción *" />
+            <TableColumn fx:id="colMarca" minWidth="100.0" text="Marca" />
+            <TableColumn fx:id="colReferencia" minWidth="110.0" text="Referencia" />
+            <TableColumn fx:id="colEstado" minWidth="120.0" text="Estado" />
+            <TableColumn fx:id="colFecha" minWidth="110.0" text="Fecha de recepción" />
+            <TableColumn fx:id="colUbicacion" minWidth="120.0" text="Ubicación" />
+            <TableColumn fx:id="colNumeroInforme" minWidth="150.0" text="Informes" />
+            <TableColumn fx:id="colNumeroCotizacion" minWidth="165.0" text="Cotizaciones" />
+            <TableColumn fx:id="colRutaFoto" minWidth="160.0" text="Ruta de imagen" />
+         </columns>
+      </TableView>
+
+      <Label style="-fx-font-size: 11;" text="* Campos obligatorios en la plantilla" textFill="#d32f2f" />
+
+      <VBox spacing="7.0" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 6;">
+         <Label style="-fx-font-weight: bold;" text="Validacion del archivo" textFill="#0a4d4a" />
+         <TextArea fx:id="txtValidacion" editable="false" prefHeight="82.0" promptText="Aqui se mostraran los errores encontrados." wrapText="true" />
       </VBox>
 
-      <HBox alignment="CENTER_RIGHT">
+      <HBox alignment="CENTER_RIGHT" spacing="12.0">
          <Button mnemonicParsing="false" onAction="#volverInicio" prefWidth="120.0" styleClass="btn-secondary" text="Volver" />
+         <Button fx:id="btnImportar" mnemonicParsing="false" onAction="#importarDatos" prefWidth="190.0" styleClass="btn-primary" text="Importar muestras" />
       </HBox>
    </children>
 </VBox>
