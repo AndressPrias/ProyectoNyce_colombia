@@ -84,14 +84,101 @@ public class MuestraService {
         );
     }
 
-    public boolean registrarMuestraExterna(String rotuloCliente, String nombreCliente, String descripcion, String marca,
-                                           String referencia, String ubicacion, Usuario custodio, String rutaFoto,
-                                           Estado estadoUI, LocalDate fechaRecepcionUI,
-                                           List<ReferenciaDocumento> informes,
-                                           List<ReferenciaDocumento> cotizaciones) {
-        return registrarMuestra(
-                rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion, custodio, rutaFoto,
-                estadoUI, fechaRecepcionUI, informes, cotizaciones, true);
+    public ResultadoImportacion importarMuestraExterna(String rotuloCliente, String nombreCliente,
+                                                        String descripcion, String marca, String referencia,
+                                                        String ubicacion, Usuario custodio, String rutaFoto,
+                                                        Estado estadoUI, LocalDate fechaRecepcionUI,
+                                                        List<ReferenciaDocumento> informes,
+                                                        List<ReferenciaDocumento> cotizaciones) {
+        if (custodio == null || !custodio.puedeControlarMuestras()) return ResultadoImportacion.ERROR;
+        LocalDate fecha = fechaRecepcionUI != null ? fechaRecepcionUI : LocalDate.now();
+        Estado estado = estadoUI != null ? estadoUI : Estado.EN_CUSTODIA;
+
+        try (Connection conn = Database.getConnection()) {
+            Integer muestraId = buscarMuestraExistente(conn, fecha, rotuloCliente, nombreCliente, descripcion);
+            if (muestraId == null) {
+                return registrarMuestra(rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
+                        custodio, rutaFoto, estado, fecha, informes, cotizaciones, true)
+                        ? ResultadoImportacion.NUEVA : ResultadoImportacion.ERROR;
+            }
+
+            conn.setAutoCommit(false);
+            try {
+                String codigoInterno;
+                String rutaFotoActual;
+                try (PreparedStatement consulta = conn.prepareStatement(
+                        "SELECT codigoInterno, rutaFoto FROM muestras WHERE id=?")) {
+                    consulta.setInt(1, muestraId);
+                    try (ResultSet rs = consulta.executeQuery()) {
+                        if (!rs.next()) {
+                            conn.rollback();
+                            return ResultadoImportacion.ERROR;
+                        }
+                        codigoInterno = rs.getString("codigoInterno");
+                        rutaFotoActual = rs.getString("rutaFoto");
+                    }
+                }
+                String rutaFinal = rutaFoto == null || rutaFoto.isBlank()
+                        ? rutaFotoActual : normalizarFotoMuestra(rutaFoto, codigoInterno);
+                try (PreparedStatement actualizar = conn.prepareStatement(
+                        "UPDATE muestras SET nombreCliente=?, marca=?, referencia=?, estado=?, ubicacion=?, " +
+                                "custodioId=?, rutaFoto=? WHERE id=?")) {
+                    actualizar.setString(1, nombreCliente);
+                    actualizar.setString(2, marca);
+                    actualizar.setString(3, referencia);
+                    actualizar.setString(4, estado.name());
+                    actualizar.setString(5, ubicacion);
+                    actualizar.setInt(6, custodio.getId());
+                    actualizar.setString(7, rutaFinal);
+                    actualizar.setInt(8, muestraId);
+                    actualizar.executeUpdate();
+                }
+
+                List<ReferenciaDocumento> informesCombinados = new ArrayList<>(
+                        leerReferencias(conn, "muestra_informes", muestraId));
+                informesCombinados.addAll(informes == null ? List.of() : informes);
+                List<ReferenciaDocumento> cotizacionesCombinadas = new ArrayList<>(
+                        leerReferencias(conn, "muestra_cotizaciones", muestraId));
+                cotizacionesCombinadas.addAll(cotizaciones == null ? List.of() : cotizaciones);
+                reemplazarReferencias(conn, "muestra_informes", muestraId,
+                        normalizarReferencias(informesCombinados));
+                reemplazarReferencias(conn, "muestra_cotizaciones", muestraId,
+                        normalizarReferencias(cotizacionesCombinadas));
+                conn.commit();
+                return ResultadoImportacion.ACTUALIZADA;
+            } catch (Exception e) {
+                conn.rollback();
+                System.err.println("Error al actualizar muestra desde Excel: " + e.getMessage());
+                return ResultadoImportacion.ERROR;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al validar muestra existente: " + e.getMessage());
+            return ResultadoImportacion.ERROR;
+        }
+    }
+
+    private Integer buscarMuestraExistente(Connection conn, LocalDate fecha, String rotuloCliente,
+                                            String nombreCliente, String descripcion) throws SQLException {
+        String sql = "SELECT id FROM muestras WHERE fechaRecepcion=? " +
+                "AND LOWER(TRIM(COALESCE(rotuloCliente, ''))) = LOWER(TRIM(COALESCE(?, ''))) " +
+                "AND LOWER(TRIM(COALESCE(nombreCliente, ''))) = LOWER(TRIM(COALESCE(?, ''))) " +
+                "AND LOWER(TRIM(COALESCE(descripcion, ''))) = LOWER(TRIM(COALESCE(?, ''))) " +
+                "ORDER BY id LIMIT 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, fecha.toString());
+            ps.setString(2, rotuloCliente);
+            ps.setString(3, nombreCliente);
+            ps.setString(4, descripcion);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt("id") : null;
+            }
+        }
+    }
+
+    public enum ResultadoImportacion {
+        NUEVA, ACTUALIZADA, ERROR
     }
 
     private boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,

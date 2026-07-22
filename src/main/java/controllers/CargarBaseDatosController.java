@@ -130,9 +130,11 @@ public class CargarBaseDatosController {
         }
 
         MuestraService service = new MuestraService();
-        int cargadas = 0;
+        int nuevas = 0;
+        int actualizadas = 0;
+        int errores = 0;
         for (Muestra muestra : muestrasValidadas) {
-            boolean guardada = service.registrarMuestraExterna(
+            MuestraService.ResultadoImportacion resultado = service.importarMuestraExterna(
                     muestra.getRotuloCliente(),
                     muestra.getNombreCliente(),
                     muestra.getDescripcion(),
@@ -146,20 +148,23 @@ public class CargarBaseDatosController {
                     muestra.getInformes(),
                     muestra.getCotizaciones()
             );
-            if (guardada) {
-                cargadas++;
+            switch (resultado) {
+                case NUEVA -> nuevas++;
+                case ACTUALIZADA -> actualizadas++;
+                case ERROR -> errores++;
             }
         }
 
-        if (cargadas == muestrasValidadas.size()) {
+        String resumen = "Nuevas: " + nuevas + " | Actualizadas: " + actualizadas + " | Errores: " + errores;
+        if (errores == 0) {
             mostrarAlerta(Alert.AlertType.INFORMATION, "Carga completada",
-                    cargadas + " muestras fueron registradas correctamente.");
-            lblResumen.setText("Carga completada: " + cargadas + " muestras");
-            txtValidacion.setText("Los datos ya se encuentran disponibles en Buscar Muestras.");
+                    "La información fue procesada correctamente.\n\n" + resumen);
+            lblResumen.setText("Carga completada - " + resumen);
+            txtValidacion.setText("Las muestras existentes fueron actualizadas y las nuevas fueron registradas.");
             btnImportar.setDisable(true);
         } else {
             mostrarAlerta(Alert.AlertType.WARNING, "Carga incompleta",
-                    "Se registraron " + cargadas + " de " + muestrasValidadas.size() + " muestras.");
+                    "Algunas filas no pudieron procesarse.\n\n" + resumen);
         }
     }
 
