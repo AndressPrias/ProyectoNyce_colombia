@@ -56,8 +56,8 @@
             <TableColumn fx:id="colEstado" minWidth="120.0" text="Estado" />
             <TableColumn fx:id="colFecha" minWidth="110.0" text="Fecha de recepción" />
             <TableColumn fx:id="colUbicacion" minWidth="120.0" text="Ubicación" />
-            <TableColumn fx:id="colNumeroInforme" minWidth="105.0" text="Informe" />
-            <TableColumn fx:id="colNumeroCotizacion" minWidth="105.0" text="Cotizacion" />
+            <TableColumn fx:id="colNumeroInforme" minWidth="150.0" text="Informes (número/año)" />
+            <TableColumn fx:id="colNumeroCotizacion" minWidth="165.0" text="Cotizaciones (número/año)" />
             <TableColumn fx:id="colRutaFoto" minWidth="160.0" text="Ruta de imagen" />
          </columns>
       </TableView>

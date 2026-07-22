@@ -76,9 +76,9 @@
                             <Label fx:id="lblDetalleTecnico" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                             <Label styleClass="detail-label" text="Responsable" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                             <Label fx:id="lblDetalleResponsable" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                            <Label styleClass="detail-label" text="Informe" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+                            <Label styleClass="detail-label" text="Informes" GridPane.columnIndex="4" GridPane.rowIndex="1" />
                             <Label fx:id="lblDetalleInforme" maxWidth="1.7976931348623157E308" styleClass="detail-value" wrapText="true" GridPane.columnIndex="5" GridPane.rowIndex="1" />
-                            <Label styleClass="detail-label" text="Cotizacion" GridPane.columnIndex="6" GridPane.rowIndex="1" />
+                            <Label styleClass="detail-label" text="Cotizaciones" GridPane.columnIndex="6" GridPane.rowIndex="1" />
                             <Label fx:id="lblDetalleCotizacion" maxWidth="1.7976931348623157E308" styleClass="detail-value" wrapText="true" GridPane.columnIndex="7" GridPane.rowIndex="1" />
 
                             <Label minWidth="92.0" styleClass="detail-label" text="Descripcion" GridPane.columnIndex="0" GridPane.rowIndex="2" />
@@ -102,7 +102,7 @@
                     <Button fx:id="btnEditarInformacion" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#editarInformacion" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Editar informacion">
                         <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/lapiz.png" /></image></ImageView></graphic>
                     </Button>
-                    <Button fx:id="btnAsignarInformeCotizacion" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#asignarInformeCotizacion" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Informe / cotizacion">
+                    <Button fx:id="btnAsignarInformeCotizacion" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#asignarInformeCotizacion" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Gestionar informes y cotizaciones">
                         <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconMuestraWhite.png" /></image></ImageView></graphic>
                     </Button>
                     <Button fx:id="btnAsignarTecnico" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#asignarTecnico" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Asignar tecnico">
@@ -132,8 +132,8 @@
                     <TableColumn fx:id="colFecha" prefWidth="130.0" text="Fecha de recepcion" />
                     <TableColumn fx:id="colUbicacion" prefWidth="90.0" text="Ubicacion" />
                     <TableColumn fx:id="colTecnico" prefWidth="75.0" text="Tecnico" />
-                    <TableColumn fx:id="colInforme" prefWidth="75.0" text="Informe" />
-                    <TableColumn fx:id="colCotizacion" prefWidth="90.0" text="Cotizacion" />
+                    <TableColumn fx:id="colInforme" prefWidth="145.0" text="Informes (número/año)" />
+                    <TableColumn fx:id="colCotizacion" prefWidth="160.0" text="Cotizaciones (número/año)" />
                     <TableColumn fx:id="colRemision" prefWidth="115.0" text="Remision" />
                 </columns>
             </TableView>

@@ -41,8 +41,6 @@ public class RemisionService {
                     muestra.setEstado(Estado.desdeTexto(rs.getString("estado")));
                     muestra.setUbicacion(rs.getString("ubicacion"));
                     muestra.setObservacionAlmacenamiento(rs.getString("observacionAlmacenamiento"));
-                    muestra.setNumeroInforme(rs.getString("numeroInforme"));
-                    muestra.setNumeroCotizacion(rs.getString("numeroCotizacion"));
                     muestra.setRemision(rs.getString("remision"));
                     muestra.setFechaRecepcion(leerFechaSeguro(rs, "fechaRecepcion"));
                     new MuestraService().cargarReferencias(conn, muestra);

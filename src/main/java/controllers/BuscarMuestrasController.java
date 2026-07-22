@@ -306,8 +306,6 @@ public class BuscarMuestrasController {
                              "LOWER(COALESCE(m.ubicacion, '')) LIKE ? OR " +
                              "LOWER(COALESCE(t.nombre, '')) LIKE ? OR " +
                              "LOWER(COALESCE(r.nombre, '')) LIKE ? OR " +
-                             "LOWER(COALESCE(m.numeroInforme, '')) LIKE ? OR " +
-                             "LOWER(COALESCE(m.numeroCotizacion, '')) LIKE ? OR " +
                              "EXISTS (SELECT 1 FROM muestra_informes mi WHERE mi.muestraId=m.id AND (mi.numero LIKE ? OR CAST(mi.anio AS TEXT) LIKE ?)) OR " +
                              "EXISTS (SELECT 1 FROM muestra_cotizaciones mc WHERE mc.muestraId=m.id AND (mc.numero LIKE ? OR CAST(mc.anio AS TEXT) LIKE ?)) OR " +
                              "LOWER(COALESCE(m.remision, '')) LIKE ? OR " +
@@ -316,7 +314,7 @@ public class BuscarMuestrasController {
 
             String textoBusqueda = txtBusquedaGeneral.getText().trim();
             String busqueda = "%" + textoBusqueda.toLowerCase() + "%";
-            for (int i = 1; i <= 19; i++) {
+            for (int i = 1; i <= 17; i++) {
                 ps.setString(i, busqueda);
             }
             try {
@@ -339,8 +337,6 @@ public class BuscarMuestrasController {
                 m.setFechaRecepcion(leerFechaSeguro(rs, "fechaRecepcion"));
                 m.setUbicacion(rs.getString("ubicacion"));
                 m.setObservacionAlmacenamiento(rs.getString("observacionAlmacenamiento"));
-                m.setNumeroInforme(rs.getString("numeroInforme"));
-                m.setNumeroCotizacion(rs.getString("numeroCotizacion"));
                 new MuestraService().cargarReferencias(conn, m);
                 m.setRemision(rs.getString("remision"));
                 int tecnicoId = rs.getInt("tecnico_id");

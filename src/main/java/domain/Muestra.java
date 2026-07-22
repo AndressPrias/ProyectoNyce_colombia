@@ -21,8 +21,6 @@ public class Muestra {
     private Usuario responsableAlmacenamiento;
     private LocalDate fechaRecepcion;
     private String rutaFoto;
-    private String numeroInforme;
-    private String numeroCotizacion;
     private String idCarga;
     private List<ReferenciaDocumento> informes = new ArrayList<>();
     private List<ReferenciaDocumento> cotizaciones = new ArrayList<>();
@@ -116,8 +114,6 @@ public class Muestra {
     public Usuario getCustodio() { return custodio; }
     public Usuario getTecnico() { return tecnico; }
     public Usuario getResponsableAlmacenamiento() { return responsableAlmacenamiento; }
-    public String getNumeroInforme() { return numeroInforme; }
-    public String getNumeroCotizacion() { return numeroCotizacion; }
     public String getIdCarga() { return idCarga; }
     public List<ReferenciaDocumento> getInformes() { return List.copyOf(informes); }
     public List<ReferenciaDocumento> getCotizaciones() { return List.copyOf(cotizaciones); }
@@ -131,16 +127,12 @@ public class Muestra {
     public void setCustodio(Usuario custodio) { this.custodio = custodio; }
     public void setTecnico(Usuario tecnico) { this.tecnico = tecnico; }
     public void setResponsableAlmacenamiento(Usuario responsableAlmacenamiento) { this.responsableAlmacenamiento = responsableAlmacenamiento; }
-    public void setNumeroInforme(String numeroInforme) { this.numeroInforme = numeroInforme; }
-    public void setNumeroCotizacion(String numeroCotizacion) { this.numeroCotizacion = numeroCotizacion; }
     public void setIdCarga(String idCarga) { this.idCarga = idCarga; }
     public void setInformes(List<ReferenciaDocumento> informes) {
         this.informes = informes == null ? new ArrayList<>() : new ArrayList<>(informes);
-        this.numeroInforme = this.informes.isEmpty() ? null : this.informes.get(0).numero();
     }
     public void setCotizaciones(List<ReferenciaDocumento> cotizaciones) {
         this.cotizaciones = cotizaciones == null ? new ArrayList<>() : new ArrayList<>(cotizaciones);
-        this.numeroCotizacion = this.cotizaciones.isEmpty() ? null : this.cotizaciones.get(0).numero();
     }
     public void setRemision(String remision) { this.remision = remision; }
 
