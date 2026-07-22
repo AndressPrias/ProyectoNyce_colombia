@@ -4,10 +4,12 @@ import domain.Estado;
 import domain.Muestra;
 import domain.Usuario;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -43,6 +45,7 @@ public class CargarBaseDatosController {
 
     private Usuario usuario;
     private List<Muestra> muestrasValidadas = List.of();
+    private Task<ResumenImportacion> tareaImportacion;
 
     @FXML
     public void initialize() {
@@ -91,6 +94,9 @@ public class CargarBaseDatosController {
 
     @FXML
     private void seleccionarArchivo() {
+        if (tareaImportacion != null) {
+            return;
+        }
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Seleccionar plantilla completada");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo Excel", "*.xlsx"));
@@ -129,43 +135,92 @@ public class CargarBaseDatosController {
             return;
         }
 
-        MuestraService service = new MuestraService();
-        int nuevas = 0;
-        int actualizadas = 0;
-        int errores = 0;
-        for (Muestra muestra : muestrasValidadas) {
-            MuestraService.ResultadoImportacion resultado = service.importarMuestraExterna(
-                    muestra.getRotuloCliente(),
-                    muestra.getNombreCliente(),
-                    muestra.getDescripcion(),
-                    muestra.getMarca(),
-                    muestra.getReferencia(),
-                    muestra.getUbicacion(),
-                    usuarioActual,
-                    muestra.getRutaFoto(),
-                    muestra.getEstado(),
-                    muestra.getFechaRecepcion(),
-                    muestra.getInformes(),
-                    muestra.getCotizaciones()
-            );
-            switch (resultado) {
-                case NUEVA -> nuevas++;
-                case ACTUALIZADA -> actualizadas++;
-                case ERROR -> errores++;
-            }
-        }
+        List<Muestra> muestrasAImportar = List.copyOf(muestrasValidadas);
+        tareaImportacion = new Task<>() {
+            @Override
+            protected ResumenImportacion call() {
+                MuestraService service = new MuestraService();
+                int nuevas = 0;
+                int actualizadas = 0;
+                int errores = 0;
+                int total = muestrasAImportar.size();
 
-        String resumen = "Nuevas: " + nuevas + " | Actualizadas: " + actualizadas + " | Errores: " + errores;
-        if (errores == 0) {
+                for (int indice = 0; indice < total; indice++) {
+                    updateMessage("Importando muestra " + (indice + 1) + " de " + total + "...");
+                    Muestra muestra = muestrasAImportar.get(indice);
+                    MuestraService.ResultadoImportacion resultado = service.importarMuestraExterna(
+                            muestra.getRotuloCliente(),
+                            muestra.getNombreCliente(),
+                            muestra.getDescripcion(),
+                            muestra.getMarca(),
+                            muestra.getReferencia(),
+                            muestra.getUbicacion(),
+                            usuarioActual,
+                            muestra.getRutaFoto(),
+                            muestra.getEstado(),
+                            muestra.getFechaRecepcion(),
+                            muestra.getInformes(),
+                            muestra.getCotizaciones()
+                    );
+                    switch (resultado) {
+                        case NUEVA -> nuevas++;
+                        case ACTUALIZADA -> actualizadas++;
+                        case ERROR -> errores++;
+                    }
+                    updateProgress(indice + 1, total);
+                }
+                return new ResumenImportacion(nuevas, actualizadas, errores);
+            }
+        };
+
+        iniciarEstadoCarga();
+        lblResumen.textProperty().bind(tareaImportacion.messageProperty());
+        tareaImportacion.setOnSucceeded(event -> mostrarResultadoImportacion(tareaImportacion.getValue()));
+        tareaImportacion.setOnFailed(event -> {
+            Throwable error = tareaImportacion.getException();
+            finalizarEstadoCarga(true);
+            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo completar la carga",
+                    error == null ? null : error.getMessage());
+        });
+
+        Thread hiloImportacion = new Thread(tareaImportacion, "importacion-muestras-excel");
+        hiloImportacion.setDaemon(true);
+        hiloImportacion.start();
+    }
+
+    private void mostrarResultadoImportacion(ResumenImportacion resultado) {
+        boolean completada = resultado.errores() == 0;
+        finalizarEstadoCarga(!completada);
+        String resumen = "Nuevas: " + resultado.nuevas()
+                + " | Actualizadas: " + resultado.actualizadas()
+                + " | Errores: " + resultado.errores();
+        if (completada) {
             mostrarAlerta(Alert.AlertType.INFORMATION, "Carga completada",
                     "La información fue procesada correctamente.\n\n" + resumen);
             lblResumen.setText("Carga completada - " + resumen);
             txtValidacion.setText("Las muestras existentes fueron actualizadas y las nuevas fueron registradas.");
-            btnImportar.setDisable(true);
         } else {
             mostrarAlerta(Alert.AlertType.WARNING, "Carga incompleta",
                     "Algunas filas no pudieron procesarse.\n\n" + resumen);
+            lblResumen.setText("Carga incompleta - " + resumen);
         }
+    }
+
+    private void iniciarEstadoCarga() {
+        ProgressIndicator indicador = new ProgressIndicator();
+        indicador.setPrefSize(18, 18);
+        indicador.setMaxSize(18, 18);
+        btnImportar.setGraphic(indicador);
+        btnImportar.setText("Importando...");
+        btnImportar.setDisable(true);
+    }
+
+    private void finalizarEstadoCarga(boolean habilitarImportacion) {
+        lblResumen.textProperty().unbind();
+        btnImportar.setGraphic(null);
+        btnImportar.setText("Importar muestras");
+        btnImportar.setDisable(!habilitarImportacion);
+        tareaImportacion = null;
     }
 
     @FXML
@@ -180,4 +235,6 @@ public class CargarBaseDatosController {
         alerta.setContentText(mensaje == null || mensaje.isBlank() ? "Ocurrió un error inesperado." : mensaje);
         alerta.showAndWait();
     }
+
+    private record ResumenImportacion(int nuevas, int actualizadas, int errores) {}
 }
