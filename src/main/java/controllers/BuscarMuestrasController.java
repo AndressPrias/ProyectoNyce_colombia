@@ -47,6 +47,7 @@ import java.util.prefs.Preferences;
 
 import javafx.stage.Stage;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import service.MuestraService;
 import service.RemisionService;
 import utilities.AppWindow;
@@ -755,12 +756,24 @@ public class BuscarMuestrasController {
         desplazamiento.setFitToWidth(true);
         desplazamiento.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         desplazamiento.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        desplazamiento.setPrefViewportHeight(390);
-        desplazamiento.setMaxHeight(390);
         desplazamiento.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         dialogo.getDialogPane().setContent(desplazamiento);
         dialogo.getDialogPane().setPrefWidth(610);
-        dialogo.getDialogPane().setPrefHeight(480);
+        Runnable ajustarAltura = () -> Platform.runLater(() -> {
+            double altoMaximo = Math.min(520, Screen.getPrimary().getVisualBounds().getHeight() - 190);
+            double altoContenido = contenido.prefHeight(580);
+            desplazamiento.setPrefViewportHeight(Math.min(altoContenido, altoMaximo));
+            desplazamiento.setMaxHeight(altoMaximo);
+            dialogo.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
+            if (dialogo.getDialogPane().getScene() != null
+                    && dialogo.getDialogPane().getScene().getWindow() != null) {
+                dialogo.getDialogPane().getScene().getWindow().sizeToScene();
+                dialogo.getDialogPane().getScene().getWindow().centerOnScreen();
+            }
+        });
+        camposInformes.cantidad().valueProperty().addListener((obs, anterior, nuevo) -> ajustarAltura.run());
+        camposCotizaciones.cantidad().valueProperty().addListener((obs, anterior, nuevo) -> ajustarAltura.run());
+        dialogo.setOnShown(evento -> ajustarAltura.run());
 
         Optional<ButtonType> resultado = dialogo.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
