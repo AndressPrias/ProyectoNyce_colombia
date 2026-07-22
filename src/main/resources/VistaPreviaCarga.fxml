@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="14.0" style="-fx-background-color: #f5f5f5;" stylesheets="@css/botones.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.VistaPreviaCargaController">
+   <padding>
+      <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
+   </padding>
+   <children>
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+         <VBox spacing="3.0">
+            <Label style="-fx-font-size: 20; -fx-font-weight: bold;" text="Vista previa de la importación" textFill="#0a4d4a" />
+            <Label fx:id="lblArchivo" textFill="#456372" />
+         </VBox>
+         <Region HBox.hgrow="ALWAYS" />
+         <Label fx:id="lblResumen" style="-fx-font-weight: bold;" textFill="#456372" />
+      </HBox>
+
+      <TableView fx:id="tblVistaPrevia" VBox.vgrow="ALWAYS">
+         <placeholder><Label text="No hay datos para mostrar" /></placeholder>
+         <columns>
+            <TableColumn fx:id="colRotulo" minWidth="110.0" text="Rótulo cliente *" />
+            <TableColumn fx:id="colCliente" minWidth="130.0" text="Cliente" />
+            <TableColumn fx:id="colDescripcion" minWidth="180.0" text="Descripción *" />
+            <TableColumn fx:id="colMarca" minWidth="100.0" text="Marca" />
+            <TableColumn fx:id="colReferencia" minWidth="110.0" text="Referencia" />
+            <TableColumn fx:id="colEstado" minWidth="120.0" text="Estado" />
+            <TableColumn fx:id="colFecha" minWidth="125.0" text="Fecha de recepción" />
+            <TableColumn fx:id="colUbicacion" minWidth="120.0" text="Ubicación" />
+            <TableColumn fx:id="colNumeroInforme" minWidth="150.0" text="Informes" />
+            <TableColumn fx:id="colNumeroCotizacion" minWidth="165.0" text="Cotizaciones" />
+            <TableColumn fx:id="colRutaFoto" minWidth="160.0" text="Ruta de imagen" />
+         </columns>
+      </TableView>
+
+      <VBox spacing="6.0" style="-fx-background-color: white; -fx-padding: 10; -fx-background-radius: 6;">
+         <Label style="-fx-font-weight: bold;" text="Validación del archivo" textFill="#0a4d4a" />
+         <TextArea fx:id="txtValidacion" editable="false" prefHeight="76.0" wrapText="true" />
+      </VBox>
+
+      <HBox alignment="CENTER_LEFT" spacing="12.0">
+         <Label style="-fx-font-size: 11;" text="* Campos obligatorios en la plantilla" textFill="#d32f2f" />
+         <Region HBox.hgrow="ALWAYS" />
+         <Button fx:id="btnCerrar" mnemonicParsing="false" onAction="#cerrar" prefWidth="120.0" styleClass="btn-secondary" text="Cancelar" />
+         <Button fx:id="btnImportar" mnemonicParsing="false" onAction="#importarDatos" prefWidth="190.0" styleClass="btn-primary" text="Importar muestras" />
+      </HBox>
+   </children>
+</VBox>
