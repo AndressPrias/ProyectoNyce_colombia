@@ -42,7 +42,6 @@ import java.util.regex.Pattern;
 public final class ExcelHelper {
 
     private static final String[] ENCABEZADOS = {
-            "idCarga *",
             "rotuloCliente *",
             "nombreCliente",
             "descripcion *",
@@ -51,10 +50,10 @@ public final class ExcelHelper {
             "estado",
             "fechaRecepcion",
             "ubicacion",
+            "numeroInforme",
+            "numeroCotizacion",
             "rutaFoto"
     };
-
-    private static final String[] ENCABEZADOS_DOCUMENTOS = {"idCargaMuestra *", "numero *"};
 
     private static final DateTimeFormatter FECHA_DIA_MES_ANIO = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -64,14 +63,10 @@ public final class ExcelHelper {
     public static void crearPlantilla(File destino) throws Exception {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet datos = workbook.createSheet("Datos");
-            Sheet informes = workbook.createSheet("Informes");
-            Sheet cotizaciones = workbook.createSheet("Cotizaciones");
             Sheet instrucciones = workbook.createSheet("Instrucciones");
             Sheet catalogos = workbook.createSheet("Catalogos");
 
             crearEncabezados(workbook, datos);
-            crearEncabezadosDocumentos(workbook, informes);
-            crearEncabezadosDocumentos(workbook, cotizaciones);
             crearInstrucciones(workbook, instrucciones);
             crearCatalogoEstados(catalogos);
             agregarValidacionEstados(workbook, datos);
@@ -166,39 +161,18 @@ public final class ExcelHelper {
             cell.setCellValue(ENCABEZADOS[i]);
             cell.setCellStyle(estilo);
             sheet.setColumnWidth(i, switch (i) {
-                case 2, 3, 8, 9 -> 28 * 256;
+                case 1, 2, 7, 10 -> 28 * 256;
+                case 8, 9 -> 24 * 256;
                 default -> 20 * 256;
             });
         }
 
         CellStyle texto = workbook.createCellStyle();
         texto.setDataFormat(workbook.createDataFormat().getFormat("@"));
-        sheet.setDefaultColumnStyle(0, texto);
+        sheet.setDefaultColumnStyle(8, texto);
+        sheet.setDefaultColumnStyle(9, texto);
         sheet.createFreezePane(0, 1);
         sheet.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, ENCABEZADOS.length - 1));
-    }
-
-    private static void crearEncabezadosDocumentos(Workbook workbook, Sheet sheet) {
-        Row row = sheet.createRow(0);
-        CellStyle estilo = workbook.createCellStyle();
-        estilo.setFillForegroundColor(IndexedColors.TEAL.getIndex());
-        estilo.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        Font fuente = workbook.createFont();
-        fuente.setBold(true);
-        fuente.setColor(IndexedColors.WHITE.getIndex());
-        estilo.setFont(fuente);
-        for (int i = 0; i < ENCABEZADOS_DOCUMENTOS.length; i++) {
-            Cell cell = row.createCell(i);
-            cell.setCellValue(ENCABEZADOS_DOCUMENTOS[i]);
-            cell.setCellStyle(estilo);
-            sheet.setColumnWidth(i, 22 * 256);
-        }
-        CellStyle texto = workbook.createCellStyle();
-        texto.setDataFormat(workbook.createDataFormat().getFormat("@"));
-        sheet.setDefaultColumnStyle(0, texto);
-        sheet.setDefaultColumnStyle(1, texto);
-        sheet.createFreezePane(0, 1);
-        sheet.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 1));
     }
 
     private static void crearInstrucciones(Workbook workbook, Sheet sheet) {
@@ -214,13 +188,13 @@ public final class ExcelHelper {
         encabezado.getCell(0).setCellStyle(titulo);
 
         String[] lineas = {
-                "Complete una muestra por fila en la hoja Datos y asigne un idCarga único, por ejemplo M001.",
+                "Complete una muestra por fila en la hoja Datos.",
                 "No cambie los nombres de los encabezados.",
                 "Campos obligatorios: rotuloCliente * y descripcion *.",
                 "estado: seleccione un valor de la lista disponible.",
                 "fechaRecepcion: use una fecha de Excel o el formato dd/MM/yyyy.",
-                "Registre todos los informes en la hoja Informes y todas las cotizaciones en la hoja Cotizaciones.",
-                "Cada número debe tener exactamente 4 dígitos, por ejemplo 0304; repita el idCargaMuestra para agregar varios.",
+                "numeroInforme y numeroCotizacion son opcionales.",
+                "Para asociar varios, escriba códigos de 4 dígitos separados por /, por ejemplo: 0001 / 0002 / 0003.",
                 "El año se toma automáticamente de la fecha de recepción de la muestra.",
                 "rutaFoto es opcional y debe contener la ruta completa de una imagen existente.",
                 "El código interno y el custodio se asignan automáticamente al importar."
@@ -241,7 +215,7 @@ public final class ExcelHelper {
     }
 
     private static void agregarValidacionEstados(Workbook workbook, Sheet datos) {
-        int columnaEstado = 6;
+        int columnaEstado = 5;
         int ultimaFilaCatalogo = Estado.values().length + 1;
         Name rangoEstados = workbook.createName();
         rangoEstados.setNameName("EstadosValidos");
