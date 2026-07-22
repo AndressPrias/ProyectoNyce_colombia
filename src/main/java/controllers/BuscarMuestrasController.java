@@ -740,7 +740,7 @@ public class BuscarMuestrasController {
             chkCotizaciones.setSelected(true);
         }
 
-        Dialog<ButtonType> dialogo = crearDialogo("Asignar informes y cotizaciones");
+        Dialog<ButtonType> dialogo = crearDialogo("Asignar informe y/o cotización");
         Label ayuda = new Label(seleccionMultiple
                 ? "Se aplicará a " + muestras.size() + " muestras. Marque los datos que desea reemplazar."
                 : "Seleccione cuántos registros desea asociar. Cada número debe tener exactamente 4 dígitos.");
