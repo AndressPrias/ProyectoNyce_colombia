@@ -758,7 +758,7 @@ public class BuscarMuestrasController {
         desplazamiento.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         desplazamiento.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         dialogo.getDialogPane().setContent(desplazamiento);
-        dialogo.getDialogPane().setPrefWidth(610);
+        dialogo.getDialogPane().setPrefWidth(690);
         Runnable ajustarAltura = () -> Platform.runLater(() -> {
             double altoMaximo = Math.min(520, Screen.getPrimary().getVisualBounds().getHeight() - 190);
             double altoContenido = contenido.prefHeight(580);
@@ -859,8 +859,8 @@ public class BuscarMuestrasController {
         for (int i = 0; i < cantidad; i++) {
             TextField campo = new TextField();
             campo.setPromptText(etiqueta + " " + (i + 1));
-            campo.setPrefWidth(125);
-            campo.setMaxWidth(125);
+            campo.setPrefWidth(145);
+            campo.setMaxWidth(145);
             campo.setTextFormatter(new TextFormatter<String>(cambio ->
                     cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null));
             if (i < valoresActuales.size()) campo.setText(valoresActuales.get(i));
