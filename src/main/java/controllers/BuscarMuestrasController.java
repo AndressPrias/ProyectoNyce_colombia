@@ -760,11 +760,15 @@ public class BuscarMuestrasController {
         dialogo.getDialogPane().setContent(desplazamiento);
         dialogo.getDialogPane().setPrefWidth(690);
         Runnable ajustarAltura = () -> Platform.runLater(() -> {
+            contenido.applyCss();
+            contenido.autosize();
             double altoMaximo = Math.min(520, Screen.getPrimary().getVisualBounds().getHeight() - 190);
-            double altoContenido = contenido.prefHeight(580);
-            desplazamiento.setPrefViewportHeight(Math.min(altoContenido, altoMaximo));
+            double altoContenido = contenido.prefHeight(650) + 6;
+            double altoVisible = Math.min(altoContenido, altoMaximo);
+            desplazamiento.setPrefViewportHeight(altoVisible);
+            desplazamiento.setPrefHeight(altoVisible);
             desplazamiento.setMaxHeight(altoMaximo);
-            dialogo.getDialogPane().setPrefHeight(Region.USE_COMPUTED_SIZE);
+            dialogo.getDialogPane().setPrefHeight(altoVisible + 86);
             if (dialogo.getDialogPane().getScene() != null
                     && dialogo.getDialogPane().getScene().getWindow() != null) {
                 dialogo.getDialogPane().getScene().getWindow().sizeToScene();
