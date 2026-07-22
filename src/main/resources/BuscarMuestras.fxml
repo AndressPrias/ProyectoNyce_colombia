@@ -96,22 +96,22 @@
                 </VBox>
 
                 <VBox alignment="TOP_CENTER" minWidth="170.0" prefHeight="300.0" prefWidth="170.0" spacing="8.0">
-                    <Button fx:id="btnFinalizarEnsayos" managed="false" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#finalizarEnsayos" styleClass="btn-ready-detail" stylesheets="@css/botones.css" text="Finalizar ensayos" visible="false">
+                    <Button fx:id="btnFinalizarEnsayos" managed="false" maxWidth="1.7976931348623157E308" minHeight="50.0" prefHeight="50.0" onAction="#finalizarEnsayos" styleClass="btn-ready-detail" stylesheets="@css/botones.css" text="Finalizar ensayos" textAlignment="CENTER" visible="false" wrapText="true">
                         <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconMuestraWhite.png" /></image></ImageView></graphic>
                     </Button>
-                    <Button fx:id="btnEditarInformacion" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#editarInformacion" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Editar informacion">
+                    <Button fx:id="btnEditarInformacion" maxWidth="1.7976931348623157E308" minHeight="50.0" prefHeight="50.0" onAction="#editarInformacion" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Editar informacion" textAlignment="CENTER" wrapText="true">
                         <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/lapiz.png" /></image></ImageView></graphic>
                     </Button>
-                    <Button fx:id="btnAsignarInformeCotizacion" maxWidth="1.7976931348623157E308" minHeight="54.0" onAction="#asignarInformeCotizacion" style="-fx-font-size: 11px;" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Asignar informe y/o cotización" textAlignment="CENTER" wrapText="true">
+                    <Button fx:id="btnAsignarInformeCotizacion" maxWidth="1.7976931348623157E308" minHeight="50.0" prefHeight="50.0" onAction="#asignarInformeCotizacion" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Asignar informe y/o cotización" textAlignment="CENTER" wrapText="true">
                         <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconMuestraWhite.png" /></image></ImageView></graphic>
                     </Button>
-                    <Button fx:id="btnAsignarTecnico" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#asignarTecnico" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Asignar tecnico">
+                    <Button fx:id="btnAsignarTecnico" maxWidth="1.7976931348623157E308" minHeight="50.0" prefHeight="50.0" onAction="#asignarTecnico" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Asignar tecnico" textAlignment="CENTER" wrapText="true">
                         <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconRegistraUsuarioWhite.png" /></image></ImageView></graphic>
                     </Button>
-                    <Button fx:id="btnAlmacenarMuestra" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#almacenarMuestra" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Almacenar">
+                    <Button fx:id="btnAlmacenarMuestra" maxWidth="1.7976931348623157E308" minHeight="50.0" prefHeight="50.0" onAction="#almacenarMuestra" styleClass="btn-primary-detail" stylesheets="@css/botones.css" text="Almacenar" textAlignment="CENTER" wrapText="true">
                         <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/iconMuestraWhite.png" /></image></ImageView></graphic>
                     </Button>
-                    <Button fx:id="btnEliminarMuestra" maxWidth="1.7976931348623157E308" minHeight="40.0" onAction="#eliminarMuestra" styleClass="btn-danger-detail" stylesheets="@css/botones.css" text="Eliminar">
+                    <Button fx:id="btnEliminarMuestra" maxWidth="1.7976931348623157E308" minHeight="50.0" prefHeight="50.0" onAction="#eliminarMuestra" styleClass="btn-danger-detail" stylesheets="@css/botones.css" text="Eliminar" textAlignment="CENTER" wrapText="true">
                         <graphic><ImageView fitHeight="15.0" fitWidth="15.0" preserveRatio="true"><image><Image url="@icons/basura.png" /></image></ImageView></graphic>
                     </Button>
                 </VBox>
