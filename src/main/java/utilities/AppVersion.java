@@ -11,7 +11,7 @@ import java.util.prefs.Preferences;
 public final class AppVersion {
 
     private static final String RESOURCE = "/app-version.properties";
-    private static final String UNKNOWN_VERSION = "1.1.0";
+    private static final String UNKNOWN_VERSION = "1.2.0";
     private static final String UNKNOWN_BUILD = "local";
     private static final String PREF_LAST_SEEN = "lastSeenBuildId";
     private static final DateTimeFormatter BUILD_FORMAT =
