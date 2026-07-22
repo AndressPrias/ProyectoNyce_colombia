@@ -723,14 +723,13 @@ public class BuscarMuestrasController {
         List<Muestra> muestras = obtenerMuestrasSeleccionadas();
         if (muestras.isEmpty()) return;
 
-        TextArea txtInforme = new TextArea();
-        TextArea txtCotizacion = new TextArea();
-        txtInforme.setPrefRowCount(4);
-        txtCotizacion.setPrefRowCount(4);
+        TextField txtInforme = new TextField();
+        TextField txtCotizacion = new TextField();
         txtInforme.setPromptText("Ejemplo: 0001 / 0002");
         txtCotizacion.setPromptText("Ejemplo: 0101 / 0102");
         CheckBox chkInformes = new CheckBox("Reemplazar informes");
         CheckBox chkCotizaciones = new CheckBox("Reemplazar cotizaciones");
+        boolean seleccionMultiple = muestras.size() > 1;
 
         if (muestras.size() == 1) {
             txtInforme.setText(formatoEdicion(muestras.get(0).getInformes()));
@@ -739,23 +738,24 @@ public class BuscarMuestrasController {
             chkCotizaciones.setSelected(true);
         }
 
-        Dialog<ButtonType> dialogo = crearDialogo("Asignar informe / cotizacion");
+        Dialog<ButtonType> dialogo = crearDialogo("Asignar informes y cotizaciones");
         GridPane contenido = crearFormulario();
-        Label ayuda = new Label("Se aplicará a " + muestras.size()
-                + " muestra(s). Use números de 4 dígitos separados por /; el año se toma de la fecha de recepción.");
+        Label ayuda = new Label(seleccionMultiple
+                ? "Se aplicará a " + muestras.size() + " muestras. Marque los datos que desea reemplazar."
+                : "Escriba uno o varios números de 4 dígitos separados por /. El año se toma de la fecha de recepción.");
         ayuda.setWrapText(true);
         contenido.add(ayuda, 0, 0, 2, 1);
-        contenido.add(chkInformes, 0, 1);
+        contenido.add(seleccionMultiple ? chkInformes : new Label("Informes"), 0, 1);
         contenido.add(txtInforme, 1, 1);
-        contenido.add(chkCotizaciones, 0, 2);
+        contenido.add(seleccionMultiple ? chkCotizaciones : new Label("Cotizaciones"), 0, 2);
         contenido.add(txtCotizacion, 1, 2);
         dialogo.getDialogPane().setContent(contenido);
 
         Optional<ButtonType> resultado = dialogo.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
 
-        boolean actualizarInforme = chkInformes.isSelected();
-        boolean actualizarCotizacion = chkCotizaciones.isSelected();
+        boolean actualizarInforme = !seleccionMultiple || chkInformes.isSelected();
+        boolean actualizarCotizacion = !seleccionMultiple || chkCotizaciones.isSelected();
         if (!actualizarInforme && !actualizarCotizacion) {
             mostrarAlerta(Alert.AlertType.WARNING, "Asignar informe / cotizacion",
                     "Seleccione al menos una categoría para actualizar.");

@@ -5,7 +5,6 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
@@ -80,13 +79,13 @@
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Label>
-                  <TextArea fx:id="txtNumeroInforme" maxHeight="58.0" prefRowCount="2" promptText="Ejemplo: 0304 / 0305" wrapText="true" />
+                  <TextField fx:id="txtNumeroInforme" promptText="Ejemplo: 0304 / 0305" />
                   <Label text="Cotizaciones (4 dígitos separados por /)" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Label>
-                  <TextArea fx:id="txtNumeroCotizacion" maxHeight="58.0" prefRowCount="2" promptText="Ejemplo: 0580 / 0581" wrapText="true" />
+                  <TextField fx:id="txtNumeroCotizacion" promptText="Ejemplo: 0580 / 0581" />
                   <Label text="Remisión" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />

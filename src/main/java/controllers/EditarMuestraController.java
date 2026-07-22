@@ -36,8 +36,8 @@ public class EditarMuestraController {
     @FXML private ComboBox<Estado> comboEstado;
     @FXML private TextField txtUbicacion;
     @FXML private ComboBox<Usuario> comboTecnico;
-    @FXML private TextArea txtNumeroInforme;
-    @FXML private TextArea txtNumeroCotizacion;
+    @FXML private TextField txtNumeroInforme;
+    @FXML private TextField txtNumeroCotizacion;
     @FXML private TextField txtRemision;
     @FXML private DatePicker fechaRecepcionPicker;
     @FXML private Label lblMensaje;
