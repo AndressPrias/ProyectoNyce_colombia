@@ -137,7 +137,7 @@ public class Muestra {
     public void setRemision(String remision) { this.remision = remision; }
 
     private String unirReferencias(List<ReferenciaDocumento> referencias) {
-        return referencias.stream().map(ReferenciaDocumento::formatoEdicion).collect(Collectors.joining(", "));
+        return referencias.stream().map(ReferenciaDocumento::numero).collect(Collectors.joining(" / "));
     }
 
 

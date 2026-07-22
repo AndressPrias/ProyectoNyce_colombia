@@ -727,8 +727,8 @@ public class BuscarMuestrasController {
         TextArea txtCotizacion = new TextArea();
         txtInforme.setPrefRowCount(4);
         txtCotizacion.setPrefRowCount(4);
-        txtInforme.setPromptText("Un registro por línea: 0335/2026");
-        txtCotizacion.setPromptText("Un registro por línea: 0287/2026");
+        txtInforme.setPromptText("Ejemplo: 0001 / 0002");
+        txtCotizacion.setPromptText("Ejemplo: 0101 / 0102");
         CheckBox chkInformes = new CheckBox("Reemplazar informes");
         CheckBox chkCotizaciones = new CheckBox("Reemplazar cotizaciones");
 
@@ -742,7 +742,7 @@ public class BuscarMuestrasController {
         Dialog<ButtonType> dialogo = crearDialogo("Asignar informe / cotizacion");
         GridPane contenido = crearFormulario();
         Label ayuda = new Label("Se aplicará a " + muestras.size()
-                + " muestra(s). Use un número de 4 dígitos y su año: 0335/2026.");
+                + " muestra(s). Use números de 4 dígitos separados por /; el año se toma de la fecha de recepción.");
         ayuda.setWrapText(true);
         contenido.add(ayuda, 0, 0, 2, 1);
         contenido.add(chkInformes, 0, 1);
@@ -762,8 +762,8 @@ public class BuscarMuestrasController {
             return;
         }
 
-        List<ReferenciaDocumento> informes;
-        List<ReferenciaDocumento> cotizaciones;
+        List<String> informes;
+        List<String> cotizaciones;
         try {
             informes = actualizarInforme ? leerReferencias(txtInforme.getText()) : List.of();
             cotizaciones = actualizarCotizacion ? leerReferencias(txtCotizacion.getText()) : List.of();
@@ -775,10 +775,15 @@ public class BuscarMuestrasController {
         MuestraService service = new MuestraService();
         int actualizadas = 0;
         for (Muestra muestra : muestras) {
+            int anio = muestra.getFechaRecepcion() == null ? java.time.Year.now().getValue() : muestra.getFechaRecepcion().getYear();
+            List<ReferenciaDocumento> referenciasInformes = informes.stream()
+                    .map(numero -> new ReferenciaDocumento(numero, anio)).toList();
+            List<ReferenciaDocumento> referenciasCotizaciones = cotizaciones.stream()
+                    .map(numero -> new ReferenciaDocumento(numero, anio)).toList();
             if (service.reemplazarInformesCotizaciones(
                     muestra.getId(),
-                    informes,
-                    cotizaciones,
+                    referenciasInformes,
+                    referenciasCotizaciones,
                     usuarioActual(),
                     actualizarInforme,
                     actualizarCotizacion)) {
@@ -796,26 +801,25 @@ public class BuscarMuestrasController {
         }
     }
 
-    private List<ReferenciaDocumento> leerReferencias(String texto) {
-        List<ReferenciaDocumento> referencias = new ArrayList<>();
+    private List<String> leerReferencias(String texto) {
+        List<String> referencias = new ArrayList<>();
         if (texto == null || texto.isBlank()) return referencias;
-        for (String linea : texto.split("\\R")) {
-            if (linea.isBlank()) continue;
-            String[] partes = linea.trim().split("/");
-            if (partes.length != 2 || !partes[0].matches("\\d{4}") || !partes[1].matches("\\d{4}")) {
-                throw new IllegalArgumentException("Cada línea debe usar el formato 0335/2026.");
+        for (String parte : texto.split("(?:/|\\R)+")) {
+            String numero = parte.trim();
+            if (!numero.matches("\\d{4}")) {
+                throw new IllegalArgumentException("Cada informe o cotización debe tener 4 dígitos; ejemplo: 0001 / 0002.");
             }
-            ReferenciaDocumento referencia = new ReferenciaDocumento(partes[0], Integer.parseInt(partes[1]));
-            if (referencias.contains(referencia)) {
-                throw new IllegalArgumentException("El registro " + linea.trim() + " está duplicado.");
+            if (referencias.contains(numero)) {
+                throw new IllegalArgumentException("El número " + numero + " está duplicado.");
             }
-            referencias.add(referencia);
+            referencias.add(numero);
         }
         return referencias;
     }
 
     private String formatoEdicion(List<ReferenciaDocumento> referencias) {
-        return referencias.stream().map(ReferenciaDocumento::formatoEdicion).collect(java.util.stream.Collectors.joining(System.lineSeparator()));
+        return referencias.stream().map(ReferenciaDocumento::numero)
+                .collect(java.util.stream.Collectors.joining(" / "));
     }
 
     @FXML
@@ -1039,18 +1043,16 @@ public class BuscarMuestrasController {
         if (muestra.getInformes().isEmpty()) {
             return "Sin datos";
         }
-        return muestra.getInformes().stream()
-                .map(ref -> "LENC - " + String.format("%02d", ref.anio() % 100) + " - I " + ref.numero())
-                .collect(java.util.stream.Collectors.joining(System.lineSeparator()));
+        int anio = muestra.getFechaRecepcion() == null ? java.time.Year.now().getValue() : muestra.getFechaRecepcion().getYear();
+        return "LENC - " + String.format("%02d", anio % 100) + " - I " + muestra.getInformesTexto();
     }
 
     private String formatearCotizacion(Muestra muestra) {
         if (muestra.getCotizaciones().isEmpty()) {
             return "Sin datos";
         }
-        return muestra.getCotizaciones().stream()
-                .map(ref -> "LENC-" + String.format("%02d", ref.anio() % 100) + "-C" + ref.numero())
-                .collect(java.util.stream.Collectors.joining(System.lineSeparator()));
+        int anio = muestra.getFechaRecepcion() == null ? java.time.Year.now().getValue() : muestra.getFechaRecepcion().getYear();
+        return "LENC-" + String.format("%02d", anio % 100) + "-C" + muestra.getCotizacionesTexto();
     }
 
     private void limpiarDetalle() {

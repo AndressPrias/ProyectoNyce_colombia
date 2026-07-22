@@ -10,8 +10,4 @@ public record ReferenciaDocumento(String numero, int anio) {
             throw new IllegalArgumentException("El año debe contener 4 dígitos");
         }
     }
-
-    public String formatoEdicion() {
-        return numero + "/" + anio;
-    }
 }

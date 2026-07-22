@@ -54,7 +54,7 @@ public final class ExcelHelper {
             "rutaFoto"
     };
 
-    private static final String[] ENCABEZADOS_DOCUMENTOS = {"idCargaMuestra *", "numero *", "anio *"};
+    private static final String[] ENCABEZADOS_DOCUMENTOS = {"idCargaMuestra *", "numero *"};
 
     private static final DateTimeFormatter FECHA_DIA_MES_ANIO = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -198,7 +198,7 @@ public final class ExcelHelper {
         sheet.setDefaultColumnStyle(0, texto);
         sheet.setDefaultColumnStyle(1, texto);
         sheet.createFreezePane(0, 1);
-        sheet.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 2));
+        sheet.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 1));
     }
 
     private static void crearInstrucciones(Workbook workbook, Sheet sheet) {
@@ -221,7 +221,7 @@ public final class ExcelHelper {
                 "fechaRecepcion: use una fecha de Excel o el formato dd/MM/yyyy.",
                 "Registre todos los informes en la hoja Informes y todas las cotizaciones en la hoja Cotizaciones.",
                 "Cada número debe tener exactamente 4 dígitos, por ejemplo 0304; repita el idCargaMuestra para agregar varios.",
-                "El año corresponde al año propio del informe o de la cotización.",
+                "El año se toma automáticamente de la fecha de recepción de la muestra.",
                 "rutaFoto es opcional y debe contener la ruta completa de una imagen existente.",
                 "El código interno y el custodio se asignan automáticamente al importar."
         };
@@ -344,8 +344,8 @@ public final class ExcelHelper {
             return;
         }
         Map<String, Integer> columnas = obtenerColumnas(encabezado);
-        if (!columnas.keySet().containsAll(List.of("idcargamuestra", "numero", "anio"))) {
-            errores.add("La hoja " + nombreHoja + " debe contener idCargaMuestra *, numero * y anio *.");
+        if (!columnas.keySet().containsAll(List.of("idcargamuestra", "numero"))) {
+            errores.add("La hoja " + nombreHoja + " debe contener idCargaMuestra * y numero *.");
             return;
         }
         Map<String, List<ReferenciaDocumento>> referencias = new HashMap<>();
@@ -355,7 +355,6 @@ public final class ExcelHelper {
             int numeroFila = indice + 1;
             String idCarga = valor(row, columnas, "idcargamuestra", formatter, evaluator);
             String numero = valor(row, columnas, "numero", formatter, evaluator);
-            String anioTexto = valor(row, columnas, "anio", formatter, evaluator);
             if (!muestrasPorIdCarga.containsKey(idCarga)) {
                 errores.add(nombreHoja + " fila " + numeroFila + ": idCargaMuestra '" + idCarga + "' no existe en Datos.");
                 continue;
@@ -364,12 +363,11 @@ public final class ExcelHelper {
                 errores.add(nombreHoja + " fila " + numeroFila + ": numero debe contener exactamente 4 dígitos.");
                 continue;
             }
-            if (!anioTexto.matches("\\d{4}")) {
-                errores.add(nombreHoja + " fila " + numeroFila + ": anio debe contener exactamente 4 dígitos.");
-                continue;
-            }
             try {
-                ReferenciaDocumento referencia = new ReferenciaDocumento(numero, Integer.parseInt(anioTexto));
+                Muestra muestra = muestrasPorIdCarga.get(idCarga);
+                int anio = muestra.getFechaRecepcion() == null
+                        ? LocalDate.now().getYear() : muestra.getFechaRecepcion().getYear();
+                ReferenciaDocumento referencia = new ReferenciaDocumento(numero, anio);
                 List<ReferenciaDocumento> lista = referencias.computeIfAbsent(idCarga, clave -> new ArrayList<>());
                 if (lista.contains(referencia)) {
                     errores.add(nombreHoja + " fila " + numeroFila + ": la relación está duplicada.");

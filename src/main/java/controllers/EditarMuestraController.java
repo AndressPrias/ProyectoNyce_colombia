@@ -194,7 +194,7 @@ public class EditarMuestraController {
 
         if (!esCodigoCuatroDigitosValido(txtNumeroInforme.getText())
                 || !esCodigoCuatroDigitosValido(txtNumeroCotizacion.getText())) {
-            lblMensaje.setText("Use una línea por registro con el formato 0335/2026");
+            lblMensaje.setText("Use números de 4 dígitos separados por /; ejemplo: 0001 / 0002");
             lblMensaje.setVisible(true);
             return;
         }
@@ -202,8 +202,8 @@ public class EditarMuestraController {
         try {
             Estado estado = comboEstado.getValue();
             LocalDate fecha = fechaRecepcionPicker.getValue();
-            List<ReferenciaDocumento> informes = leerReferencias(txtNumeroInforme.getText());
-            List<ReferenciaDocumento> cotizaciones = leerReferencias(txtNumeroCotizacion.getText());
+            List<ReferenciaDocumento> informes = leerReferencias(txtNumeroInforme.getText(), fecha.getYear());
+            List<ReferenciaDocumento> cotizaciones = leerReferencias(txtNumeroCotizacion.getText(), fecha.getYear());
 
             if (muestraEditando != null) {
                 muestraEditando.setDescripcion(txtDescripcion.getText());
@@ -306,23 +306,22 @@ public class EditarMuestraController {
 
     private boolean esCodigoCuatroDigitosValido(String valor) {
         try {
-            leerReferencias(valor);
+            leerReferencias(valor, 2000);
             return true;
         } catch (IllegalArgumentException e) {
             return false;
         }
     }
 
-    private List<ReferenciaDocumento> leerReferencias(String texto) {
+    private List<ReferenciaDocumento> leerReferencias(String texto, int anio) {
         List<ReferenciaDocumento> referencias = new ArrayList<>();
         if (texto == null || texto.isBlank()) return referencias;
-        for (String linea : texto.split("\\R")) {
-            if (linea.isBlank()) continue;
-            String[] partes = linea.trim().split("/");
-            if (partes.length != 2 || !partes[0].matches("\\d{4}") || !partes[1].matches("\\d{4}")) {
-                throw new IllegalArgumentException("Use una línea por registro con el formato 0335/2026");
+        for (String parte : texto.split("(?:/|\\R)+")) {
+            String numero = parte.trim();
+            if (!numero.matches("\\d{4}")) {
+                throw new IllegalArgumentException("Use números de 4 dígitos separados por /; ejemplo: 0001 / 0002");
             }
-            ReferenciaDocumento referencia = new ReferenciaDocumento(partes[0], Integer.parseInt(partes[1]));
+            ReferenciaDocumento referencia = new ReferenciaDocumento(numero, anio);
             if (referencias.contains(referencia)) throw new IllegalArgumentException("Hay registros duplicados");
             referencias.add(referencia);
         }
@@ -330,8 +329,8 @@ public class EditarMuestraController {
     }
 
     private String formatoEdicion(List<ReferenciaDocumento> referencias) {
-        return referencias.stream().map(ReferenciaDocumento::formatoEdicion)
-                .collect(java.util.stream.Collectors.joining(System.lineSeparator()));
+        return referencias.stream().map(ReferenciaDocumento::numero)
+                .collect(java.util.stream.Collectors.joining(" / "));
     }
 
 

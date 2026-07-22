@@ -75,18 +75,18 @@
                      </font></Button>
                         <Label style="-fx-font-size: 10" text="Formatos permitidos: JPG, PNG, JPEG" />
                         <Label style="-fx-font-size: 10" text="Tamaño máximo: 5 MB" />
-                  <Label text="Informes (uno por línea: 0335/2026)" textFill="#0a4d4a">
+                  <Label text="Informes (4 dígitos separados por /)" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Label>
-                  <TextArea fx:id="txtNumeroInforme" maxHeight="58.0" prefRowCount="2" promptText="Ejemplo: 0304/2026" wrapText="true" />
-                  <Label text="Cotizaciones (una por línea: 0580/2026)" textFill="#0a4d4a">
+                  <TextArea fx:id="txtNumeroInforme" maxHeight="58.0" prefRowCount="2" promptText="Ejemplo: 0304 / 0305" wrapText="true" />
+                  <Label text="Cotizaciones (4 dígitos separados por /)" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Label>
-                  <TextArea fx:id="txtNumeroCotizacion" maxHeight="58.0" prefRowCount="2" promptText="Ejemplo: 0580/2026" wrapText="true" />
+                  <TextArea fx:id="txtNumeroCotizacion" maxHeight="58.0" prefRowCount="2" promptText="Ejemplo: 0580 / 0581" wrapText="true" />
                   <Label text="Remisión" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />

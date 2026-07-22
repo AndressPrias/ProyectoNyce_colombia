@@ -132,8 +132,8 @@
                     <TableColumn fx:id="colFecha" prefWidth="130.0" text="Fecha de recepcion" />
                     <TableColumn fx:id="colUbicacion" prefWidth="90.0" text="Ubicacion" />
                     <TableColumn fx:id="colTecnico" prefWidth="75.0" text="Tecnico" />
-                    <TableColumn fx:id="colInforme" prefWidth="145.0" text="Informes (número/año)" />
-                    <TableColumn fx:id="colCotizacion" prefWidth="160.0" text="Cotizaciones (número/año)" />
+                    <TableColumn fx:id="colInforme" prefWidth="145.0" text="Informes" />
+                    <TableColumn fx:id="colCotizacion" prefWidth="160.0" text="Cotizaciones" />
                     <TableColumn fx:id="colRemision" prefWidth="115.0" text="Remision" />
                 </columns>
             </TableView>

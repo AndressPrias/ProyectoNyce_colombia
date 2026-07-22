@@ -478,9 +478,9 @@ public class RemisionMuestrasController {
     private String identificacionInterna(Muestra muestra) {
         String informe = "Sin informe";
         if (!muestra.getInformes().isEmpty()) {
-            informe = muestra.getInformes().stream()
-                    .map(ref -> "LENC - " + String.format("%02d", ref.anio() % 100) + " - I " + ref.numero())
-                    .collect(java.util.stream.Collectors.joining(" / "));
+            int anio = muestra.getFechaRecepcion() == null
+                    ? java.time.Year.now().getValue() : muestra.getFechaRecepcion().getYear();
+            informe = "LENC - " + String.format("%02d", anio % 100) + " - I " + muestra.getInformesTexto();
         }
         return informe + "\nID: " + texto(muestra.getCodigoInterno(), "Sin ID");
     }
