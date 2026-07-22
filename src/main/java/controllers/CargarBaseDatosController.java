@@ -6,6 +6,9 @@ import domain.Usuario;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -14,7 +17,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import service.MuestraService;
 import utilities.ExcelHelper;
 import utilities.Navegacion;
@@ -46,6 +52,8 @@ public class CargarBaseDatosController {
     private Usuario usuario;
     private List<Muestra> muestrasValidadas = List.of();
     private Task<ResumenImportacion> tareaImportacion;
+    private Stage ventanaCarga;
+    private Label lblProgresoCarga;
 
     @FXML
     public void initialize() {
@@ -173,8 +181,8 @@ public class CargarBaseDatosController {
             }
         };
 
-        iniciarEstadoCarga();
-        lblResumen.textProperty().bind(tareaImportacion.messageProperty());
+        mostrarVentanaCarga();
+        lblProgresoCarga.textProperty().bind(tareaImportacion.messageProperty());
         tareaImportacion.setOnSucceeded(event -> mostrarResultadoImportacion(tareaImportacion.getValue()));
         tareaImportacion.setOnFailed(event -> {
             Throwable error = tareaImportacion.getException();
@@ -206,21 +214,45 @@ public class CargarBaseDatosController {
         }
     }
 
-    private void iniciarEstadoCarga() {
+    private void mostrarVentanaCarga() {
         ProgressIndicator indicador = new ProgressIndicator();
-        indicador.setPrefSize(18, 18);
-        indicador.setMaxSize(18, 18);
-        btnImportar.setGraphic(indicador);
-        btnImportar.setText("Importando...");
+        indicador.setPrefSize(68, 68);
+        indicador.setMaxSize(68, 68);
+
+        Label titulo = new Label("Cargando información");
+        titulo.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #0a4d4a;");
+        lblProgresoCarga = new Label("Preparando importación...");
+        lblProgresoCarga.setStyle("-fx-text-fill: #456372;");
+
+        VBox contenido = new VBox(14, indicador, titulo, lblProgresoCarga);
+        contenido.setAlignment(Pos.CENTER);
+        contenido.setPadding(new Insets(28, 42, 28, 42));
+        contenido.setStyle("-fx-background-color: #f5f5f5;");
+
+        ventanaCarga = new Stage();
+        ventanaCarga.setTitle("Importando muestras");
+        ventanaCarga.initOwner(tblVistaPrevia.getScene().getWindow());
+        ventanaCarga.initModality(Modality.WINDOW_MODAL);
+        ventanaCarga.setResizable(false);
+        ventanaCarga.setScene(new Scene(contenido, 360, 220));
+        ventanaCarga.setOnCloseRequest(event -> {
+            if (tareaImportacion != null) event.consume();
+        });
         btnImportar.setDisable(true);
+        ventanaCarga.show();
     }
 
     private void finalizarEstadoCarga(boolean habilitarImportacion) {
-        lblResumen.textProperty().unbind();
-        btnImportar.setGraphic(null);
-        btnImportar.setText("Importar muestras");
+        if (lblProgresoCarga != null) {
+            lblProgresoCarga.textProperty().unbind();
+        }
         btnImportar.setDisable(!habilitarImportacion);
         tareaImportacion = null;
+        if (ventanaCarga != null) {
+            ventanaCarga.close();
+        }
+        ventanaCarga = null;
+        lblProgresoCarga = null;
     }
 
     @FXML
