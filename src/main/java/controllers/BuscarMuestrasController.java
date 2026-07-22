@@ -22,6 +22,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 
@@ -723,17 +724,15 @@ public class BuscarMuestrasController {
         List<Muestra> muestras = obtenerMuestrasSeleccionadas();
         if (muestras.isEmpty()) return;
 
-        TextField txtInforme = new TextField();
-        TextField txtCotizacion = new TextField();
-        txtInforme.setPromptText("Ejemplo: 0001 / 0002");
-        txtCotizacion.setPromptText("Ejemplo: 0101 / 0102");
         CheckBox chkInformes = new CheckBox("Reemplazar informes");
         CheckBox chkCotizaciones = new CheckBox("Reemplazar cotizaciones");
         boolean seleccionMultiple = muestras.size() > 1;
+        List<ReferenciaDocumento> informesActuales = seleccionMultiple ? List.of() : muestras.get(0).getInformes();
+        List<ReferenciaDocumento> cotizacionesActuales = seleccionMultiple ? List.of() : muestras.get(0).getCotizaciones();
+        CamposDocumentos camposInformes = crearCamposDocumentos("Informe", informesActuales);
+        CamposDocumentos camposCotizaciones = crearCamposDocumentos("Cotización", cotizacionesActuales);
 
         if (muestras.size() == 1) {
-            txtInforme.setText(formatoEdicion(muestras.get(0).getInformes()));
-            txtCotizacion.setText(formatoEdicion(muestras.get(0).getCotizaciones()));
             chkInformes.setSelected(true);
             chkCotizaciones.setSelected(true);
         }
@@ -742,14 +741,15 @@ public class BuscarMuestrasController {
         GridPane contenido = crearFormulario();
         Label ayuda = new Label(seleccionMultiple
                 ? "Se aplicará a " + muestras.size() + " muestras. Marque los datos que desea reemplazar."
-                : "Escriba uno o varios números de 4 dígitos separados por /. El año se toma de la fecha de recepción.");
+                : "Seleccione cuántos registros desea asociar. Cada número debe tener exactamente 4 dígitos.");
         ayuda.setWrapText(true);
         contenido.add(ayuda, 0, 0, 2, 1);
         contenido.add(seleccionMultiple ? chkInformes : new Label("Informes"), 0, 1);
-        contenido.add(txtInforme, 1, 1);
+        contenido.add(camposInformes.contenedor(), 1, 1);
         contenido.add(seleccionMultiple ? chkCotizaciones : new Label("Cotizaciones"), 0, 2);
-        contenido.add(txtCotizacion, 1, 2);
+        contenido.add(camposCotizaciones.contenedor(), 1, 2);
         dialogo.getDialogPane().setContent(contenido);
+        dialogo.getDialogPane().setPrefWidth(560);
 
         Optional<ButtonType> resultado = dialogo.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
@@ -765,8 +765,8 @@ public class BuscarMuestrasController {
         List<String> informes;
         List<String> cotizaciones;
         try {
-            informes = actualizarInforme ? leerReferencias(txtInforme.getText()) : List.of();
-            cotizaciones = actualizarCotizacion ? leerReferencias(txtCotizacion.getText()) : List.of();
+            informes = actualizarInforme ? leerCamposDocumentos(camposInformes, "informe") : List.of();
+            cotizaciones = actualizarCotizacion ? leerCamposDocumentos(camposCotizaciones, "cotización") : List.of();
         } catch (IllegalArgumentException e) {
             mostrarAlerta(Alert.AlertType.WARNING, "Formato no válido", e.getMessage());
             return;
@@ -801,13 +801,44 @@ public class BuscarMuestrasController {
         }
     }
 
-    private List<String> leerReferencias(String texto) {
+    private CamposDocumentos crearCamposDocumentos(String etiqueta, List<ReferenciaDocumento> actuales) {
+        Spinner<Integer> cantidad = new Spinner<>(0, 20, actuales.size());
+        cantidad.setEditable(true);
+        cantidad.setPrefWidth(80);
+        HBox cabecera = new HBox(8, new Label("Cantidad:"), cantidad);
+        cabecera.setAlignment(Pos.CENTER_LEFT);
+        VBox campos = new VBox(6);
+        VBox contenedor = new VBox(8, cabecera, campos);
+        List<String> valoresIniciales = actuales.stream().map(ReferenciaDocumento::numero).toList();
+        Runnable reconstruir = () -> reconstruirCamposDocumentos(campos, etiqueta, cantidad.getValue(), valoresIniciales);
+        cantidad.valueProperty().addListener((obs, anterior, nuevo) -> reconstruir.run());
+        reconstruir.run();
+        return new CamposDocumentos(cantidad, campos, contenedor);
+    }
+
+    private void reconstruirCamposDocumentos(VBox contenedor, String etiqueta, int cantidad,
+                                              List<String> valoresIniciales) {
+        List<String> valoresActuales = contenedor.getChildren().stream()
+                .filter(TextField.class::isInstance).map(TextField.class::cast)
+                .map(TextField::getText).toList();
+        contenedor.getChildren().clear();
+        for (int i = 0; i < cantidad; i++) {
+            TextField campo = new TextField();
+            campo.setPromptText(etiqueta + " " + (i + 1) + " (4 dígitos)");
+            campo.setTextFormatter(new TextFormatter<String>(cambio ->
+                    cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null));
+            if (i < valoresActuales.size()) campo.setText(valoresActuales.get(i));
+            else if (i < valoresIniciales.size()) campo.setText(valoresIniciales.get(i));
+            contenedor.getChildren().add(campo);
+        }
+    }
+
+    private List<String> leerCamposDocumentos(CamposDocumentos campos, String etiqueta) {
         List<String> referencias = new ArrayList<>();
-        if (texto == null || texto.isBlank()) return referencias;
-        for (String parte : texto.split("(?:/|\\R)+")) {
-            String numero = parte.trim();
+        for (javafx.scene.Node nodo : campos.campos().getChildren()) {
+            String numero = ((TextField) nodo).getText().trim();
             if (!numero.matches("\\d{4}")) {
-                throw new IllegalArgumentException("Cada informe o cotización debe tener 4 dígitos; ejemplo: 0001 / 0002.");
+                throw new IllegalArgumentException("Cada " + etiqueta + " debe contener exactamente 4 dígitos.");
             }
             if (referencias.contains(numero)) {
                 throw new IllegalArgumentException("El número " + numero + " está duplicado.");
@@ -816,6 +847,8 @@ public class BuscarMuestrasController {
         }
         return referencias;
     }
+
+    private record CamposDocumentos(Spinner<Integer> cantidad, VBox campos, VBox contenedor) {}
 
     private String formatoEdicion(List<ReferenciaDocumento> referencias) {
         return referencias.stream().map(ReferenciaDocumento::numero)
