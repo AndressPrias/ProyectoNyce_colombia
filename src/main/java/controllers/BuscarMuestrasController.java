@@ -22,6 +22,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
@@ -729,8 +731,8 @@ public class BuscarMuestrasController {
         boolean seleccionMultiple = muestras.size() > 1;
         List<ReferenciaDocumento> informesActuales = seleccionMultiple ? List.of() : muestras.get(0).getInformes();
         List<ReferenciaDocumento> cotizacionesActuales = seleccionMultiple ? List.of() : muestras.get(0).getCotizaciones();
-        CamposDocumentos camposInformes = crearCamposDocumentos("Informe", informesActuales);
-        CamposDocumentos camposCotizaciones = crearCamposDocumentos("Cotización", cotizacionesActuales);
+        CamposDocumentos camposInformes = crearCamposDocumentos("Informes", "Informe", informesActuales);
+        CamposDocumentos camposCotizaciones = crearCamposDocumentos("Cotizaciones", "Cotización", cotizacionesActuales);
 
         if (muestras.size() == 1) {
             chkInformes.setSelected(true);
@@ -738,18 +740,19 @@ public class BuscarMuestrasController {
         }
 
         Dialog<ButtonType> dialogo = crearDialogo("Asignar informes y cotizaciones");
-        GridPane contenido = crearFormulario();
         Label ayuda = new Label(seleccionMultiple
                 ? "Se aplicará a " + muestras.size() + " muestras. Marque los datos que desea reemplazar."
                 : "Seleccione cuántos registros desea asociar. Cada número debe tener exactamente 4 dígitos.");
         ayuda.setWrapText(true);
-        contenido.add(ayuda, 0, 0, 2, 1);
-        contenido.add(seleccionMultiple ? chkInformes : new Label("Informes"), 0, 1);
-        contenido.add(camposInformes.contenedor(), 1, 1);
-        contenido.add(seleccionMultiple ? chkCotizaciones : new Label("Cotizaciones"), 0, 2);
-        contenido.add(camposCotizaciones.contenedor(), 1, 2);
+        VBox contenido = new VBox(14);
+        contenido.setPadding(new Insets(8, 4, 4, 4));
+        contenido.getChildren().add(ayuda);
+        if (seleccionMultiple) contenido.getChildren().add(chkInformes);
+        contenido.getChildren().add(camposInformes.contenedor());
+        if (seleccionMultiple) contenido.getChildren().add(chkCotizaciones);
+        contenido.getChildren().add(camposCotizaciones.contenedor());
         dialogo.getDialogPane().setContent(contenido);
-        dialogo.getDialogPane().setPrefWidth(680);
+        dialogo.getDialogPane().setPrefWidth(610);
 
         Optional<ButtonType> resultado = dialogo.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
@@ -801,16 +804,24 @@ public class BuscarMuestrasController {
         }
     }
 
-    private CamposDocumentos crearCamposDocumentos(String etiqueta, List<ReferenciaDocumento> actuales) {
+    private CamposDocumentos crearCamposDocumentos(String titulo, String etiqueta,
+                                                     List<ReferenciaDocumento> actuales) {
         Spinner<Integer> cantidad = new Spinner<>(0, 20, actuales.size());
         cantidad.setEditable(true);
         cantidad.setPrefWidth(80);
-        HBox cabecera = new HBox(8, new Label("Cantidad:"), cantidad);
+        Label lblTitulo = new Label(titulo);
+        lblTitulo.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0a4d4a;");
+        Region separador = new Region();
+        HBox.setHgrow(separador, Priority.ALWAYS);
+        HBox cabecera = new HBox(8, lblTitulo, separador, new Label("Cantidad:"), cantidad);
         cabecera.setAlignment(Pos.CENTER_LEFT);
         GridPane campos = new GridPane();
         campos.setHgap(8);
         campos.setVgap(6);
         VBox contenedor = new VBox(8, cabecera, campos);
+        contenedor.setPadding(new Insets(12));
+        contenedor.setStyle("-fx-background-color: #f7faf9; -fx-border-color: #b8ceca; " +
+                "-fx-border-radius: 6px; -fx-background-radius: 6px;");
         List<String> valoresIniciales = actuales.stream().map(ReferenciaDocumento::numero).toList();
         Runnable reconstruir = () -> reconstruirCamposDocumentos(campos, etiqueta, cantidad.getValue(), valoresIniciales);
         cantidad.valueProperty().addListener((obs, anterior, nuevo) -> reconstruir.run());
@@ -826,9 +837,9 @@ public class BuscarMuestrasController {
         contenedor.getChildren().clear();
         for (int i = 0; i < cantidad; i++) {
             TextField campo = new TextField();
-            campo.setPromptText(etiqueta + " " + (i + 1) + " (4 dígitos)");
-            campo.setPrefWidth(105);
-            campo.setMaxWidth(105);
+            campo.setPromptText(etiqueta + " " + (i + 1));
+            campo.setPrefWidth(125);
+            campo.setMaxWidth(125);
             campo.setTextFormatter(new TextFormatter<String>(cambio ->
                     cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null));
             if (i < valoresActuales.size()) campo.setText(valoresActuales.get(i));
