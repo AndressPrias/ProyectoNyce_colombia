@@ -749,7 +749,7 @@ public class BuscarMuestrasController {
         contenido.add(seleccionMultiple ? chkCotizaciones : new Label("Cotizaciones"), 0, 2);
         contenido.add(camposCotizaciones.contenedor(), 1, 2);
         dialogo.getDialogPane().setContent(contenido);
-        dialogo.getDialogPane().setPrefWidth(560);
+        dialogo.getDialogPane().setPrefWidth(680);
 
         Optional<ButtonType> resultado = dialogo.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
@@ -807,7 +807,9 @@ public class BuscarMuestrasController {
         cantidad.setPrefWidth(80);
         HBox cabecera = new HBox(8, new Label("Cantidad:"), cantidad);
         cabecera.setAlignment(Pos.CENTER_LEFT);
-        VBox campos = new VBox(6);
+        GridPane campos = new GridPane();
+        campos.setHgap(8);
+        campos.setVgap(6);
         VBox contenedor = new VBox(8, cabecera, campos);
         List<String> valoresIniciales = actuales.stream().map(ReferenciaDocumento::numero).toList();
         Runnable reconstruir = () -> reconstruirCamposDocumentos(campos, etiqueta, cantidad.getValue(), valoresIniciales);
@@ -816,7 +818,7 @@ public class BuscarMuestrasController {
         return new CamposDocumentos(cantidad, campos, contenedor);
     }
 
-    private void reconstruirCamposDocumentos(VBox contenedor, String etiqueta, int cantidad,
+    private void reconstruirCamposDocumentos(GridPane contenedor, String etiqueta, int cantidad,
                                               List<String> valoresIniciales) {
         List<String> valoresActuales = contenedor.getChildren().stream()
                 .filter(TextField.class::isInstance).map(TextField.class::cast)
@@ -825,11 +827,13 @@ public class BuscarMuestrasController {
         for (int i = 0; i < cantidad; i++) {
             TextField campo = new TextField();
             campo.setPromptText(etiqueta + " " + (i + 1) + " (4 dígitos)");
+            campo.setPrefWidth(105);
+            campo.setMaxWidth(105);
             campo.setTextFormatter(new TextFormatter<String>(cambio ->
                     cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null));
             if (i < valoresActuales.size()) campo.setText(valoresActuales.get(i));
             else if (i < valoresIniciales.size()) campo.setText(valoresIniciales.get(i));
-            contenedor.getChildren().add(campo);
+            contenedor.add(campo, i % 4, i / 4);
         }
     }
 
@@ -848,7 +852,7 @@ public class BuscarMuestrasController {
         return referencias;
     }
 
-    private record CamposDocumentos(Spinner<Integer> cantidad, VBox campos, VBox contenedor) {}
+    private record CamposDocumentos(Spinner<Integer> cantidad, GridPane campos, VBox contenedor) {}
 
     private String formatoEdicion(List<ReferenciaDocumento> referencias) {
         return referencias.stream().map(ReferenciaDocumento::numero)
