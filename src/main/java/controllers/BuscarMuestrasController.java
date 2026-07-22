@@ -751,8 +751,16 @@ public class BuscarMuestrasController {
         contenido.getChildren().add(camposInformes.contenedor());
         if (seleccionMultiple) contenido.getChildren().add(chkCotizaciones);
         contenido.getChildren().add(camposCotizaciones.contenedor());
-        dialogo.getDialogPane().setContent(contenido);
+        ScrollPane desplazamiento = new ScrollPane(contenido);
+        desplazamiento.setFitToWidth(true);
+        desplazamiento.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        desplazamiento.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        desplazamiento.setPrefViewportHeight(390);
+        desplazamiento.setMaxHeight(390);
+        desplazamiento.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+        dialogo.getDialogPane().setContent(desplazamiento);
         dialogo.getDialogPane().setPrefWidth(610);
+        dialogo.getDialogPane().setPrefHeight(480);
 
         Optional<ButtonType> resultado = dialogo.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
