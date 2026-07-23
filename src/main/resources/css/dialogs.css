@@ -46,8 +46,23 @@
 }
 
 .info-dialog .app-dialog-symbol,
+.success-dialog .app-dialog-symbol,
 .update-dialog .app-dialog-symbol {
     -fx-background-color: #008c84;
+}
+
+.warning-dialog .app-dialog-symbol {
+    -fx-background-color: #d98b17;
+}
+
+.success-dialog .app-dialog-message {
+    -fx-background-color: #edf9f6;
+    -fx-border-color: #b9e2da;
+}
+
+.warning-dialog .app-dialog-message {
+    -fx-background-color: #fff8e8;
+    -fx-border-color: #efd29a;
 }
 
 .error-dialog .app-dialog-symbol {

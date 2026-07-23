@@ -21,6 +21,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import service.RemisionService;
+import utilities.AppDialog;
 import utilities.UsuarioSesion;
 import utilities.PdfRemisionWriter;
 
@@ -268,19 +269,26 @@ public class RemisionMuestrasController {
                 return;
             }
             remisionService.registrarRutaArchivo(consecutivo, archivoPdf.toString());
+            String resultadoMuestras = muestrasRemision.size() == 1
+                    ? "La muestra quedó registrada como enviada."
+                    : "Las " + muestrasRemision.size() + " muestras quedaron registradas como enviadas.";
 
             try {
                 boolean impresa = PdfRemisionWriter.imprimir(archivoPdf);
-                String resultadoImpresion = impresa
-                        ? "El documento fue enviado a la impresora seleccionada."
-                        : "La impresión fue cancelada por el usuario.";
-                mostrarAlerta(Alert.AlertType.INFORMATION, "Remisión generada",
-                        "La remisión " + codigoRemision + " fue guardada y las muestras quedaron como enviadas.\n\n" +
-                                resultadoImpresion + "\n\nArchivo: " + archivoPdf);
+                if (impresa) {
+                    AppDialog.showSuccess("Remisión generada",
+                            codigoRemision + " generada correctamente",
+                            resultadoMuestras + "\n\nEl documento fue enviado a la impresora seleccionada.");
+                } else {
+                    AppDialog.showInformation("Remisión generada",
+                            codigoRemision + " quedó registrada",
+                            resultadoMuestras + "\n\nLa impresión fue cancelada. Puede imprimir la remisión más adelante desde la búsqueda de muestras.");
+                }
             } catch (Exception errorImpresion) {
-                mostrarAlerta(Alert.AlertType.WARNING, "Remisión generada sin impresión",
-                        "La remisión " + codigoRemision + " fue guardada correctamente, pero no fue posible imprimirla.\n\n" +
-                                mensajeRaiz(errorImpresion) + "\n\nArchivo: " + archivoPdf);
+                AppDialog.showWarning("Remisión generada",
+                        codigoRemision + " se guardó sin imprimir",
+                        resultadoMuestras + "\n\nNo fue posible enviar el documento a la impresora. " +
+                                mensajeRaiz(errorImpresion));
             }
             limpiarFormulario();
         } catch (Exception e) {

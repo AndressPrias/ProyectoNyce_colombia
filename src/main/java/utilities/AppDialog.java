@@ -30,6 +30,18 @@ public final class AppDialog {
         dialog.showAndWait();
     }
 
+    public static void showSuccess(String title, String header, String message) {
+        Dialog<ButtonType> dialog = create(title, header, message, DialogKind.SUCCESS,
+                new ButtonType("Aceptar", ButtonBar.ButtonData.OK_DONE));
+        dialog.showAndWait();
+    }
+
+    public static void showWarning(String title, String header, String message) {
+        Dialog<ButtonType> dialog = create(title, header, message, DialogKind.WARNING,
+                new ButtonType("Entendido", ButtonBar.ButtonData.OK_DONE));
+        dialog.showAndWait();
+    }
+
     public static void showError(String title, String header, String message) {
         Dialog<ButtonType> dialog = create(title, header, message, DialogKind.ERROR,
                 new ButtonType("Entendido", ButtonBar.ButtonData.OK_DONE));
@@ -148,6 +160,8 @@ public final class AppDialog {
 
     private enum DialogKind {
         INFO("info-dialog", "i", "Notificación del sistema"),
+        SUCCESS("success-dialog", "✓", "Proceso completado"),
+        WARNING("warning-dialog", "!", "Proceso completado con observaciones"),
         UPDATE("update-dialog", "UP", "Nueva versión disponible"),
         ERROR("error-dialog", "!", "Se requiere revisión");
 
