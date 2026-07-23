@@ -157,6 +157,7 @@ public class CargarBaseDatosController {
                     updateMessage("Importando muestra " + (indice + 1) + " de " + total + "...");
                     Muestra muestra = muestrasAImportar.get(indice);
                     MuestraService.ResultadoImportacion resultado = service.importarMuestraExterna(
+                            muestra.getCodigoInterno(),
                             muestra.getRotuloCliente(),
                             muestra.getNombreCliente(),
                             muestra.getDescripcion(),
@@ -168,7 +169,9 @@ public class CargarBaseDatosController {
                             muestra.getEstado(),
                             muestra.getFechaRecepcion(),
                             muestra.getInformes(),
-                            muestra.getCotizaciones()
+                            muestra.getCotizaciones(),
+                            muestra.getRemision(),
+                            muestra.getObservacionAlmacenamiento()
                     );
                     switch (resultado) {
                         case NUEVA -> nuevas++;

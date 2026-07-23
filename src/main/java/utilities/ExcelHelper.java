@@ -42,17 +42,18 @@ import java.util.regex.Pattern;
 public final class ExcelHelper {
 
     private static final String[] ENCABEZADOS = {
-            "Referencia Externa *",
-            "Nombre del cliente",
-            "Descripción Muestra *",
-            "marca",
-            "referencia",
-            "estado",
-            "Fecha de ingreso",
-            "ubicacion",
-            "numeroInforme",
-            "numeroCotizacion",
-            "rutaFoto"
+            "FECHA DE INGRESO",
+            "NOMBRE DEL CLIENTE",
+            "DESCRIPCIÓN MUESTRA",
+            "MARCA",
+            "REFERENCIA EXTERNA",
+            "ID",
+            "INFORME",
+            "COTIZACIÓN",
+            "UBICACIÓN",
+            "REMISIÓN",
+            "ESTADO",
+            "OBSERVACIONES"
     };
 
     private static final DateTimeFormatter FECHA_DIA_MES_ANIO = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -161,16 +162,18 @@ public final class ExcelHelper {
             cell.setCellValue(ENCABEZADOS[i]);
             cell.setCellStyle(estilo);
             sheet.setColumnWidth(i, switch (i) {
-                case 1, 2, 7, 10 -> 28 * 256;
-                case 8, 9 -> 24 * 256;
+                case 1, 2, 11 -> 30 * 256;
+                case 4, 8, 9 -> 24 * 256;
+                case 6, 7 -> 22 * 256;
                 default -> 20 * 256;
             });
         }
 
         CellStyle texto = workbook.createCellStyle();
         texto.setDataFormat(workbook.createDataFormat().getFormat("@"));
-        sheet.setDefaultColumnStyle(8, texto);
-        sheet.setDefaultColumnStyle(9, texto);
+        for (int columna : new int[]{5, 6, 7, 9}) {
+            sheet.setDefaultColumnStyle(columna, texto);
+        }
         sheet.createFreezePane(0, 1);
         sheet.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, ENCABEZADOS.length - 1));
     }
@@ -190,14 +193,14 @@ public final class ExcelHelper {
         String[] lineas = {
                 "Complete una muestra por fila en la hoja Datos.",
                 "No cambie los nombres de los encabezados.",
-                "Campos obligatorios: Referencia Externa * y Descripción Muestra *.",
-                "estado: seleccione un valor de la lista disponible.",
+                "Campos obligatorios: REFERENCIA EXTERNA y DESCRIPCIÓN MUESTRA.",
+                "ESTADO: seleccione un valor de la lista disponible.",
                 "Fecha de ingreso: use una fecha de Excel o el formato dd/MM/yyyy.",
-                "numeroInforme y numeroCotizacion son opcionales.",
+                "INFORME y COTIZACIÓN son opcionales.",
                 "Para asociar varios, escriba códigos de 4 dígitos separados por /, por ejemplo: 0001 / 0002 / 0003.",
                 "El año se toma automáticamente de la fecha de ingreso de la muestra.",
-                "rutaFoto es opcional y debe contener la ruta completa de una imagen existente.",
-                "El código interno y el custodio se asignan automáticamente al importar."
+                "ID es opcional: permite actualizar una muestra existente o conservar su identificación histórica.",
+                "Si ID está vacío, el sistema genera uno automáticamente. El custodio se asigna al importar."
         };
 
         for (int i = 0; i < lineas.length; i++) {
@@ -215,7 +218,7 @@ public final class ExcelHelper {
     }
 
     private static void agregarValidacionEstados(Workbook workbook, Sheet datos) {
-        int columnaEstado = 5;
+        int columnaEstado = 10;
         int ultimaFilaCatalogo = Estado.values().length + 1;
         Name rangoEstados = workbook.createName();
         rangoEstados.setNameName("EstadosValidos");
@@ -243,10 +246,10 @@ public final class ExcelHelper {
 
     private static void validarEncabezados(Map<String, Integer> columnas, List<String> errores) {
         if (!contieneAlguna(columnas, "referenciaexterna", "rotulocliente")) {
-            errores.add("Falta el encabezado obligatorio Referencia Externa *.");
+            errores.add("Falta el encabezado obligatorio REFERENCIA EXTERNA.");
         }
         if (!contieneAlguna(columnas, "descripcionmuestra", "descripcion")) {
-            errores.add("Falta el encabezado obligatorio Descripción Muestra *.");
+            errores.add("Falta el encabezado obligatorio DESCRIPCIÓN MUESTRA.");
         }
     }
 
@@ -265,9 +268,16 @@ public final class ExcelHelper {
         muestra.setDescripcion(valorConAlias(row, columnas, formatter, evaluator,
                 "descripcionmuestra", "descripcion"));
         muestra.setMarca(valor(row, columnas, "marca", formatter, evaluator));
-        muestra.setReferencia(valor(row, columnas, "referencia", formatter, evaluator));
+        muestra.setReferencia(columnas.containsKey("referencia")
+                ? valor(row, columnas, "referencia", formatter, evaluator) : null);
         muestra.setUbicacion(valor(row, columnas, "ubicacion", formatter, evaluator));
-        muestra.setRutaFoto(valor(row, columnas, "rutafoto", formatter, evaluator));
+        muestra.setRutaFoto(columnas.containsKey("rutafoto")
+                ? valor(row, columnas, "rutafoto", formatter, evaluator) : null);
+        muestra.setCodigoInterno(valor(row, columnas, "id", formatter, evaluator));
+        muestra.setRemision(columnas.containsKey("remision")
+                ? valor(row, columnas, "remision", formatter, evaluator) : null);
+        muestra.setObservacionAlmacenamiento(columnas.containsKey("observaciones")
+                ? valor(row, columnas, "observaciones", formatter, evaluator) : null);
 
         if (plantillaNueva && muestra.getIdCarga().isBlank()) {
             errores.add("Fila " + numeroFila + ": idCarga es obligatorio.");
@@ -301,9 +311,9 @@ public final class ExcelHelper {
         int anioPredeterminado = muestra.getFechaRecepcion() != null
                 && muestra.getFechaRecepcion().getYear() >= 2000
                 ? muestra.getFechaRecepcion().getYear() : LocalDate.now().getYear();
-        muestra.setInformes(leerCodigosLegacy(row, columnas, "numeroinforme", "numeroInforme",
+        muestra.setInformes(leerCodigos(row, columnas, new String[]{"informe", "numeroinforme"}, "INFORME",
                 anioPredeterminado, formatter, evaluator, numeroFila, errores));
-        muestra.setCotizaciones(leerCodigosLegacy(row, columnas, "numerocotizacion", "numeroCotizacion",
+        muestra.setCotizaciones(leerCodigos(row, columnas, new String[]{"cotizacion", "numerocotizacion"}, "COTIZACIÓN",
                 anioPredeterminado, formatter, evaluator, numeroFila, errores));
 
         return muestra;
@@ -361,11 +371,11 @@ public final class ExcelHelper {
         });
     }
 
-    private static List<ReferenciaDocumento> leerCodigosLegacy(Row row, Map<String, Integer> columnas,
-                                                                String nombreColumna, String etiqueta, int anio,
-                                                                DataFormatter formatter, FormulaEvaluator evaluator,
-                                                                int numeroFila, List<String> errores) {
-        String valor = valor(row, columnas, nombreColumna, formatter, evaluator);
+    private static List<ReferenciaDocumento> leerCodigos(Row row, Map<String, Integer> columnas,
+                                                          String[] nombresColumnas, String etiqueta, int anio,
+                                                          DataFormatter formatter, FormulaEvaluator evaluator,
+                                                          int numeroFila, List<String> errores) {
+        String valor = valorConAlias(row, columnas, formatter, evaluator, nombresColumnas);
         if (valor.isBlank()) return List.of();
         List<ReferenciaDocumento> referencias = new ArrayList<>();
         Matcher matcher = Pattern.compile("(?<!\\d)\\d{4}(?!\\d)").matcher(valor);

@@ -63,7 +63,7 @@ public class MuestraService {
     public boolean registrarMuestra(String rotuloCliente, String descripcion,
                                  String ubicacion, Usuario custodio, String rutaFoto) {
         return registrarMuestra(rotuloCliente, null, descripcion, null, null, ubicacion, custodio, rutaFoto,
-                null, null, List.of(), List.of(), false);
+                null, null, List.of(), List.of(), false, null, null, null);
     }
 
     public boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,
@@ -71,7 +71,8 @@ public class MuestraService {
                                     Estado estadoUI, LocalDate fechaRecepcionUI) {
         return registrarMuestra(
                 rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
-                custodio, rutaFoto, estadoUI, fechaRecepcionUI, List.of(), List.of(), false
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, List.of(), List.of(), false,
+                null, null, null
         );
     }
 
@@ -80,31 +81,35 @@ public class MuestraService {
                                            Estado estadoUI, LocalDate fechaRecepcionUI) {
         return registrarMuestra(
                 rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
-                custodio, rutaFoto, estadoUI, fechaRecepcionUI, List.of(), List.of(), true
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, List.of(), List.of(), true,
+                null, null, null
         );
     }
 
-    public ResultadoImportacion importarMuestraExterna(String rotuloCliente, String nombreCliente,
+    public ResultadoImportacion importarMuestraExterna(String codigoInterno, String rotuloCliente, String nombreCliente,
                                                         String descripcion, String marca, String referencia,
                                                         String ubicacion, Usuario custodio, String rutaFoto,
                                                         Estado estadoUI, LocalDate fechaRecepcionUI,
                                                         List<ReferenciaDocumento> informes,
-                                                        List<ReferenciaDocumento> cotizaciones) {
+                                                        List<ReferenciaDocumento> cotizaciones,
+                                                        String remision, String observaciones) {
         if (custodio == null || !custodio.puedeControlarMuestras()) return ResultadoImportacion.ERROR;
         LocalDate fecha = fechaRecepcionUI != null ? fechaRecepcionUI : LocalDate.now();
         Estado estado = estadoUI != null ? estadoUI : Estado.EN_CUSTODIA;
 
         try (Connection conn = Database.getConnection()) {
-            Integer muestraId = buscarMuestraExistente(conn, fecha, rotuloCliente, nombreCliente, descripcion);
+            Integer muestraId = buscarMuestraExistente(conn, codigoInterno, fecha,
+                    rotuloCliente, nombreCliente, descripcion);
             if (muestraId == null) {
                 return registrarMuestra(rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
-                        custodio, rutaFoto, estado, fecha, informes, cotizaciones, true)
+                        custodio, rutaFoto, estado, fecha, informes, cotizaciones, true,
+                        codigoInterno, remision, observaciones)
                         ? ResultadoImportacion.NUEVA : ResultadoImportacion.ERROR;
             }
 
             conn.setAutoCommit(false);
             try {
-                String codigoInterno;
+                String codigoActual;
                 String rutaFotoActual;
                 try (PreparedStatement consulta = conn.prepareStatement(
                         "SELECT codigoInterno, rutaFoto FROM muestras WHERE id=?")) {
@@ -114,23 +119,30 @@ public class MuestraService {
                             conn.rollback();
                             return ResultadoImportacion.ERROR;
                         }
-                        codigoInterno = rs.getString("codigoInterno");
+                        codigoActual = rs.getString("codigoInterno");
                         rutaFotoActual = rs.getString("rutaFoto");
                     }
                 }
                 String rutaFinal = rutaFoto == null || rutaFoto.isBlank()
-                        ? rutaFotoActual : normalizarFotoMuestra(rutaFoto, codigoInterno);
+                        ? rutaFotoActual : normalizarFotoMuestra(rutaFoto, codigoActual);
                 try (PreparedStatement actualizar = conn.prepareStatement(
-                        "UPDATE muestras SET nombreCliente=?, marca=?, referencia=?, estado=?, ubicacion=?, " +
-                                "custodioId=?, rutaFoto=? WHERE id=?")) {
-                    actualizar.setString(1, nombreCliente);
-                    actualizar.setString(2, marca);
-                    actualizar.setString(3, referencia);
-                    actualizar.setString(4, estado.name());
-                    actualizar.setString(5, ubicacion);
-                    actualizar.setInt(6, custodio.getId());
-                    actualizar.setString(7, rutaFinal);
-                    actualizar.setInt(8, muestraId);
+                        "UPDATE muestras SET rotuloCliente=?, nombreCliente=?, descripcion=?, marca=?, " +
+                                "referencia=COALESCE(?, referencia), estado=?, ubicacion=?, custodioId=?, " +
+                                "fechaRecepcion=?, rutaFoto=?, remision=COALESCE(?, remision), " +
+                                "observacionAlmacenamiento=COALESCE(?, observacionAlmacenamiento) WHERE id=?")) {
+                    actualizar.setString(1, rotuloCliente);
+                    actualizar.setString(2, nombreCliente);
+                    actualizar.setString(3, descripcion);
+                    actualizar.setString(4, marca);
+                    actualizar.setString(5, referencia);
+                    actualizar.setString(6, estado.name());
+                    actualizar.setString(7, ubicacion);
+                    actualizar.setInt(8, custodio.getId());
+                    actualizar.setString(9, fecha.toString());
+                    actualizar.setString(10, rutaFinal);
+                    actualizar.setString(11, remision);
+                    actualizar.setString(12, observaciones);
+                    actualizar.setInt(13, muestraId);
                     actualizar.executeUpdate();
                 }
 
@@ -159,8 +171,18 @@ public class MuestraService {
         }
     }
 
-    private Integer buscarMuestraExistente(Connection conn, LocalDate fecha, String rotuloCliente,
+    private Integer buscarMuestraExistente(Connection conn, String codigoInterno, LocalDate fecha, String rotuloCliente,
                                             String nombreCliente, String descripcion) throws SQLException {
+        if (codigoInterno != null && !codigoInterno.isBlank()) {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT id FROM muestras WHERE LOWER(TRIM(codigoInterno))=LOWER(TRIM(?)) LIMIT 1")) {
+                ps.setString(1, codigoInterno);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) return rs.getInt("id");
+                }
+            }
+            return null;
+        }
         String sql = "SELECT id FROM muestras WHERE fechaRecepcion=? " +
                 "AND LOWER(TRIM(COALESCE(rotuloCliente, ''))) = LOWER(TRIM(COALESCE(?, ''))) " +
                 "AND LOWER(TRIM(COALESCE(nombreCliente, ''))) = LOWER(TRIM(COALESCE(?, ''))) " +
@@ -185,7 +207,8 @@ public class MuestraService {
                                      String referencia, String ubicacion, Usuario custodio, String rutaFoto,
                                      Estado estadoUI, LocalDate fechaRecepcionUI,
                                      List<ReferenciaDocumento> informes, List<ReferenciaDocumento> cotizaciones,
-                                     boolean codigoDesdeFechaRecepcion) {
+                                     boolean codigoDesdeFechaRecepcion, String codigoImportado,
+                                     String remision, String observaciones) {
 
         if (custodio == null) {
             throw new IllegalArgumentException("No hay un usuario autenticado para registrar la muestra");
@@ -196,9 +219,9 @@ public class MuestraService {
 
         Estado estado = estadoUI != null ? estadoUI : Estado.EN_CUSTODIA;
         LocalDate fecha = fechaRecepcionUI != null ? fechaRecepcionUI : LocalDate.now();
-        String codigo = codigoDesdeFechaRecepcion
-                ? generarCodigoInternoParaFecha(fecha)
-                : generarCodigoInterno();
+        String codigo = codigoImportado != null && !codigoImportado.isBlank()
+                ? codigoImportado.trim()
+                : codigoDesdeFechaRecepcion ? generarCodigoInternoParaFecha(fecha) : generarCodigoInterno();
         List<ReferenciaDocumento> informesValidos = normalizarReferencias(informes);
         List<ReferenciaDocumento> cotizacionesValidas = normalizarReferencias(cotizaciones);
         String rutaFotoNormalizada = normalizarFotoMuestra(rutaFoto, codigo);
@@ -206,8 +229,9 @@ public class MuestraService {
         try (Connection conn = Database.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(
-                     "INSERT INTO muestras (codigoInterno, rotuloCliente, nombreCliente, descripcion, marca, referencia, estado, ubicacion, custodioId, fechaRecepcion, rutaFoto) " +
-                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+                     "INSERT INTO muestras (codigoInterno, rotuloCliente, nombreCliente, descripcion, marca, referencia, " +
+                             "estado, ubicacion, custodioId, fechaRecepcion, rutaFoto, remision, observacionAlmacenamiento) " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, codigo);
             ps.setString(2, rotuloCliente);
@@ -220,6 +244,8 @@ public class MuestraService {
             ps.setInt(9, custodio.getId());
             ps.setString(10, fecha.toString());
             ps.setString(11, rutaFotoNormalizada);
+            ps.setString(12, remision);
+            ps.setString(13, observaciones);
             ps.executeUpdate();
 
             ResultSet rs = ps.getGeneratedKeys();
