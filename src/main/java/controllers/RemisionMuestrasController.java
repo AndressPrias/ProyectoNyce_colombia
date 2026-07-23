@@ -9,12 +9,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.geometry.VPos;
-import javafx.print.PrintColor;
-import javafx.print.PrinterJob;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -26,13 +20,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.transform.Scale;
 import javafx.scene.layout.VBox;
 import service.RemisionService;
 import utilities.UsuarioSesion;
@@ -49,8 +36,6 @@ import java.util.Map;
 
 public class RemisionMuestrasController {
 
-    private static final double ESCALA_DOCUMENTO_PDF = 4.0;
-    private static final double ESCALA_HOJA_IMPRESA = 4.0;
     private static final DateTimeFormatter FECHA = DateTimeFormatter.ISO_LOCAL_DATE;
     private static final String OBSERVACION_PREDETERMINADA =
             "Las muestras fueron sometidas a ensayos destructivos, por lo cual no se encuentran en buen estado.";
@@ -274,7 +259,7 @@ public class RemisionMuestrasController {
             Path archivoPdf;
             try {
                 archivoPdf = PdfRemisionWriter.guardarDosCopias(
-                        crearImagenParaImpresion(), codigoRemision);
+                        crearDatosPdf(), codigoRemision);
             } catch (Exception errorArchivo) {
                 mostrarAlerta(Alert.AlertType.ERROR, "Remisión registrada sin archivo",
                         "La remisión " + codigoRemision + " quedó registrada, pero no fue posible guardar el PDF.\n\n" +
@@ -299,188 +284,37 @@ public class RemisionMuestrasController {
             mostrarAlerta(Alert.AlertType.WARNING, "Imprimir remisión", "Seleccione al menos una muestra.");
             return;
         }
-
-        WritableImage imagenDocumento = crearImagenParaImpresion();
-        PrinterJob job = PrinterJob.createPrinterJob();
-        if (job == null || !job.showPrintDialog(documentoRemision.getScene().getWindow())) return;
-
-        job.getJobSettings().setPrintColor(PrintColor.COLOR);
-        double anchoImprimible = job.getJobSettings().getPageLayout().getPrintableWidth();
-        double altoImprimible = job.getJobSettings().getPageLayout().getPrintableHeight();
-        Canvas hojaConDosCopias = crearHojaImprimible(imagenDocumento, anchoImprimible, altoImprimible);
-        boolean impreso = job.printPage(hojaConDosCopias);
-
-        if (impreso) job.endJob();
-    }
-
-    private WritableImage crearImagenParaImpresion() {
-        double ancho = 1180;
-        // 4x entrega cerca de 600 DPI por copia en el PDF automático. Sigue muy por
-        // debajo del tamaño que ocasionaba páginas en blanco en algunos controladores.
-        double escalaResolucion = ESCALA_DOCUMENTO_PDF;
-        double altoFila = Math.max(28, Math.min(42, 170.0 / Math.max(1, muestrasSeleccionadas.size())));
-        double alto = 517 + altoFila * Math.max(2, muestrasSeleccionadas.size());
-        Canvas lienzo = new Canvas(ancho * escalaResolucion, alto * escalaResolucion);
-        GraphicsContext gc = lienzo.getGraphicsContext2D();
-        gc.scale(escalaResolucion, escalaResolucion);
-        Color verde = Color.web("#009486");
-        Color gris = Color.web("#8a8b8b");
-        Color borde = Color.web("#444444");
-        gc.setFill(Color.WHITE);
-        gc.fillRect(0, 0, ancho, alto);
-
-        Image logo = new Image(getClass().getResource("/icons/logoNyceColombia.jpg").toExternalForm());
-        gc.drawImage(logo, 16, 10, 150, 64);
-        dibujarCelda(gc, 180, 15, 980, 36, verde, verde, "REMISIÓN DE MUESTRAS", Color.WHITE, 17, true);
-        dibujarCelda(gc, 540, 66, 145, 42, verde, verde, "FECHA DE\nELABORACIÓN", Color.WHITE, 11, true);
-        dibujarCelda(gc, 685, 66, 210, 42, Color.WHITE, verde, formatearFecha(dpFechaElaboracion.getValue()), Color.BLACK, 14, false);
-        dibujarCelda(gc, 895, 66, 145, 42, verde, verde, "CONSECUTIVO", Color.WHITE, 11, true);
-        dibujarCelda(gc, 1040, 66, 120, 42, Color.WHITE, verde, lblConsecutivo.getText(), Color.BLACK, 25, true);
-        dibujarCelda(gc, 16, 116, 1144, 28, gris, gris, "LABORATORIO DE ENSAYOS  NYCE COLOMBIA S.A.S", Color.WHITE, 11, true);
-        dibujarCelda(gc, 16, 152, 140, 36, verde, verde, "NOMBRE DEL CLIENTE", Color.WHITE, 9, true);
-        dibujarCelda(gc, 156, 152, 360, 36, Color.WHITE, verde, txtCliente.getText(), Color.BLACK, 12, false);
-        dibujarCelda(gc, 640, 152, 150, 36, verde, verde, "TIPO DE SALIDA", Color.WHITE, 11, true);
-        dibujarCelda(gc, 790, 152, 370, 36, Color.WHITE, verde, cmbTipoSalida.getValue(), Color.BLACK, 12, false);
-
-        double yTabla = 198;
-        double[] anchos = {205, 135, 255, 135, 205, 105, 104};
-        String[] titulos = {"IDENTIFICACIÓN\nINTERNA", "REFERENCIA\nEXTERNA", "DESCRIPCIÓN\nMUESTRA",
-                "FABRICANTE / MARCA", "OBSERVACIONES", "FECHA DE\nINGRESO", "FECHA DE\nENTREGA"};
-        double x = 16;
-        for (int i = 0; i < titulos.length; i++) {
-            dibujarCelda(gc, x, yTabla, anchos[i], 44, verde, Color.WHITE, titulos[i], Color.WHITE, 9, true);
-            x += anchos[i];
-        }
-        double y = yTabla + 44;
-        for (Muestra muestra : muestrasSeleccionadas) {
-            String[] valores = {identificacionInterna(muestra), texto(muestra.getRotuloCliente(), ""),
-                    texto(muestra.getDescripcion(), ""), texto(muestra.getMarca(), ""),
-                    texto(muestra.getObservacionAlmacenamiento(), "Ninguna"),
-                    formatearFecha(muestra.getFechaRecepcion()), formatearFecha(dpFechaElaboracion.getValue())};
-            x = 16;
-            for (int i = 0; i < valores.length; i++) {
-                dibujarCelda(gc, x, y, anchos[i], altoFila, Color.WHITE, borde, valores[i], Color.BLACK, 10, false);
-                x += anchos[i];
-            }
-            y += altoFila;
-        }
-        if (muestrasSeleccionadas.size() < 2) {
-            x = 16;
-            for (double anchoColumna : anchos) {
-                dibujarCelda(gc, x, y, anchoColumna, altoFila, Color.WHITE, borde, "", Color.BLACK, 10, false);
-                x += anchoColumna;
-            }
-            y += altoFila;
-        }
-
-        y += 12;
-        dibujarCelda(gc, 16, y, 140, 52, verde, verde, "TOTAL MUESTRAS", Color.WHITE, 10, true);
-        dibujarCelda(gc, 156, y, 100, 52, Color.WHITE, verde, String.valueOf(muestrasSeleccionadas.size()), Color.BLACK, 13, false);
-        dibujarCelda(gc, 256, y, 160, 52, verde, verde, "NÚMERO DE EMPAQUES", Color.WHITE, 10, true);
-        dibujarCelda(gc, 416, y, 100, 52, Color.WHITE, verde, String.valueOf(spnEmpaques.getValue()), Color.BLACK, 13, false);
-        dibujarCelda(gc, 516, y, 245, 52, verde, verde, "OBSERVACIÓN FINAL DE LAS MUESTRAS", Color.WHITE, 9, true);
-        dibujarCelda(gc, 761, y, 399, 52, Color.WHITE, verde, txtObservacionFinal.getText(), Color.BLACK, 10, false);
-
-        y += 64;
-        dibujarCelda(gc, 130, y, 470, 32, verde, verde, "ENTREGADO POR:", Color.WHITE, 15, true);
-        dibujarCelda(gc, 600, y, 450, 32, verde, verde, "ENTREGADO A:", Color.WHITE, 15, true);
-        dibujarCelda(gc, 130, y + 32, 470, 50, Color.WHITE, verde, lblEntregadoPor.getText(), Color.BLACK, 12, true);
-        dibujarCelda(gc, 600, y + 32, 450, 25, Color.WHITE, verde, "FIRMA: " + txtFirma.getText(), Color.GRAY, 10, false);
-        dibujarCelda(gc, 600, y + 57, 450, 25, Color.WHITE, verde, "CÉDULA: " + txtCedula.getText(), Color.GRAY, 10, false);
-        dibujarCelda(gc, 130, y + 82, 470, 25, Color.WHITE, verde, lblCargoEntregadoPor.getText(), Color.BLACK, 10, false);
-        dibujarCelda(gc, 600, y + 82, 450, 25, Color.WHITE, verde, "NOMBRE Y PLACA: " + txtNombrePlaca.getText(), Color.GRAY, 10, false);
-
-        double yPie = alto - 74;
-        gc.setFill(Color.web("#555555"));
-        gc.setFont(Font.font("Arial", 9));
-        gc.setTextAlign(TextAlignment.LEFT);
-        gc.setTextBaseline(VPos.BASELINE);
-        gc.fillText("ENTRADA EN VIGOR 2023-08-30", 16, yPie - 8);
-        gc.setFill(gris);
-        gc.fillRect(16, yPie, 1144, 62);
-        gc.setFill(Color.WHITE);
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.CENTER);
-        gc.setFont(Font.font("Arial", 10));
-        gc.fillText("Se prohíbe la reproducción total o parcial sin previa autorización", ancho / 2, yPie + 20);
-        gc.fillText("NYCE Colombia S.A.S. | Calle 30 No. 17 - 52 | Teusaquillo - Bogotá D.C. Colombia | Tel. +571 756 84 85 ext. 129", ancho / 2, yPie + 44);
-
-        SnapshotParameters parametros = new SnapshotParameters();
-        parametros.setFill(Color.WHITE);
-        return lienzo.snapshot(parametros, null);
-    }
-
-    private void dibujarCelda(GraphicsContext gc, double x, double y, double ancho, double alto,
-                              Color fondo, Color borde, String texto, Color colorTexto,
-                              double tamanoFuente, boolean negrita) {
-        gc.setFill(fondo);
-        gc.fillRect(x, y, ancho, alto);
-        gc.setStroke(borde);
-        gc.setLineWidth(1);
-        gc.strokeRect(x, y, ancho, alto);
-        gc.setFill(colorTexto);
-        gc.setFont(Font.font("Arial", negrita ? FontWeight.BOLD : FontWeight.NORMAL, tamanoFuente));
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.CENTER);
-        String valor = texto == null ? "" : texto;
-        String[] lineas = ajustarLineas(valor, Math.max(8, (int) ((ancho - 12) / (tamanoFuente * 0.55))));
-        double salto = tamanoFuente + 2;
-        double inicio = y + alto / 2 - (lineas.length - 1) * salto / 2;
-        for (int i = 0; i < lineas.length; i++) {
-            gc.fillText(lineas[i], x + ancho / 2, inicio + i * salto, Math.max(10, ancho - 10));
+        try {
+            PdfRemisionWriter.imprimir(crearDatosPdf());
+        } catch (Exception e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo imprimir", mensajeRaiz(e));
         }
     }
 
-    private String[] ajustarLineas(String texto, int maximoCaracteres) {
-        List<String> lineas = new java.util.ArrayList<>();
-        for (String parrafo : texto.split("\\n", -1)) {
-            if (parrafo.length() <= maximoCaracteres) {
-                lineas.add(parrafo);
-                continue;
-            }
-            StringBuilder linea = new StringBuilder();
-            for (String palabra : parrafo.split("\\s+")) {
-                if (!linea.isEmpty() && linea.length() + palabra.length() + 1 > maximoCaracteres) {
-                    lineas.add(linea.toString());
-                    linea.setLength(0);
-                }
-                if (!linea.isEmpty()) linea.append(' ');
-                linea.append(palabra);
-            }
-            lineas.add(linea.toString());
-        }
-        return lineas.toArray(String[]::new);
-    }
-
-    private Canvas crearHojaImprimible(WritableImage imagen, double anchoPagina, double altoPagina) {
-        // 4 píxeles por punto equivalen a 288 DPI: calidad de impresión alta sin
-        // sobrecargar el controlador de Windows con el lienzo anterior de 6x.
-        double factorResolucion = ESCALA_HOJA_IMPRESA;
-        Canvas hoja = new Canvas(anchoPagina * factorResolucion, altoPagina * factorResolucion);
-        GraphicsContext gc = hoja.getGraphicsContext2D();
-        gc.scale(factorResolucion, factorResolucion);
-        gc.setFill(Color.WHITE);
-        gc.fillRect(0, 0, anchoPagina, altoPagina);
-
-        double separacion = 8;
-        double altoCopiaDisponible = (altoPagina - separacion) / 2;
-        double escala = Math.min(anchoPagina / imagen.getWidth(), altoCopiaDisponible / imagen.getHeight());
-        double anchoCopia = imagen.getWidth() * escala;
-        double altoCopia = imagen.getHeight() * escala;
-        double x = (anchoPagina - anchoCopia) / 2;
-        double ySuperior = (altoCopiaDisponible - altoCopia) / 2;
-        double yInferior = altoCopiaDisponible + separacion + (altoCopiaDisponible - altoCopia) / 2;
-        gc.drawImage(imagen, x, ySuperior, anchoCopia, altoCopia);
-        gc.drawImage(imagen, x, yInferior, anchoCopia, altoCopia);
-
-        gc.setStroke(Color.GRAY);
-        gc.setLineWidth(0.8);
-        gc.setLineDashes(5, 3);
-        double ySeparador = altoPagina / 2;
-        gc.strokeLine(0, ySeparador, anchoPagina, ySeparador);
-        hoja.getTransforms().add(new Scale(
-                1.0 / factorResolucion, 1.0 / factorResolucion, 0, 0));
-        return hoja;
+    private PdfRemisionWriter.Datos crearDatosPdf() {
+        List<PdfRemisionWriter.Fila> filas = muestrasSeleccionadas.stream()
+                .map(muestra -> new PdfRemisionWriter.Fila(
+                        identificacionInterna(muestra),
+                        texto(muestra.getRotuloCliente(), ""),
+                        texto(muestra.getDescripcion(), ""),
+                        texto(muestra.getMarca(), ""),
+                        texto(muestra.getObservacionAlmacenamiento(), "Ninguna"),
+                        formatearFecha(muestra.getFechaRecepcion()),
+                        formatearFecha(dpFechaElaboracion.getValue())))
+                .toList();
+        return new PdfRemisionWriter.Datos(
+                formatearFecha(dpFechaElaboracion.getValue()),
+                lblConsecutivo.getText(),
+                txtCliente.getText(),
+                cmbTipoSalida.getValue(),
+                filas,
+                spnEmpaques.getValue(),
+                txtObservacionFinal.getText(),
+                lblEntregadoPor.getText(),
+                lblCargoEntregadoPor.getText(),
+                txtFirma.getText(),
+                txtCedula.getText(),
+                txtNombrePlaca.getText());
     }
 
     private void limpiarFormulario() {
