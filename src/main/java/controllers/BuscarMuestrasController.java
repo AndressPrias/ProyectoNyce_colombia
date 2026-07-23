@@ -290,6 +290,9 @@ public class BuscarMuestrasController {
     void buscarMuestras() {
         Muestra seleccionAnterior = tblResultados.getSelectionModel().getSelectedItem();
         Integer idSeleccionado = seleccionAnterior == null ? null : seleccionAnterior.getId();
+        List<Integer> idsSeleccionados = tblResultados.getSelectionModel().getSelectedItems().stream()
+                .map(Muestra::getId)
+                .toList();
         listaMuestras.clear();
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(
@@ -365,7 +368,7 @@ public class BuscarMuestrasController {
                 listaMuestras.add(m);
             }
 
-            actualizarSeleccionYDetalle(idSeleccionado);
+            actualizarSeleccionYDetalle(idsSeleccionados, idSeleccionado);
             Platform.runLater(tblResultados::refresh);
             ajustarColumnasPorContenidoSiCorresponde();
 
@@ -521,16 +524,23 @@ public class BuscarMuestrasController {
             return null;
         }
     }
-    private void actualizarSeleccionYDetalle(Integer idSeleccionado) {
-        if (idSeleccionado == null) {
+    private void actualizarSeleccionYDetalle(List<Integer> idsSeleccionados, Integer idSeleccionado) {
+        if (idsSeleccionados == null || idsSeleccionados.isEmpty()) {
             limpiarDetalle();
             return;
         }
 
-        Muestra muestraActualizada = listaMuestras.stream()
+        tblResultados.getSelectionModel().clearSelection();
+        listaMuestras.stream()
+                .filter(muestra -> idsSeleccionados.contains(muestra.getId()))
+                .forEach(muestra -> tblResultados.getSelectionModel().select(muestra));
+
+        Muestra muestraActualizada = idSeleccionado == null ? null : listaMuestras.stream()
                 .filter(muestra -> muestra.getId() == idSeleccionado)
-                .findFirst()
-                .orElse(null);
+                .findFirst().orElse(null);
+        if (muestraActualizada == null) {
+            muestraActualizada = tblResultados.getSelectionModel().getSelectedItem();
+        }
 
         if (muestraActualizada == null) {
             limpiarDetalle();
@@ -681,8 +691,9 @@ public class BuscarMuestrasController {
     @FXML
     void asignarTecnico() {
         if (!verificarControlMuestras()) return;
-        Muestra muestra = obtenerMuestraSeleccionada();
-        if (muestra == null) return;
+        List<Muestra> muestras = obtenerMuestrasSeleccionadas();
+        if (muestras.isEmpty()) return;
+        Muestra muestraBase = muestras.get(0);
 
         List<Usuario> tecnicos = UsuarioSesion.obtenerUsuariosAsignables();
         if (tecnicos.isEmpty()) {
@@ -693,17 +704,21 @@ public class BuscarMuestrasController {
         ComboBox<Usuario> comboTecnico = new ComboBox<>(FXCollections.observableArrayList(tecnicos));
         comboTecnico.setMaxWidth(Double.MAX_VALUE);
         comboTecnico.setPromptText("Seleccione un técnico");
-        if (muestra.getTecnico() != null) {
+        if (muestras.size() == 1 && muestraBase.getTecnico() != null) {
             tecnicos.stream()
-                    .filter(tecnico -> tecnico.getId() == muestra.getTecnico().getId())
+                    .filter(tecnico -> tecnico.getId() == muestraBase.getTecnico().getId())
                     .findFirst()
                     .ifPresent(comboTecnico::setValue);
         }
 
-        Dialog<ButtonType> dialogo = crearDialogo("Asignar técnico");
+        Dialog<ButtonType> dialogo = crearDialogo(muestras.size() == 1 ? "Asignar técnico" : "Asignar técnico a muestras");
         GridPane contenido = crearFormulario();
-        contenido.add(new Label("Tecnico"), 0, 0);
-        contenido.add(comboTecnico, 1, 0);
+        if (muestras.size() > 1) {
+            contenido.add(new Label("Se aplicará a " + muestras.size() + " muestras seleccionadas."), 0, 0, 2, 1);
+        }
+        int filaTecnico = muestras.size() > 1 ? 1 : 0;
+        contenido.add(new Label("Técnico"), 0, filaTecnico);
+        contenido.add(comboTecnico, 1, filaTecnico);
         dialogo.getDialogPane().setContent(contenido);
 
         Optional<ButtonType> resultado = dialogo.showAndWait();
@@ -713,11 +728,20 @@ public class BuscarMuestrasController {
             return;
         }
 
-        if (new MuestraService().asignarTecnico(muestra.getId(), comboTecnico.getValue(), usuarioActual())) {
-            buscarMuestras();
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Asignar técnico", "Técnico asignado correctamente");
+        MuestraService service = new MuestraService();
+        int actualizadas = 0;
+        for (Muestra muestra : muestras) {
+            if (service.asignarTecnico(muestra.getId(), comboTecnico.getValue(), usuarioActual())) {
+                actualizadas++;
+            }
+        }
+        buscarMuestras();
+        if (actualizadas == muestras.size()) {
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Asignar técnico",
+                    "Se asignó el técnico a " + actualizadas + " muestra(s)");
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Asignar técnico", "No se pudo guardar la asignación");
+            mostrarAlerta(Alert.AlertType.WARNING, "Asignar técnico",
+                    "Se asignó el técnico a " + actualizadas + " de " + muestras.size() + " muestra(s)");
         }
     }
 
