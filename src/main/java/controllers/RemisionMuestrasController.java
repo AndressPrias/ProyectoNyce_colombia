@@ -49,6 +49,8 @@ import java.util.Map;
 
 public class RemisionMuestrasController {
 
+    private static final double ESCALA_DOCUMENTO_PDF = 4.0;
+    private static final double ESCALA_HOJA_IMPRESA = 4.0;
     private static final DateTimeFormatter FECHA = DateTimeFormatter.ISO_LOCAL_DATE;
     private static final String OBSERVACION_PREDETERMINADA =
             "Las muestras fueron sometidas a ensayos destructivos, por lo cual no se encuentran en buen estado.";
@@ -313,9 +315,9 @@ public class RemisionMuestrasController {
 
     private WritableImage crearImagenParaImpresion() {
         double ancho = 1180;
-        // 2x conserva una resolución cercana a 300 DPI en media hoja carta y evita
-        // imágenes demasiado grandes que algunos controladores de Windows imprimen en blanco.
-        double escalaResolucion = 2.0;
+        // 4x entrega cerca de 600 DPI por copia en el PDF automático. Sigue muy por
+        // debajo del tamaño que ocasionaba páginas en blanco en algunos controladores.
+        double escalaResolucion = ESCALA_DOCUMENTO_PDF;
         double altoFila = Math.max(28, Math.min(42, 170.0 / Math.max(1, muestrasSeleccionadas.size())));
         double alto = 517 + altoFila * Math.max(2, muestrasSeleccionadas.size());
         Canvas lienzo = new Canvas(ancho * escalaResolucion, alto * escalaResolucion);
@@ -451,7 +453,9 @@ public class RemisionMuestrasController {
     }
 
     private Canvas crearHojaImprimible(WritableImage imagen, double anchoPagina, double altoPagina) {
-        double factorResolucion = 3.0;
+        // 4 píxeles por punto equivalen a 288 DPI: calidad de impresión alta sin
+        // sobrecargar el controlador de Windows con el lienzo anterior de 6x.
+        double factorResolucion = ESCALA_HOJA_IMPRESA;
         Canvas hoja = new Canvas(anchoPagina * factorResolucion, altoPagina * factorResolucion);
         GraphicsContext gc = hoja.getGraphicsContext2D();
         gc.scale(factorResolucion, factorResolucion);
