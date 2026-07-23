@@ -54,15 +54,15 @@
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
                 <Label styleClass="form-label" text="Buscar muestra" />
-                <TextField fx:id="txtBuscarMuestra" maxWidth="Infinity" promptText="Cliente, referencia, fecha, código, descripción, marca, estado..." HBox.hgrow="ALWAYS" />
+                <TextField fx:id="txtBuscarMuestra" maxWidth="Infinity" promptText="Nombre del cliente, referencia externa, fecha, código, descripción muestra, marca, estado..." HBox.hgrow="ALWAYS" />
             </HBox>
             <TableView fx:id="tblDisponibles" fixedCellSize="42.0" prefHeight="180.0" VBox.vgrow="NEVER">
                 <columns>
                     <TableColumn fx:id="colSeleccion" editable="true" maxWidth="72" minWidth="72" prefWidth="72" resizable="false" text="MARCAR" />
                     <TableColumn fx:id="colDisponibleInterna" prefWidth="190" text="IDENTIFICACIÓN INTERNA" />
-                    <TableColumn fx:id="colDisponibleExterna" prefWidth="150" text="IDENTIFICACIÓN EXTERNA" />
-                    <TableColumn fx:id="colDisponibleDescripcion" prefWidth="300" text="DESCRIPCIÓN" />
-                    <TableColumn fx:id="colDisponibleCliente" prefWidth="210" text="CLIENTE" />
+                    <TableColumn fx:id="colDisponibleExterna" prefWidth="165" text="REFERENCIA EXTERNA" />
+                    <TableColumn fx:id="colDisponibleDescripcion" prefWidth="300" text="DESCRIPCIÓN MUESTRA" />
+                    <TableColumn fx:id="colDisponibleCliente" prefWidth="210" text="NOMBRE DEL CLIENTE" />
                     <TableColumn fx:id="colDisponibleEstado" prefWidth="190" text="ESTADO" />
                 </columns>
                 <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN" /></columnResizePolicy>
@@ -78,7 +78,7 @@
                 </columnConstraints>
                 <Label styleClass="form-label" text="Fecha de elaboración" />
                 <DatePicker fx:id="dpFechaElaboracion" maxWidth="Infinity" GridPane.columnIndex="1" />
-                <Label styleClass="form-label" text="Cliente" GridPane.columnIndex="2" />
+                <Label styleClass="form-label" text="Nombre del cliente" GridPane.columnIndex="2" />
                 <TextField fx:id="txtCliente" promptText="Se completa con las muestras" GridPane.columnIndex="3" />
                 <Label styleClass="form-label" text="Número de empaques" GridPane.columnIndex="4" />
                 <Spinner fx:id="spnEmpaques" editable="true" maxWidth="Infinity" GridPane.columnIndex="5">
@@ -127,7 +127,7 @@
 
                         <HBox spacing="120">
                             <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                                <Label minHeight="29.0" prefHeight="29.0" prefWidth="135.0" styleClass="field-heading" text="CLIENTE" />
+                                <Label minHeight="29.0" prefHeight="29.0" prefWidth="155.0" styleClass="field-heading" text="NOMBRE DEL CLIENTE" />
                                 <Label fx:id="lblClienteDocumento" alignment="CENTER" maxWidth="Infinity" minWidth="250" prefHeight="37.0" prefWidth="403.0" styleClass="field-value" HBox.hgrow="ALWAYS" />
                             </HBox>
                             <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
@@ -139,11 +139,11 @@
                         <TableView fx:id="tblRemision" editable="false" fixedCellSize="44" minHeight="145" prefHeight="145" styleClass="document-table">
                             <columns>
                                 <TableColumn fx:id="colInterna" prefWidth="205" text="IDENTIFICACIÓN INTERNA" />
-                                <TableColumn fx:id="colExterna" prefWidth="132" text="IDENTIFICACIÓN EXTERNA" />
-                                <TableColumn fx:id="colDescripcion" prefWidth="255" text="DESCRIPCIÓN" />
+                                <TableColumn fx:id="colExterna" prefWidth="145" text="REFERENCIA EXTERNA" />
+                                <TableColumn fx:id="colDescripcion" prefWidth="255" text="DESCRIPCIÓN MUESTRA" />
                                 <TableColumn fx:id="colMarca" prefWidth="125" text="FABRICANTE / MARCA" />
                                 <TableColumn fx:id="colObservaciones" prefWidth="210" text="OBSERVACIONES" />
-                                <TableColumn fx:id="colRecepcion" prefWidth="105" text="FECHA DE RECEPCIÓN" />
+                                <TableColumn fx:id="colRecepcion" prefWidth="105" text="FECHA DE INGRESO" />
                                 <TableColumn fx:id="colEntrega" prefWidth="105" text="FECHA DE ENTREGA" />
                             </columns>
                             <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN" /></columnResizePolicy>

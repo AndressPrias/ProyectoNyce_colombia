@@ -42,13 +42,13 @@ import java.util.regex.Pattern;
 public final class ExcelHelper {
 
     private static final String[] ENCABEZADOS = {
-            "rotuloCliente *",
-            "nombreCliente",
-            "descripcion *",
+            "Referencia Externa *",
+            "Nombre del cliente",
+            "Descripción Muestra *",
             "marca",
             "referencia",
             "estado",
-            "fechaRecepcion",
+            "Fecha de ingreso",
             "ubicacion",
             "numeroInforme",
             "numeroCotizacion",
@@ -190,12 +190,12 @@ public final class ExcelHelper {
         String[] lineas = {
                 "Complete una muestra por fila en la hoja Datos.",
                 "No cambie los nombres de los encabezados.",
-                "Campos obligatorios: rotuloCliente * y descripcion *.",
+                "Campos obligatorios: Referencia Externa * y Descripción Muestra *.",
                 "estado: seleccione un valor de la lista disponible.",
-                "fechaRecepcion: use una fecha de Excel o el formato dd/MM/yyyy.",
+                "Fecha de ingreso: use una fecha de Excel o el formato dd/MM/yyyy.",
                 "numeroInforme y numeroCotizacion son opcionales.",
                 "Para asociar varios, escriba códigos de 4 dígitos separados por /, por ejemplo: 0001 / 0002 / 0003.",
-                "El año se toma automáticamente de la fecha de recepción de la muestra.",
+                "El año se toma automáticamente de la fecha de ingreso de la muestra.",
                 "rutaFoto es opcional y debe contener la ruta completa de una imagen existente.",
                 "El código interno y el custodio se asignan automáticamente al importar."
         };
@@ -242,11 +242,11 @@ public final class ExcelHelper {
     }
 
     private static void validarEncabezados(Map<String, Integer> columnas, List<String> errores) {
-        if (!columnas.containsKey("rotulocliente")) {
-            errores.add("Falta el encabezado obligatorio rotuloCliente *.");
+        if (!contieneAlguna(columnas, "referenciaexterna", "rotulocliente")) {
+            errores.add("Falta el encabezado obligatorio Referencia Externa *.");
         }
-        if (!columnas.containsKey("descripcion")) {
-            errores.add("Falta el encabezado obligatorio descripcion *.");
+        if (!contieneAlguna(columnas, "descripcionmuestra", "descripcion")) {
+            errores.add("Falta el encabezado obligatorio Descripción Muestra *.");
         }
     }
 
@@ -258,9 +258,12 @@ public final class ExcelHelper {
         muestra.setIdCarga(plantillaNueva
                 ? valor(row, columnas, "idcarga", formatter, evaluator)
                 : String.format("FILA-%04d", numeroFila));
-        muestra.setRotuloCliente(valor(row, columnas, "rotulocliente", formatter, evaluator));
-        muestra.setNombreCliente(valor(row, columnas, "nombrecliente", formatter, evaluator));
-        muestra.setDescripcion(valor(row, columnas, "descripcion", formatter, evaluator));
+        muestra.setRotuloCliente(valorConAlias(row, columnas, formatter, evaluator,
+                "referenciaexterna", "rotulocliente"));
+        muestra.setNombreCliente(valorConAlias(row, columnas, formatter, evaluator,
+                "nombredelcliente", "nombrecliente"));
+        muestra.setDescripcion(valorConAlias(row, columnas, formatter, evaluator,
+                "descripcionmuestra", "descripcion"));
         muestra.setMarca(valor(row, columnas, "marca", formatter, evaluator));
         muestra.setReferencia(valor(row, columnas, "referencia", formatter, evaluator));
         muestra.setUbicacion(valor(row, columnas, "ubicacion", formatter, evaluator));
@@ -271,10 +274,10 @@ public final class ExcelHelper {
         }
 
         if (muestra.getRotuloCliente().isBlank()) {
-            errores.add("Fila " + numeroFila + ": rotuloCliente es obligatorio.");
+            errores.add("Fila " + numeroFila + ": Referencia Externa es obligatoria.");
         }
         if (muestra.getDescripcion().isBlank()) {
-            errores.add("Fila " + numeroFila + ": descripcion es obligatoria.");
+            errores.add("Fila " + numeroFila + ": Descripción Muestra es obligatoria.");
         }
 
         String estado = valor(row, columnas, "estado", formatter, evaluator);
@@ -288,7 +291,7 @@ public final class ExcelHelper {
             }
         }
 
-        Cell celdaFecha = celda(row, columnas, "fecharecepcion");
+        Cell celdaFecha = celdaConAlias(row, columnas, "fechadeingreso", "fecharecepcion");
         try {
             muestra.setFechaRecepcion(leerFecha(celdaFecha, formatter, evaluator));
         } catch (IllegalArgumentException e) {
@@ -391,7 +394,7 @@ public final class ExcelHelper {
             try {
                 return LocalDate.parse(texto, FECHA_DIA_MES_ANIO);
             } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("fechaRecepcion debe usar dd/MM/yyyy.");
+                throw new IllegalArgumentException("Fecha de ingreso debe usar dd/MM/yyyy.");
             }
         }
     }
@@ -405,6 +408,28 @@ public final class ExcelHelper {
     private static Cell celda(Row row, Map<String, Integer> columnas, String nombre) {
         Integer indice = columnas.get(nombre);
         return indice == null ? null : row.getCell(indice);
+    }
+
+    private static String valorConAlias(Row row, Map<String, Integer> columnas,
+                                        DataFormatter formatter, FormulaEvaluator evaluator,
+                                        String... nombres) {
+        Cell cell = celdaConAlias(row, columnas, nombres);
+        return cell == null ? "" : formatter.formatCellValue(cell, evaluator).trim();
+    }
+
+    private static Cell celdaConAlias(Row row, Map<String, Integer> columnas, String... nombres) {
+        for (String nombre : nombres) {
+            Cell cell = celda(row, columnas, nombre);
+            if (cell != null) return cell;
+        }
+        return null;
+    }
+
+    private static boolean contieneAlguna(Map<String, Integer> columnas, String... nombres) {
+        for (String nombre : nombres) {
+            if (columnas.containsKey(nombre)) return true;
+        }
+        return false;
     }
 
     private static boolean filaVacia(Row row, DataFormatter formatter, FormulaEvaluator evaluator) {

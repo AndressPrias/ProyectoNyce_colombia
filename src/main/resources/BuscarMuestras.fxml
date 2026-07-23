@@ -28,7 +28,7 @@
                 <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                     <image><Image url="@icons/filtrar.png" /></image>
                 </ImageView>
-                <TextField fx:id="txtBusquedaGeneral" maxWidth="1.7976931348623157E308" minHeight="46.0" onAction="#buscarMuestras" promptText="Buscar por codigo, descripcion, cliente, marca, referencia, estado, ubicacion, fecha o cualquier valor..." styleClass="search-field-main" HBox.hgrow="ALWAYS" />
+                <TextField fx:id="txtBusquedaGeneral" maxWidth="1.7976931348623157E308" minHeight="46.0" onAction="#buscarMuestras" promptText="Buscar por código, descripción muestra, nombre del cliente, referencia externa, marca, estado, ubicación, fecha o cualquier valor..." styleClass="search-field-main" HBox.hgrow="ALWAYS" />
             </HBox>
         </VBox>
 
@@ -65,9 +65,9 @@
                         <children>
                             <Label styleClass="detail-label" text="ID" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                             <Label fx:id="lblDetalleCodigoInterno" maxWidth="1.7976931348623157E308" styleClass="detail-value-strong" textOverrun="ELLIPSIS" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                            <Label styleClass="detail-label" text="Fecha" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                            <Label styleClass="detail-label" text="Fecha de ingreso" GridPane.columnIndex="2" GridPane.rowIndex="0" />
                             <Label fx:id="lblDetalleFecha" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-                            <Label styleClass="detail-label" text="Cliente" GridPane.columnIndex="4" GridPane.rowIndex="0" />
+                            <Label styleClass="detail-label" text="Nombre del cliente" GridPane.columnIndex="4" GridPane.rowIndex="0" />
                             <Label fx:id="lblDetalleCliente" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="5" GridPane.rowIndex="0" />
                             <Label styleClass="detail-label" text="Marca" GridPane.columnIndex="6" GridPane.rowIndex="0" />
                             <Label fx:id="lblDetalleMarca" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="7" GridPane.rowIndex="0" />
@@ -81,7 +81,7 @@
                             <Label styleClass="detail-label" text="Cotizaciones" GridPane.columnIndex="6" GridPane.rowIndex="1" />
                             <Label fx:id="lblDetalleCotizacion" maxWidth="1.7976931348623157E308" styleClass="detail-value" wrapText="true" GridPane.columnIndex="7" GridPane.rowIndex="1" />
 
-                            <Label minWidth="92.0" styleClass="detail-label" text="Descripcion" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <Label minWidth="120.0" styleClass="detail-label" text="Descripción Muestra" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                             <Label fx:id="lblDetalleDescripcion" maxWidth="1.7976931348623157E308" minHeight="32.0" prefHeight="32.0" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="2" />
                             <Label minWidth="92.0" styleClass="detail-label" text="Observaciones" GridPane.columnIndex="0" GridPane.rowIndex="3" />
                             <Label fx:id="lblDetalleObservaciones" maxWidth="1.7976931348623157E308" minHeight="32.0" prefHeight="32.0" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="3" />
@@ -123,13 +123,13 @@
                 </VBox.margin>
                 <columns>
                     <TableColumn fx:id="colCodigoInterno" prefWidth="45.0" text="ID" />
-                    <TableColumn fx:id="colDescripcion" prefWidth="115.0" text="Descripcion" />
-                    <TableColumn fx:id="colRotulo" prefWidth="115.0" text="Rotulo cliente" />
-                    <TableColumn fx:id="colCliente" prefWidth="75.0" text="Cliente" />
+                    <TableColumn fx:id="colDescripcion" prefWidth="145.0" text="Descripción Muestra" />
+                    <TableColumn fx:id="colRotulo" prefWidth="130.0" text="Referencia Externa" />
+                    <TableColumn fx:id="colCliente" prefWidth="120.0" text="Nombre del cliente" />
                     <TableColumn fx:id="colMarca" prefWidth="70.0" text="Marca" />
                     <TableColumn fx:id="colReferencia" prefWidth="95.0" text="Referencia" />
                     <TableColumn fx:id="colEstado" prefWidth="75.0" text="Estado" />
-                    <TableColumn fx:id="colFecha" prefWidth="130.0" text="Fecha de recepcion" />
+                    <TableColumn fx:id="colFecha" prefWidth="115.0" text="Fecha de ingreso" />
                     <TableColumn fx:id="colUbicacion" prefWidth="90.0" text="Ubicacion" />
                     <TableColumn fx:id="colTecnico" prefWidth="75.0" text="Tecnico" />
                     <TableColumn fx:id="colInforme" prefWidth="145.0" text="Informes" />

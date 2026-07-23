@@ -244,7 +244,8 @@ public class RemisionMuestrasController {
             return;
         }
         if (dpFechaElaboracion.getValue() == null || txtCliente.getText().isBlank() || cmbTipoSalida.getValue() == null) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Remisión incompleta", "Complete la fecha, el cliente y el tipo de salida.");
+            mostrarAlerta(Alert.AlertType.WARNING, "Remisión incompleta",
+                    "Complete la fecha, el nombre del cliente y el tipo de salida.");
             return;
         }
 
@@ -339,15 +340,15 @@ public class RemisionMuestrasController {
         dibujarCelda(gc, 895, 66, 145, 42, verde, verde, "CONSECUTIVO", Color.WHITE, 11, true);
         dibujarCelda(gc, 1040, 66, 120, 42, Color.WHITE, verde, lblConsecutivo.getText(), Color.BLACK, 25, true);
         dibujarCelda(gc, 16, 116, 1144, 28, gris, gris, "LABORATORIO DE ENSAYOS  NYCE COLOMBIA S.A.S", Color.WHITE, 11, true);
-        dibujarCelda(gc, 16, 152, 140, 36, verde, verde, "CLIENTE", Color.WHITE, 11, true);
+        dibujarCelda(gc, 16, 152, 140, 36, verde, verde, "NOMBRE DEL CLIENTE", Color.WHITE, 9, true);
         dibujarCelda(gc, 156, 152, 360, 36, Color.WHITE, verde, txtCliente.getText(), Color.BLACK, 12, false);
         dibujarCelda(gc, 640, 152, 150, 36, verde, verde, "TIPO DE SALIDA", Color.WHITE, 11, true);
         dibujarCelda(gc, 790, 152, 370, 36, Color.WHITE, verde, cmbTipoSalida.getValue(), Color.BLACK, 12, false);
 
         double yTabla = 198;
         double[] anchos = {205, 135, 255, 135, 205, 105, 104};
-        String[] titulos = {"IDENTIFICACIÓN\nINTERNA", "IDENTIFICACIÓN\nEXTERNA", "DESCRIPCIÓN",
-                "FABRICANTE / MARCA", "OBSERVACIONES", "FECHA DE\nRECEPCIÓN", "FECHA DE\nENTREGA"};
+        String[] titulos = {"IDENTIFICACIÓN\nINTERNA", "REFERENCIA\nEXTERNA", "DESCRIPCIÓN\nMUESTRA",
+                "FABRICANTE / MARCA", "OBSERVACIONES", "FECHA DE\nINGRESO", "FECHA DE\nENTREGA"};
         double x = 16;
         for (int i = 0; i < titulos.length; i++) {
             dibujarCelda(gc, x, yTabla, anchos[i], 44, verde, Color.WHITE, titulos[i], Color.WHITE, 9, true);
