@@ -24,7 +24,7 @@
 
 <BorderPane prefHeight="900.0" prefWidth="1300.0" styleClass="remision-root" stylesheets="@css/remision.css,@css/botones.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RemisionMuestrasController">
     <top>
-        <VBox prefHeight="359.0" prefWidth="1300.0" spacing="12.0" styleClass="remision-tools">
+        <VBox minHeight="634.0" prefHeight="634.0" prefWidth="1300.0" spacing="12.0" styleClass="remision-tools">
             <padding><Insets bottom="14" left="20" right="20" top="16" /></padding>
             <HBox alignment="CENTER_LEFT" spacing="14">
                 <VBox HBox.hgrow="ALWAYS">
@@ -56,7 +56,7 @@
                 <Label styleClass="form-label" text="Buscar muestra" />
                 <TextField fx:id="txtBuscarMuestra" maxWidth="Infinity" promptText="Nombre del cliente, referencia externa, fecha, código, descripción muestra, marca, estado..." HBox.hgrow="ALWAYS" />
             </HBox>
-            <TableView fx:id="tblDisponibles" fixedCellSize="42.0" prefHeight="180.0" VBox.vgrow="NEVER">
+            <TableView fx:id="tblDisponibles" fixedCellSize="42.0" minHeight="455.0" prefHeight="455.0" VBox.vgrow="NEVER">
                 <columns>
                     <TableColumn fx:id="colSeleccion" editable="true" maxWidth="72" minWidth="72" prefWidth="72" resizable="false" text="MARCAR" />
                     <TableColumn fx:id="colDisponibleInterna" prefWidth="190" text="IDENTIFICACIÓN INTERNA" />
@@ -136,7 +136,7 @@
                             </HBox>
                         </HBox>
 
-                        <TableView fx:id="tblRemision" editable="false" fixedCellSize="44" minHeight="490" prefHeight="490" styleClass="document-table">
+                        <TableView fx:id="tblRemision" editable="false" fixedCellSize="44" minHeight="145" prefHeight="145" styleClass="document-table">
                             <columns>
                                 <TableColumn fx:id="colInterna" prefWidth="205" text="IDENTIFICACIÓN INTERNA" />
                                 <TableColumn fx:id="colExterna" prefWidth="145" text="REFERENCIA EXTERNA" />
