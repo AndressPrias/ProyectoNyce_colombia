@@ -35,6 +35,9 @@ import java.util.Map;
 
 public class RemisionMuestrasController {
 
+    private static final int FILAS_MINIMAS_VISIBLES = 10;
+    private static final double ALTO_FILA_REMISION = 44;
+    private static final double ALTO_CABECERA_TABLA = 50;
     private static final DateTimeFormatter FECHA = DateTimeFormatter.ISO_LOCAL_DATE;
     private static final String OBSERVACION_PREDETERMINADA =
             "Las muestras fueron sometidas a ensayos de carácter destructivo; en consecuencia, " +
@@ -215,7 +218,16 @@ public class RemisionMuestrasController {
         lblTotalMuestras.setText(String.valueOf(muestrasSeleccionadas.size()));
         lblEmpaques.setText(String.valueOf(spnEmpaques.getValue()));
         lblObservacionDocumento.setText(texto(txtObservacionFinal.getText(), "Ninguna"));
+        ajustarAlturaTablaRemision();
         tblRemision.refresh();
+    }
+
+    private void ajustarAlturaTablaRemision() {
+        int filasVisibles = Math.max(FILAS_MINIMAS_VISIBLES, muestrasSeleccionadas.size());
+        double altura = ALTO_CABECERA_TABLA + filasVisibles * ALTO_FILA_REMISION;
+        tblRemision.setMinHeight(altura);
+        tblRemision.setPrefHeight(altura);
+        tblRemision.setMaxHeight(altura);
     }
 
     @FXML

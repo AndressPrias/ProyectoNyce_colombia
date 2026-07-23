@@ -136,7 +136,7 @@
                             </HBox>
                         </HBox>
 
-                        <TableView fx:id="tblRemision" editable="false" fixedCellSize="44" minHeight="145" prefHeight="145" styleClass="document-table">
+                        <TableView fx:id="tblRemision" editable="false" fixedCellSize="44" minHeight="490" prefHeight="490" styleClass="document-table">
                             <columns>
                                 <TableColumn fx:id="colInterna" prefWidth="205" text="IDENTIFICACIÓN INTERNA" />
                                 <TableColumn fx:id="colExterna" prefWidth="145" text="REFERENCIA EXTERNA" />
