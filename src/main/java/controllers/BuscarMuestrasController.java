@@ -1047,6 +1047,11 @@ public class BuscarMuestrasController {
         dialogo.initOwner(tblResultados.getScene().getWindow());
         dialogo.initModality(Modality.WINDOW_MODAL);
         dialogo.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        URL estilosDialogo = getClass().getResource("/css/dialogs.css");
+        if (estilosDialogo != null) {
+            dialogo.getDialogPane().getStylesheets().add(estilosDialogo.toExternalForm());
+        }
+        dialogo.getDialogPane().getStyleClass().add("management-dialog");
         return dialogo;
     }
 
