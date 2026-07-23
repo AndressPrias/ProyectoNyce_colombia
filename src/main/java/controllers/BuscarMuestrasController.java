@@ -751,30 +751,21 @@ public class BuscarMuestrasController {
         List<Muestra> muestras = obtenerMuestrasSeleccionadas();
         if (muestras.isEmpty()) return;
 
-        CheckBox chkInformes = new CheckBox("Reemplazar informes");
-        CheckBox chkCotizaciones = new CheckBox("Reemplazar cotizaciones");
         boolean seleccionMultiple = muestras.size() > 1;
         List<ReferenciaDocumento> informesActuales = seleccionMultiple ? List.of() : muestras.get(0).getInformes();
         List<ReferenciaDocumento> cotizacionesActuales = seleccionMultiple ? List.of() : muestras.get(0).getCotizaciones();
         CamposDocumentos camposInformes = crearCamposDocumentos("Informes", "Informe", informesActuales);
         CamposDocumentos camposCotizaciones = crearCamposDocumentos("Cotizaciones", "Cotización", cotizacionesActuales);
 
-        if (muestras.size() == 1) {
-            chkInformes.setSelected(true);
-            chkCotizaciones.setSelected(true);
-        }
-
         Dialog<ButtonType> dialogo = crearDialogo("Asignar informe y/o cotización");
         Label ayuda = new Label(seleccionMultiple
-                ? "Se aplicará a " + muestras.size() + " muestras. Marque los datos que desea reemplazar."
+                ? "Se aplicará a " + muestras.size() + " muestras. Ingrese una cantidad mayor que cero en los datos que desea asignar."
                 : "Seleccione cuántos registros desea asociar. Cada número debe tener exactamente 4 dígitos.");
         ayuda.setWrapText(true);
         VBox contenido = new VBox(14);
         contenido.setPadding(new Insets(8, 4, 4, 4));
         contenido.getChildren().add(ayuda);
-        if (seleccionMultiple) contenido.getChildren().add(chkInformes);
         contenido.getChildren().add(camposInformes.contenedor());
-        if (seleccionMultiple) contenido.getChildren().add(chkCotizaciones);
         contenido.getChildren().add(camposCotizaciones.contenedor());
         ScrollPane desplazamiento = new ScrollPane(contenido);
         desplazamiento.setFitToWidth(true);
@@ -806,11 +797,11 @@ public class BuscarMuestrasController {
         Optional<ButtonType> resultado = dialogo.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
 
-        boolean actualizarInforme = !seleccionMultiple || chkInformes.isSelected();
-        boolean actualizarCotizacion = !seleccionMultiple || chkCotizaciones.isSelected();
+        boolean actualizarInforme = !seleccionMultiple || camposInformes.cantidad().getValue() > 0;
+        boolean actualizarCotizacion = !seleccionMultiple || camposCotizaciones.cantidad().getValue() > 0;
         if (!actualizarInforme && !actualizarCotizacion) {
             mostrarAlerta(Alert.AlertType.WARNING, "Asignar informe / cotizacion",
-                    "Seleccione al menos una categoría para actualizar.");
+                    "Ingrese al menos un informe o una cotización para asignar.");
             return;
         }
 
