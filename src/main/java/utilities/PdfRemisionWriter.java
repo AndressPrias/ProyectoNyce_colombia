@@ -93,7 +93,7 @@ public final class PdfRemisionWriter {
             PDImageXObject logo = cargarLogo(documento);
 
             double altoFila = Math.max(28, Math.min(42, 170.0 / Math.max(1, datos.filas().size())));
-            double altoDocumento = 517 + altoFila * Math.max(2, datos.filas().size());
+            double altoDocumento = 517 + altoFila * Math.max(1, datos.filas().size());
             double anchoDisponible = ANCHO_CARTA - MARGEN * 2;
             double altoMaximo = (ALTO_CARTA - MARGEN * 2 - ESPACIO_ENTRE_COPIAS) / 2;
             double escala = Math.min(anchoDisponible / ANCHO_DOCUMENTO, altoMaximo / altoDocumento);
@@ -158,15 +158,6 @@ public final class PdfRemisionWriter {
             }
             y += altoFila;
         }
-        for (int filaVacia = datos.filas().size(); filaVacia < 2; filaVacia++) {
-            x = 16;
-            for (double ancho : anchos) {
-                r.celda(x, y, ancho, altoFila, BLANCO, BORDE, "", NEGRO, 10, false);
-                x += ancho;
-            }
-            y += altoFila;
-        }
-
         y += 12;
         r.celda(16, y, 140, 52, VERDE, VERDE, "TOTAL MUESTRAS", BLANCO, 10, true);
         r.celda(156, y, 100, 52, BLANCO, VERDE, String.valueOf(datos.filas().size()), NEGRO, 13, false);
