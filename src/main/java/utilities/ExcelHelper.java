@@ -93,8 +93,8 @@ public final class ExcelHelper {
                 escribirTexto(fila, 3, muestra.getMarca(), null);
                 escribirTexto(fila, 4, muestra.getRotuloCliente(), null);
                 escribirTexto(fila, 5, muestra.getCodigoInterno(), texto);
-                escribirTexto(fila, 6, muestra.getInformesTexto(), texto);
-                escribirTexto(fila, 7, muestra.getCotizacionesTexto(), texto);
+                escribirTexto(fila, 6, formatoReferenciasCompletas(muestra.getInformes(), "I"), texto);
+                escribirTexto(fila, 7, formatoReferenciasCompletas(muestra.getCotizaciones(), "C"), texto);
                 escribirTexto(fila, 8, muestra.getUbicacion(), null);
                 escribirTexto(fila, 9, muestra.getRemision(), texto);
                 escribirTexto(fila, 10, muestra.getEstado() == null ? "" : muestra.getEstado().toString(), null);
@@ -127,11 +127,34 @@ public final class ExcelHelper {
     }
 
     private static void escribirTexto(Row fila, int columna, String valor, CellStyle estilo) {
+        if (valor == null || valor.isBlank()) {
+            return;
+        }
         Cell celda = fila.createCell(columna);
-        celda.setCellValue(valor == null ? "" : valor);
+        celda.setCellValue(valor);
         if (estilo != null) {
             celda.setCellStyle(estilo);
         }
+    }
+
+    private static String formatoReferenciasCompletas(List<ReferenciaDocumento> referencias, String tipo) {
+        if (referencias == null || referencias.isEmpty()) {
+            return "";
+        }
+        int anio = referencias.getFirst().anio();
+        boolean mismoAnio = referencias.stream().allMatch(referencia -> referencia.anio() == anio);
+        if (mismoAnio) {
+            String numeros = referencias.stream()
+                    .map(ReferenciaDocumento::numero)
+                    .reduce((primero, siguiente) -> primero + " / " + siguiente)
+                    .orElse("");
+            return "LENC - " + String.format("%02d", anio % 100) + " - " + tipo + " " + numeros;
+        }
+        return referencias.stream()
+                .map(referencia -> "LENC - " + String.format("%02d", referencia.anio() % 100)
+                        + " - " + tipo + " " + referencia.numero())
+                .reduce((primero, siguiente) -> primero + " / " + siguiente)
+                .orElse("");
     }
 
     public static ResultadoLectura leerExcel(File archivo) {
@@ -217,7 +240,7 @@ public final class ExcelHelper {
             sheet.setColumnWidth(i, switch (i) {
                 case 1, 2, 11 -> 30 * 256;
                 case 4, 8, 9 -> 24 * 256;
-                case 6, 7 -> 22 * 256;
+                case 6, 7 -> 34 * 256;
                 default -> 20 * 256;
             });
         }
