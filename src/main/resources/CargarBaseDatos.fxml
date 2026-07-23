@@ -18,11 +18,20 @@
    </padding>
    <children>
       <VBox spacing="5.0">
-         <Text fill="#0a4d4a" text="Cargar Base de Datos">
+         <Text fill="#0a4d4a" text="Gestión de Base de Datos">
             <font><Font name="System Bold" size="24.0" /></font>
          </Text>
-         <Text fill="#456372" text="Descargue la plantilla, complete los datos y valide el archivo antes de importarlo." />
+         <Text fill="#456372" text="Importe, actualice o descargue la información de muestras en formato Excel." />
       </VBox>
+
+      <HBox alignment="CENTER_LEFT" spacing="16.0" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 6;">
+         <VBox prefWidth="520.0" spacing="6.0">
+            <Label style="-fx-font-weight: bold;" text="Descargar base de datos" textFill="#0a4d4a" />
+            <Label text="Exporta todas las muestras usando las mismas 12 columnas de la plantilla de carga." textFill="#456372" wrapText="true" />
+         </VBox>
+         <Region HBox.hgrow="ALWAYS" />
+         <Button fx:id="btnExportar" mnemonicParsing="false" onAction="#descargarBaseDatos" prefWidth="215.0" styleClass="btn-primary" text="Descargar base de datos" />
+      </HBox>
 
       <HBox alignment="CENTER_LEFT" spacing="16.0" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 6;">
          <VBox prefWidth="310.0" spacing="6.0">
@@ -48,21 +57,20 @@
             <Label text="No hay datos para mostrar" />
          </placeholder>
          <columns>
-            <TableColumn fx:id="colRotulo" minWidth="135.0" text="Referencia Externa *" />
-            <TableColumn fx:id="colCliente" minWidth="145.0" text="Nombre del cliente" />
-            <TableColumn fx:id="colDescripcion" minWidth="180.0" text="Descripción Muestra *" />
+            <TableColumn fx:id="colFecha" minWidth="125.0" text="Fecha de ingreso" />
+            <TableColumn fx:id="colCliente" minWidth="155.0" text="Nombre del cliente" />
+            <TableColumn fx:id="colDescripcion" minWidth="180.0" text="Descripción Muestra" />
             <TableColumn fx:id="colMarca" minWidth="100.0" text="Marca" />
-            <TableColumn fx:id="colReferencia" minWidth="110.0" text="Referencia" />
-            <TableColumn fx:id="colEstado" minWidth="120.0" text="Estado" />
-            <TableColumn fx:id="colFecha" minWidth="115.0" text="Fecha de ingreso" />
-            <TableColumn fx:id="colUbicacion" minWidth="120.0" text="Ubicación" />
+            <TableColumn fx:id="colRotulo" minWidth="145.0" text="Referencia externa" />
+            <TableColumn fx:id="colId" minWidth="120.0" text="ID" />
             <TableColumn fx:id="colNumeroInforme" minWidth="150.0" text="Informes" />
             <TableColumn fx:id="colNumeroCotizacion" minWidth="165.0" text="Cotizaciones" />
-            <TableColumn fx:id="colRutaFoto" minWidth="160.0" text="Ruta de imagen" />
+            <TableColumn fx:id="colUbicacion" minWidth="120.0" text="Ubicación" />
+            <TableColumn fx:id="colRemision" minWidth="120.0" text="Remisión" />
+            <TableColumn fx:id="colEstado" minWidth="120.0" text="Estado" />
+            <TableColumn fx:id="colObservaciones" minWidth="180.0" text="Observaciones" />
          </columns>
       </TableView>
-
-      <Label style="-fx-font-size: 11;" text="* Campos obligatorios en la plantilla" textFill="#d32f2f" />
 
       <VBox spacing="7.0" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 6;">
          <Label style="-fx-font-weight: bold;" text="Validacion del archivo" textFill="#0a4d4a" />

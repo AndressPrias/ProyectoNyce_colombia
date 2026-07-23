@@ -79,7 +79,7 @@ public final class Navegacion {
         if (UsuarioSesion.getUsuario() == null || !UsuarioSesion.getUsuario().puedeControlarMuestras()) {
             return;
         }
-        cargar(Paths.CARGAR_BASE_DATOS, "Cargar Base de Datos", controller -> {
+        cargar(Paths.CARGAR_BASE_DATOS, "Gestión de Base de Datos", controller -> {
             if (controller instanceof CargarBaseDatosController c) {
                 c.setUsuario(UsuarioSesion.getUsuario());
             }

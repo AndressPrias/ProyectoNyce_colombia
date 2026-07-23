@@ -292,9 +292,22 @@ public class MuestraService {
     }
 
     public List<Muestra> obtenerTodasMuestras() {
+        try {
+            return consultarTodasMuestras();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public List<Muestra> obtenerTodasMuestrasParaExportar() throws SQLException {
+        return consultarTodasMuestras();
+    }
+
+    private List<Muestra> consultarTodasMuestras() throws SQLException {
         List<Muestra> lista = new ArrayList<>();
         try (Connection conn = Database.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM muestras");
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM muestras ORDER BY fechaRecepcion, codigoInterno");
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -327,9 +340,6 @@ public class MuestraService {
                 m.setRutaFoto(rs.getString("rutaFoto"));
                 lista.add(m);
             }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return lista;
     }

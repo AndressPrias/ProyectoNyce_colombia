@@ -63,21 +63,74 @@ public final class ExcelHelper {
 
     public static void crearPlantilla(File destino) throws Exception {
         try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet datos = workbook.createSheet("Datos");
-            Sheet instrucciones = workbook.createSheet("Instrucciones");
-            Sheet catalogos = workbook.createSheet("Catalogos");
-
-            crearEncabezados(workbook, datos);
-            crearInstrucciones(workbook, instrucciones);
-            crearCatalogoEstados(catalogos);
-            agregarValidacionEstados(workbook, datos);
-
-            workbook.setSheetHidden(workbook.getSheetIndex(catalogos), true);
-            workbook.setActiveSheet(workbook.getSheetIndex(datos));
+            crearEstructuraPlantilla(workbook);
 
             try (FileOutputStream salida = new FileOutputStream(destino)) {
                 workbook.write(salida);
             }
+        }
+    }
+
+    public static void exportarMuestras(File destino, List<Muestra> muestras) throws Exception {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet datos = crearEstructuraPlantilla(workbook);
+            CellStyle fecha = workbook.createCellStyle();
+            fecha.setDataFormat(workbook.createDataFormat().getFormat("dd/MM/yyyy"));
+            CellStyle texto = workbook.createCellStyle();
+            texto.setDataFormat(workbook.createDataFormat().getFormat("@"));
+            texto.setAlignment(HorizontalAlignment.LEFT);
+
+            int indiceFila = 1;
+            for (Muestra muestra : muestras) {
+                Row fila = datos.createRow(indiceFila++);
+                Cell celdaFecha = fila.createCell(0);
+                if (muestra.getFechaRecepcion() != null) {
+                    celdaFecha.setCellValue(muestra.getFechaRecepcion());
+                    celdaFecha.setCellStyle(fecha);
+                }
+                escribirTexto(fila, 1, muestra.getNombreCliente(), null);
+                escribirTexto(fila, 2, muestra.getDescripcion(), null);
+                escribirTexto(fila, 3, muestra.getMarca(), null);
+                escribirTexto(fila, 4, muestra.getRotuloCliente(), null);
+                escribirTexto(fila, 5, muestra.getCodigoInterno(), texto);
+                escribirTexto(fila, 6, muestra.getInformesTexto(), texto);
+                escribirTexto(fila, 7, muestra.getCotizacionesTexto(), texto);
+                escribirTexto(fila, 8, muestra.getUbicacion(), null);
+                escribirTexto(fila, 9, muestra.getRemision(), texto);
+                escribirTexto(fila, 10, muestra.getEstado() == null ? "" : muestra.getEstado().toString(), null);
+                escribirTexto(fila, 11, muestra.getObservacionAlmacenamiento(), null);
+            }
+
+            if (!muestras.isEmpty()) {
+                datos.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(
+                        0, muestras.size(), 0, ENCABEZADOS.length - 1));
+            }
+            try (FileOutputStream salida = new FileOutputStream(destino)) {
+                workbook.write(salida);
+            }
+        }
+    }
+
+    private static Sheet crearEstructuraPlantilla(Workbook workbook) {
+        Sheet datos = workbook.createSheet("Datos");
+        Sheet instrucciones = workbook.createSheet("Instrucciones");
+        Sheet catalogos = workbook.createSheet("Catalogos");
+
+        crearEncabezados(workbook, datos);
+        crearInstrucciones(workbook, instrucciones);
+        crearCatalogoEstados(catalogos);
+        agregarValidacionEstados(workbook, datos);
+
+        workbook.setSheetHidden(workbook.getSheetIndex(catalogos), true);
+        workbook.setActiveSheet(workbook.getSheetIndex(datos));
+        return datos;
+    }
+
+    private static void escribirTexto(Row fila, int columna, String valor, CellStyle estilo) {
+        Cell celda = fila.createCell(columna);
+        celda.setCellValue(valor == null ? "" : valor);
+        if (estilo != null) {
+            celda.setCellStyle(estilo);
         }
     }
 
@@ -171,6 +224,7 @@ public final class ExcelHelper {
 
         CellStyle texto = workbook.createCellStyle();
         texto.setDataFormat(workbook.createDataFormat().getFormat("@"));
+        texto.setAlignment(HorizontalAlignment.LEFT);
         for (int columna : new int[]{5, 6, 7, 9}) {
             sheet.setDefaultColumnStyle(columna, texto);
         }

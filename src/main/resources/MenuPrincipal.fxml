@@ -88,12 +88,12 @@
                         <Image url="@icons/IconCargarDatos.png" />
                      </image>
                   </ImageView>
-                  <Label alignment="CENTER" maxWidth="120.0" minHeight="54.0" prefHeight="54.0" prefWidth="120.0" styleClass="card-title" text="Cargar base de datos" textAlignment="CENTER" wrapText="true">
+                  <Label alignment="CENTER" maxWidth="140.0" minHeight="54.0" prefHeight="54.0" prefWidth="140.0" styleClass="card-title" text="Gestión base de datos" textAlignment="CENTER" wrapText="true">
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font>
                   </Label>
-                  <Label alignment="CENTER" maxWidth="120.0" minHeight="52.0" prefHeight="52.0" prefWidth="120.0" styleClass="card-description" text="Carga y actualiza desde Excel" textAlignment="CENTER" wrapText="true" />
+                  <Label alignment="CENTER" maxWidth="140.0" minHeight="52.0" prefHeight="52.0" prefWidth="140.0" styleClass="card-description" text="Importa, actualiza y descarga en Excel" textAlignment="CENTER" wrapText="true" />
                </children>
             </VBox>
                     </children>

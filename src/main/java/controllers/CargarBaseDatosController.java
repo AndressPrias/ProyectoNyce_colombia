@@ -28,6 +28,8 @@ import utilities.UsuarioSesion;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class CargarBaseDatosController {
@@ -36,24 +38,27 @@ public class CargarBaseDatosController {
     @FXML private Label lblResumen;
     @FXML private TextArea txtValidacion;
     @FXML private Button btnImportar;
+    @FXML private Button btnExportar;
     @FXML private TableView<Muestra> tblVistaPrevia;
     @FXML private TableColumn<Muestra, String> colRotulo;
     @FXML private TableColumn<Muestra, String> colCliente;
     @FXML private TableColumn<Muestra, String> colDescripcion;
     @FXML private TableColumn<Muestra, String> colMarca;
-    @FXML private TableColumn<Muestra, String> colReferencia;
+    @FXML private TableColumn<Muestra, String> colId;
     @FXML private TableColumn<Muestra, Estado> colEstado;
     @FXML private TableColumn<Muestra, LocalDate> colFecha;
     @FXML private TableColumn<Muestra, String> colUbicacion;
     @FXML private TableColumn<Muestra, String> colNumeroInforme;
     @FXML private TableColumn<Muestra, String> colNumeroCotizacion;
-    @FXML private TableColumn<Muestra, String> colRutaFoto;
+    @FXML private TableColumn<Muestra, String> colRemision;
+    @FXML private TableColumn<Muestra, String> colObservaciones;
 
     private Usuario usuario;
     private List<Muestra> muestrasValidadas = List.of();
-    private Task<ResumenImportacion> tareaImportacion;
-    private Stage ventanaCarga;
-    private Label lblProgresoCarga;
+    private boolean archivoValido;
+    private Task<?> tareaActiva;
+    private Stage ventanaProceso;
+    private Label lblProgreso;
 
     @FXML
     public void initialize() {
@@ -62,13 +67,14 @@ public class CargarBaseDatosController {
         colCliente.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         colDescripcion.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
         colMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
-        colReferencia.setCellValueFactory(new PropertyValueFactory<>("referencia"));
+        colId.setCellValueFactory(new PropertyValueFactory<>("codigoInterno"));
         colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fechaRecepcion"));
         colUbicacion.setCellValueFactory(new PropertyValueFactory<>("ubicacion"));
         colNumeroInforme.setCellValueFactory(new PropertyValueFactory<>("informesTexto"));
         colNumeroCotizacion.setCellValueFactory(new PropertyValueFactory<>("cotizacionesTexto"));
-        colRutaFoto.setCellValueFactory(new PropertyValueFactory<>("rutaFoto"));
+        colRemision.setCellValueFactory(new PropertyValueFactory<>("remision"));
+        colObservaciones.setCellValueFactory(new PropertyValueFactory<>("observacionAlmacenamiento"));
         btnImportar.setDisable(true);
     }
 
@@ -102,7 +108,7 @@ public class CargarBaseDatosController {
 
     @FXML
     private void seleccionarArchivo() {
-        if (tareaImportacion != null) {
+        if (tareaActiva != null) {
             return;
         }
         FileChooser chooser = new FileChooser();
@@ -116,9 +122,10 @@ public class CargarBaseDatosController {
         lblArchivo.setText(archivo.getName());
         ExcelHelper.ResultadoLectura resultado = ExcelHelper.leerExcel(archivo);
         muestrasValidadas = resultado.getMuestras();
+        archivoValido = resultado.esValido();
         tblVistaPrevia.setItems(FXCollections.observableArrayList(muestrasValidadas));
 
-        if (resultado.esValido()) {
+        if (archivoValido) {
             lblResumen.setText(muestrasValidadas.size() + " filas listas para importar");
             txtValidacion.setText("Archivo validado correctamente. Ya puede importar los datos.");
             btnImportar.setDisable(false);
@@ -131,6 +138,9 @@ public class CargarBaseDatosController {
 
     @FXML
     private void importarDatos() {
+        if (tareaActiva != null) {
+            return;
+        }
         Usuario usuarioActual = usuario != null ? usuario : UsuarioSesion.getUsuario();
         if (usuarioActual == null) {
             mostrarAlerta(Alert.AlertType.ERROR, "Sesión no disponible",
@@ -144,7 +154,7 @@ public class CargarBaseDatosController {
         }
 
         List<Muestra> muestrasAImportar = List.copyOf(muestrasValidadas);
-        tareaImportacion = new Task<>() {
+        Task<ResumenImportacion> tareaImportacion = new Task<>() {
             @Override
             protected ResumenImportacion call() {
                 MuestraService service = new MuestraService();
@@ -184,12 +194,13 @@ public class CargarBaseDatosController {
             }
         };
 
-        mostrarVentanaCarga();
-        lblProgresoCarga.textProperty().bind(tareaImportacion.messageProperty());
+        tareaActiva = tareaImportacion;
+        mostrarVentanaProceso("Importando muestras", "Cargando información", "Preparando importación...");
+        lblProgreso.textProperty().bind(tareaImportacion.messageProperty());
         tareaImportacion.setOnSucceeded(event -> mostrarResultadoImportacion(tareaImportacion.getValue()));
         tareaImportacion.setOnFailed(event -> {
             Throwable error = tareaImportacion.getException();
-            finalizarEstadoCarga(true);
+            finalizarProceso();
             mostrarAlerta(Alert.AlertType.ERROR, "No se pudo completar la carga",
                     error == null ? null : error.getMessage());
         });
@@ -199,9 +210,68 @@ public class CargarBaseDatosController {
         hiloImportacion.start();
     }
 
+    @FXML
+    private void descargarBaseDatos() {
+        if (tareaActiva != null) {
+            return;
+        }
+        Usuario usuarioActual = usuario != null ? usuario : UsuarioSesion.getUsuario();
+        if (usuarioActual == null || !usuarioActual.puedeControlarMuestras()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Permiso requerido",
+                    "No tiene permiso para descargar la base de datos de muestras.");
+            return;
+        }
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Guardar base de datos en Excel");
+        chooser.setInitialFileName("base_datos_muestras_"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm")) + ".xlsx");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo Excel", "*.xlsx"));
+        File destinoSeleccionado = chooser.showSaveDialog(tblVistaPrevia.getScene().getWindow());
+        if (destinoSeleccionado == null) {
+            return;
+        }
+        File destino = destinoSeleccionado.getName().toLowerCase().endsWith(".xlsx")
+                ? destinoSeleccionado
+                : new File(destinoSeleccionado.getParentFile(), destinoSeleccionado.getName() + ".xlsx");
+
+        Task<Integer> tareaExportacion = new Task<>() {
+            @Override
+            protected Integer call() throws Exception {
+                updateMessage("Consultando muestras registradas...");
+                List<Muestra> muestras = new MuestraService().obtenerTodasMuestrasParaExportar();
+                updateMessage("Generando archivo Excel con " + muestras.size() + " muestras...");
+                ExcelHelper.exportarMuestras(destino, muestras);
+                updateMessage("Finalizando descarga...");
+                return muestras.size();
+            }
+        };
+
+        tareaActiva = tareaExportacion;
+        mostrarVentanaProceso("Descargando base de datos", "Descargando información",
+                "Preparando descarga...");
+        lblProgreso.textProperty().bind(tareaExportacion.messageProperty());
+        tareaExportacion.setOnSucceeded(event -> {
+            int total = tareaExportacion.getValue();
+            finalizarProceso();
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Descarga completada",
+                    "Se exportaron " + total + " muestras correctamente en:\n" + destino.getAbsolutePath());
+        });
+        tareaExportacion.setOnFailed(event -> {
+            Throwable error = tareaExportacion.getException();
+            finalizarProceso();
+            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo descargar la base de datos",
+                    error == null ? null : error.getMessage());
+        });
+
+        Thread hiloExportacion = new Thread(tareaExportacion, "exportacion-muestras-excel");
+        hiloExportacion.setDaemon(true);
+        hiloExportacion.start();
+    }
+
     private void mostrarResultadoImportacion(ResumenImportacion resultado) {
         boolean completada = resultado.errores() == 0;
-        finalizarEstadoCarga(!completada);
+        finalizarProceso();
         String resumen = "Nuevas: " + resultado.nuevas()
                 + " | Actualizadas: " + resultado.actualizadas()
                 + " | Errores: " + resultado.errores();
@@ -217,45 +287,47 @@ public class CargarBaseDatosController {
         }
     }
 
-    private void mostrarVentanaCarga() {
+    private void mostrarVentanaProceso(String tituloVentana, String tituloProceso, String mensajeInicial) {
         ProgressIndicator indicador = new ProgressIndicator();
         indicador.setPrefSize(68, 68);
         indicador.setMaxSize(68, 68);
 
-        Label titulo = new Label("Cargando información");
+        Label titulo = new Label(tituloProceso);
         titulo.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #0a4d4a;");
-        lblProgresoCarga = new Label("Preparando importación...");
-        lblProgresoCarga.setStyle("-fx-text-fill: #456372;");
+        lblProgreso = new Label(mensajeInicial);
+        lblProgreso.setStyle("-fx-text-fill: #456372;");
 
-        VBox contenido = new VBox(14, indicador, titulo, lblProgresoCarga);
+        VBox contenido = new VBox(14, indicador, titulo, lblProgreso);
         contenido.setAlignment(Pos.CENTER);
         contenido.setPadding(new Insets(28, 42, 28, 42));
         contenido.setStyle("-fx-background-color: #f5f5f5;");
 
-        ventanaCarga = new Stage();
-        ventanaCarga.setTitle("Importando muestras");
-        ventanaCarga.initOwner(tblVistaPrevia.getScene().getWindow());
-        ventanaCarga.initModality(Modality.WINDOW_MODAL);
-        ventanaCarga.setResizable(false);
-        ventanaCarga.setScene(new Scene(contenido, 360, 220));
-        ventanaCarga.setOnCloseRequest(event -> {
-            if (tareaImportacion != null) event.consume();
+        ventanaProceso = new Stage();
+        ventanaProceso.setTitle(tituloVentana);
+        ventanaProceso.initOwner(tblVistaPrevia.getScene().getWindow());
+        ventanaProceso.initModality(Modality.WINDOW_MODAL);
+        ventanaProceso.setResizable(false);
+        ventanaProceso.setScene(new Scene(contenido, 380, 220));
+        ventanaProceso.setOnCloseRequest(event -> {
+            if (tareaActiva != null) event.consume();
         });
         btnImportar.setDisable(true);
-        ventanaCarga.show();
+        btnExportar.setDisable(true);
+        ventanaProceso.show();
     }
 
-    private void finalizarEstadoCarga(boolean habilitarImportacion) {
-        if (lblProgresoCarga != null) {
-            lblProgresoCarga.textProperty().unbind();
+    private void finalizarProceso() {
+        if (lblProgreso != null) {
+            lblProgreso.textProperty().unbind();
         }
-        btnImportar.setDisable(!habilitarImportacion);
-        tareaImportacion = null;
-        if (ventanaCarga != null) {
-            ventanaCarga.close();
+        tareaActiva = null;
+        btnImportar.setDisable(!archivoValido);
+        btnExportar.setDisable(false);
+        if (ventanaProceso != null) {
+            ventanaProceso.close();
         }
-        ventanaCarga = null;
-        lblProgresoCarga = null;
+        ventanaProceso = null;
+        lblProgreso = null;
     }
 
     @FXML
