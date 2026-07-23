@@ -27,7 +27,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -305,12 +304,7 @@ public class RemisionMuestrasController {
         job.getJobSettings().setPrintColor(PrintColor.COLOR);
         double anchoImprimible = job.getJobSettings().getPageLayout().getPrintableWidth();
         double altoImprimible = job.getJobSettings().getPageLayout().getPrintableHeight();
-        ImageView copiaSuperior = crearCopiaImprimible(imagenDocumento, anchoImprimible, altoImprimible);
-        ImageView copiaInferior = crearCopiaImprimible(imagenDocumento, anchoImprimible, altoImprimible);
-        VBox hojaConDosCopias = new VBox(8, copiaSuperior, copiaInferior);
-        hojaConDosCopias.setPrefSize(anchoImprimible, altoImprimible);
-        hojaConDosCopias.applyCss();
-        hojaConDosCopias.layout();
+        Canvas hojaConDosCopias = crearHojaImprimible(imagenDocumento, anchoImprimible, altoImprimible);
         boolean impreso = job.printPage(hojaConDosCopias);
 
         if (impreso) job.endJob();
@@ -318,9 +312,9 @@ public class RemisionMuestrasController {
 
     private WritableImage crearImagenParaImpresion() {
         double ancho = 1180;
-        // 6x sobre el lienzo lógico equivale aproximadamente a 900 DPI
-        // al ubicar cada copia en media hoja carta.
-        double escalaResolucion = 6.0;
+        // 2x conserva una resolución cercana a 300 DPI en media hoja carta y evita
+        // imágenes demasiado grandes que algunos controladores de Windows imprimen en blanco.
+        double escalaResolucion = 2.0;
         double altoFila = Math.max(28, Math.min(42, 170.0 / Math.max(1, muestrasSeleccionadas.size())));
         double alto = 517 + altoFila * Math.max(2, muestrasSeleccionadas.size());
         Canvas lienzo = new Canvas(ancho * escalaResolucion, alto * escalaResolucion);
@@ -455,12 +449,29 @@ public class RemisionMuestrasController {
         return lineas.toArray(String[]::new);
     }
 
-    private ImageView crearCopiaImprimible(WritableImage imagen, double ancho, double altoPagina) {
-        ImageView copia = new ImageView(imagen);
-        copia.setPreserveRatio(true);
-        copia.setFitWidth(ancho);
-        copia.setFitHeight((altoPagina - 8) / 2);
-        return copia;
+    private Canvas crearHojaImprimible(WritableImage imagen, double anchoPagina, double altoPagina) {
+        Canvas hoja = new Canvas(anchoPagina, altoPagina);
+        GraphicsContext gc = hoja.getGraphicsContext2D();
+        gc.setFill(Color.WHITE);
+        gc.fillRect(0, 0, anchoPagina, altoPagina);
+
+        double separacion = 8;
+        double altoCopiaDisponible = (altoPagina - separacion) / 2;
+        double escala = Math.min(anchoPagina / imagen.getWidth(), altoCopiaDisponible / imagen.getHeight());
+        double anchoCopia = imagen.getWidth() * escala;
+        double altoCopia = imagen.getHeight() * escala;
+        double x = (anchoPagina - anchoCopia) / 2;
+        double ySuperior = (altoCopiaDisponible - altoCopia) / 2;
+        double yInferior = altoCopiaDisponible + separacion + (altoCopiaDisponible - altoCopia) / 2;
+        gc.drawImage(imagen, x, ySuperior, anchoCopia, altoCopia);
+        gc.drawImage(imagen, x, yInferior, anchoCopia, altoCopia);
+
+        gc.setStroke(Color.GRAY);
+        gc.setLineWidth(0.8);
+        gc.setLineDashes(5, 3);
+        double ySeparador = altoPagina / 2;
+        gc.strokeLine(0, ySeparador, anchoPagina, ySeparador);
+        return hoja;
     }
 
     private void limpiarFormulario() {
