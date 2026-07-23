@@ -1025,13 +1025,6 @@ public class BuscarMuestrasController {
         return muestras;
     }
 
-    private String normalizarCodigoAsignacion(String valor) {
-        if (valor == null || valor.isBlank()) {
-            return null;
-        }
-        return valor.trim();
-    }
-
     private Dialog<ButtonType> crearDialogo(String titulo) {
         Dialog<ButtonType> dialogo = new Dialog<>();
         dialogo.setTitle(titulo);

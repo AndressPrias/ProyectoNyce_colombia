@@ -537,12 +537,6 @@ public final class ExcelHelper {
         return sinAcentos.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
     }
 
-    private static String normalizarEstado(String valor) {
-        String sinAcentos = Normalizer.normalize(valor, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "");
-        return sinAcentos.trim().toUpperCase(Locale.ROOT).replaceAll("[\\s-]+", "_");
-    }
-
     public static final class ResultadoLectura {
         private final List<Muestra> muestras;
         private final List<String> errores;

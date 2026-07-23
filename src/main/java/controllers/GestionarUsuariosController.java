@@ -27,17 +27,12 @@ import utilities.Navegacion;
 import utilities.UsuarioSesion;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class GestionarUsuariosController {
-
-    private static final String CARPETA_AVATARES = "src/main/resources/avatarUsuarios";
-    private static final String RECURSO_AVATARES = "/avatarUsuarios/";
 
     @FXML private TableView<Usuario> tblUsuarios;
     @FXML private TableColumn<Usuario, Integer> colId;

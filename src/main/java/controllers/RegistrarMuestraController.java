@@ -15,7 +15,6 @@ import utilities.ImageStorage;
 import utilities.Navegacion;
 
 import java.io.File;
-import java.net.URL;
 import java.time.LocalDate;
 
 public class RegistrarMuestraController {
