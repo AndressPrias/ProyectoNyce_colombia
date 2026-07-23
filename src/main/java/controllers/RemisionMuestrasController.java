@@ -32,6 +32,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
+import javafx.scene.transform.Scale;
 import javafx.scene.layout.VBox;
 import service.RemisionService;
 import utilities.UsuarioSesion;
@@ -450,8 +451,10 @@ public class RemisionMuestrasController {
     }
 
     private Canvas crearHojaImprimible(WritableImage imagen, double anchoPagina, double altoPagina) {
-        Canvas hoja = new Canvas(anchoPagina, altoPagina);
+        double factorResolucion = 3.0;
+        Canvas hoja = new Canvas(anchoPagina * factorResolucion, altoPagina * factorResolucion);
         GraphicsContext gc = hoja.getGraphicsContext2D();
+        gc.scale(factorResolucion, factorResolucion);
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, anchoPagina, altoPagina);
 
@@ -471,6 +474,8 @@ public class RemisionMuestrasController {
         gc.setLineDashes(5, 3);
         double ySeparador = altoPagina / 2;
         gc.strokeLine(0, ySeparador, anchoPagina, ySeparador);
+        hoja.getTransforms().add(new Scale(
+                1.0 / factorResolucion, 1.0 / factorResolucion, 0, 0));
         return hoja;
     }
 
