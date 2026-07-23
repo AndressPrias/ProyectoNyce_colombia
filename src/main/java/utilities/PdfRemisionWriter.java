@@ -72,14 +72,13 @@ public final class PdfRemisionWriter {
         return destino;
     }
 
-    public static boolean imprimir(Datos datos) throws IOException, PrinterException {
+    public static void imprimir(Datos datos) throws IOException, PrinterException {
         if (datos == null) throw new IllegalArgumentException("Los datos de la remisión son obligatorios");
         try (PDDocument documento = Loader.loadPDF(crearPdf(datos))) {
             PrinterJob trabajo = PrinterJob.getPrinterJob();
             trabajo.setPageable(new PDFPageable(documento));
-            if (!trabajo.printDialog()) return false;
+            if (!trabajo.printDialog()) return;
             trabajo.print();
-            return true;
         }
     }
 

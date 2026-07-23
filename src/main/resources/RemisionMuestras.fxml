@@ -100,7 +100,7 @@
             <content>
                 <VBox alignment="TOP_CENTER" spacing="16">
                     <padding><Insets bottom="32" left="24" right="24" top="24" /></padding>
-                    <VBox fx:id="documentoRemision" maxWidth="1180" minWidth="980" prefWidth="1180" spacing="12" styleClass="document-page">
+                    <VBox maxWidth="1180" minWidth="980" prefWidth="1180" spacing="12" styleClass="document-page">
                         <padding><Insets bottom="22" left="22" right="22" top="22" /></padding>
 
                         <HBox alignment="CENTER_LEFT" spacing="16">

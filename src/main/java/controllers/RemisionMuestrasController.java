@@ -20,7 +20,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.layout.VBox;
 import service.RemisionService;
 import utilities.UsuarioSesion;
 import utilities.PdfRemisionWriter;
@@ -79,8 +78,6 @@ public class RemisionMuestrasController {
     @FXML private Label lblObservacionDocumento;
     @FXML private Label lblEntregadoPor;
     @FXML private Label lblCargoEntregadoPor;
-    @FXML private VBox documentoRemision;
-
     private final RemisionService remisionService = new RemisionService();
     private final ObservableList<Muestra> muestrasSeleccionadas = FXCollections.observableArrayList();
     private final ObservableList<Muestra> muestrasDisponibles = FXCollections.observableArrayList();
@@ -261,7 +258,7 @@ public class RemisionMuestrasController {
             Path archivoPdf;
             try {
                 archivoPdf = PdfRemisionWriter.guardarDosCopias(
-                        crearDatosPdf(), codigoRemision);
+                        crearDatosRemision(), codigoRemision);
             } catch (Exception errorArchivo) {
                 mostrarAlerta(Alert.AlertType.ERROR, "Remisión registrada sin archivo",
                         "La remisión " + codigoRemision + " quedó registrada, pero no fue posible guardar el PDF.\n\n" +
@@ -287,13 +284,13 @@ public class RemisionMuestrasController {
             return;
         }
         try {
-            PdfRemisionWriter.imprimir(crearDatosPdf());
+            PdfRemisionWriter.imprimir(crearDatosRemision());
         } catch (Exception e) {
             mostrarAlerta(Alert.AlertType.ERROR, "No se pudo imprimir", mensajeRaiz(e));
         }
     }
 
-    private PdfRemisionWriter.Datos crearDatosPdf() {
+    private PdfRemisionWriter.Datos crearDatosRemision() {
         List<PdfRemisionWriter.Fila> filas = muestrasSeleccionadas.stream()
                 .map(muestra -> new PdfRemisionWriter.Fila(
                         identificacionInterna(muestra),
