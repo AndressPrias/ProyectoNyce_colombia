@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
@@ -58,6 +59,8 @@
                   <DatePicker fx:id="fechaRecepcionPicker" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="512.0" />
                   <Label style="-fx-font-weight: bold;" text="Ubicación" textFill="#0a4d4a" />
                   <TextField fx:id="txtUbicacion" maxWidth="1.7976931348623157E308" promptText="Ubicación de la muestra" />
+                  <Label style="-fx-font-weight: bold;" text="Observaciones" textFill="#0a4d4a" />
+                  <TextArea fx:id="txtObservaciones" maxWidth="1.7976931348623157E308" prefHeight="72.0" promptText="Ingrese observaciones de la muestra" wrapText="true" />
                   <Label style="-fx-font-size: 11;" text="* Campos obligatorios" textFill="#d32f2f" />
                </children>
             </VBox>

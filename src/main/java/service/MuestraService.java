@@ -69,10 +69,17 @@ public class MuestraService {
     public boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,
                                     String referencia, String ubicacion, Usuario custodio, String rutaFoto,
                                     Estado estadoUI, LocalDate fechaRecepcionUI) {
+        return registrarMuestra(rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, null);
+    }
+
+    public boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,
+                                    String referencia, String ubicacion, Usuario custodio, String rutaFoto,
+                                    Estado estadoUI, LocalDate fechaRecepcionUI, String observaciones) {
         return registrarMuestra(
                 rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
                 custodio, rutaFoto, estadoUI, fechaRecepcionUI, List.of(), List.of(), false,
-                null, null, null
+                null, null, observaciones
         );
     }
 
@@ -375,7 +382,7 @@ public class MuestraService {
                         : muestra.getCodigoInterno()
         );
         String sql = "UPDATE muestras SET descripcion=?, rotuloCliente=?, nombreCliente=?, marca=?, referencia=?, estado=?, " +
-                "fechaRecepcion=?, ubicacion=?, tecnicoId=?, rutaFoto=? WHERE id=?";
+                "fechaRecepcion=?, ubicacion=?, tecnicoId=?, rutaFoto=?, observacionAlmacenamiento=? WHERE id=?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -390,7 +397,8 @@ public class MuestraService {
             ps.setString(8, muestra.getUbicacion());
             setUsuarioIdNullable(ps, 9, muestra.getTecnico());
             ps.setString(10, rutaFoto);
-            ps.setInt(11, muestra.getId());
+            ps.setString(11, muestra.getObservacionAlmacenamiento());
+            ps.setInt(12, muestra.getId());
 
             return ps.executeUpdate() == 1;
 

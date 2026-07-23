@@ -29,6 +29,7 @@ public class RegistrarMuestraController {
     @FXML private TextField txtReferencia;
     @FXML private ComboBox<Estado> comboEstado;
     @FXML private TextField txtUbicacion;
+    @FXML private TextArea txtObservaciones;
     @FXML private DatePicker fechaRecepcionPicker;
     @FXML private Label txtInformativos;
     @FXML private Button btnSubirImagen;
@@ -74,6 +75,7 @@ public class RegistrarMuestraController {
             txtReferencia.setText(muestra.getReferencia());
             comboEstado.setValue(muestra.getEstado());
             txtUbicacion.setText(muestra.getUbicacion());
+            txtObservaciones.setText(muestra.getObservacionAlmacenamiento());
             fechaRecepcionPicker.setValue(muestra.getFechaRecepcion());
             rutaFotoSeleccionada = muestra.getRutaFoto();
             cargarImagenProducto();
@@ -128,7 +130,8 @@ public class RegistrarMuestraController {
                         usuario,
                         rutaFotoSeleccionada,
                         estado,
-                        fecha
+                        fecha,
+                        txtObservaciones.getText()
                 );
                 if (!guardada) {
                     txtInformativos.setText("No se pudo registrar la muestra");
@@ -144,6 +147,7 @@ public class RegistrarMuestraController {
                 muestraEditando.setReferencia(txtReferencia.getText());
                 muestraEditando.setEstado(estado);
                 muestraEditando.setUbicacion(txtUbicacion.getText());
+                muestraEditando.setObservacionAlmacenamiento(txtObservaciones.getText());
                 muestraEditando.setFechaRecepcion(fecha);
                 muestraEditando.setRutaFoto(rutaFotoSeleccionada);
                 service.actualizarMuestra(muestraEditando, usuario);
@@ -173,6 +177,7 @@ public class RegistrarMuestraController {
         txtReferencia.clear();
         comboEstado.getSelectionModel().clearSelection();
         txtUbicacion.clear();
+        txtObservaciones.clear();
         fechaRecepcionPicker.setValue(null);
         rutaFotoSeleccionada = "";
         imgProducto.setImage(null);
