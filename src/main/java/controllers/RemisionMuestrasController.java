@@ -38,7 +38,9 @@ public class RemisionMuestrasController {
 
     private static final DateTimeFormatter FECHA = DateTimeFormatter.ISO_LOCAL_DATE;
     private static final String OBSERVACION_PREDETERMINADA =
-            "Las muestras fueron sometidas a ensayos destructivos, por lo cual no se encuentran en buen estado.";
+            "Las muestras fueron sometidas a ensayos de carácter destructivo; en consecuencia, " +
+            "su integridad física y sus condiciones originales se encuentran alteradas, " +
+            "por lo que no son aptas para su reutilización.";
 
     @FXML private TableView<Muestra> tblDisponibles;
     @FXML private TextField txtBuscarMuestra;
