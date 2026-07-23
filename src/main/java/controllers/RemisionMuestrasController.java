@@ -219,7 +219,7 @@ public class RemisionMuestrasController {
     }
 
     @FXML
-    private void confirmarRemision() {
+    private void generarEImprimirRemision() {
         Usuario actual = usuario != null ? usuario : UsuarioSesion.getUsuario();
         if (actual == null || !actual.puedeControlarMuestras()) {
             mostrarAlerta(Alert.AlertType.WARNING, "Permiso requerido", "No tiene permiso para generar remisiones.");
@@ -247,18 +247,19 @@ public class RemisionMuestrasController {
                 return;
             }
 
+            List<Muestra> muestrasRemision = List.copyOf(muestrasSeleccionadas);
             consecutivo = remisionService.registrarRemision(
                     dpFechaElaboracion.getValue(), txtCliente.getText().trim(), cmbTipoSalida.getValue(),
                     spnEmpaques.getValue(), txtObservacionFinal.getText().trim(), actual,
                     txtFirma.getText().trim(), txtCedula.getText().trim(), txtNombrePlaca.getText().trim(),
-                    List.copyOf(muestrasSeleccionadas), consecutivo);
+                    muestrasRemision, consecutivo);
 
             String codigoRemision = "R" + formatearConsecutivo(consecutivo);
             lblConsecutivo.setText(formatearConsecutivo(consecutivo));
             Path archivoPdf;
             try {
                 archivoPdf = PdfRemisionWriter.guardarDosCopias(
-                        crearDatosRemision(), codigoRemision);
+                        crearDatosRemision(muestrasRemision), codigoRemision);
             } catch (Exception errorArchivo) {
                 mostrarAlerta(Alert.AlertType.ERROR, "Remisión registrada sin archivo",
                         "La remisión " + codigoRemision + " quedó registrada, pero no fue posible guardar el PDF.\n\n" +
@@ -268,30 +269,27 @@ public class RemisionMuestrasController {
             }
             remisionService.registrarRutaArchivo(consecutivo, archivoPdf.toString());
 
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Remisión registrada",
-                    "La remisión " + codigoRemision + " fue guardada y las muestras quedaron como enviadas.\n\n" +
-                            "Archivo: " + archivoPdf);
+            try {
+                boolean impresa = PdfRemisionWriter.imprimir(archivoPdf);
+                String resultadoImpresion = impresa
+                        ? "El documento fue enviado a la impresora seleccionada."
+                        : "La impresión fue cancelada por el usuario.";
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Remisión generada",
+                        "La remisión " + codigoRemision + " fue guardada y las muestras quedaron como enviadas.\n\n" +
+                                resultadoImpresion + "\n\nArchivo: " + archivoPdf);
+            } catch (Exception errorImpresion) {
+                mostrarAlerta(Alert.AlertType.WARNING, "Remisión generada sin impresión",
+                        "La remisión " + codigoRemision + " fue guardada correctamente, pero no fue posible imprimirla.\n\n" +
+                                mensajeRaiz(errorImpresion) + "\n\nArchivo: " + archivoPdf);
+            }
             limpiarFormulario();
         } catch (Exception e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo registrar", mensajeRaiz(e));
+            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo generar la remisión", mensajeRaiz(e));
         }
     }
 
-    @FXML
-    private void imprimirRemision() {
-        if (muestrasSeleccionadas.isEmpty()) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Imprimir remisión", "Seleccione al menos una muestra.");
-            return;
-        }
-        try {
-            PdfRemisionWriter.imprimir(crearDatosRemision());
-        } catch (Exception e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo imprimir", mensajeRaiz(e));
-        }
-    }
-
-    private PdfRemisionWriter.Datos crearDatosRemision() {
-        List<PdfRemisionWriter.Fila> filas = muestrasSeleccionadas.stream()
+    private PdfRemisionWriter.Datos crearDatosRemision(List<Muestra> muestrasRemision) {
+        List<PdfRemisionWriter.Fila> filas = muestrasRemision.stream()
                 .map(muestra -> new PdfRemisionWriter.Fila(
                         identificacionInterna(muestra),
                         texto(muestra.getRotuloCliente(), ""),

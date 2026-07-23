@@ -35,15 +35,7 @@
                     <Label styleClass="form-label" text="Consecutivo" />
                     <TextField fx:id="txtConsecutivo" alignment="CENTER" prefWidth="95.0" promptText="0001" />
                 </HBox>
-                <Button onAction="#imprimirRemision" prefHeight="36.0" prefWidth="99.0" styleClass="btn-secondary" text="Imprimir">
-               <graphic>
-                  <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@icons/imprimirVerde.png" />
-                     </image>
-                  </ImageView>
-               </graphic></Button>
-                <Button onAction="#confirmarRemision" styleClass="btn-primary" text="Confirmar remisión">
+                <Button onAction="#generarEImprimirRemision" prefHeight="36.0" prefWidth="210.0" styleClass="btn-primary" text="Generar e imprimir remisión">
                <graphic>
                   <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                      <image>
