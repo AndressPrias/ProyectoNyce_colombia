@@ -3,6 +3,8 @@ package controllers;
 import db.Database;
 import domain.Rol;
 import domain.Usuario;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,7 +19,6 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Circle;
@@ -31,24 +32,30 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Locale;
 
 public class GestionarUsuariosController {
 
     @FXML private TableView<Usuario> tblUsuarios;
     @FXML private TableColumn<Usuario, Integer> colId;
     @FXML private TableColumn<Usuario, String> colNombre;
-    @FXML private TableColumn<Usuario, Rol> colRol;
-    @FXML private TableColumn<Usuario, Boolean> colControlMuestras;
-    @FXML private TableColumn<Usuario, Boolean> colControlTotal;
+    @FXML private TableColumn<Usuario, String> colRol;
+    @FXML private TableColumn<Usuario, String> colControlMuestras;
+    @FXML private TableColumn<Usuario, String> colControlTotal;
     @FXML private TextField txtNombre;
     @FXML private ComboBox<String> comboRol;
     @FXML private PasswordField txtPassword;
     @FXML private Label lblMensaje;
+    @FXML private Label lblModoFormulario;
+    @FXML private Label lblTituloFormulario;
+    @FXML private Label lblDescripcionFormulario;
+    @FXML private Label lblAyudaPassword;
     @FXML private ImageView imgFotoPerfil;
     @FXML private Button btnSeleccionarImagen;
     @FXML private Button btnGuardar;
     @FXML private Button btnNuevo;
     @FXML private Button btnEliminar;
+    @FXML private Button btnCancelarEdicion;
     @FXML private CheckBox chkControlMuestras;
     @FXML private CheckBox chkControlTotal;
 
@@ -60,13 +67,15 @@ public class GestionarUsuariosController {
     @FXML
     public void initialize() {
         comboRol.setItems(FXCollections.observableArrayList("AUXILIAR", "TECNICO", "SUPERVISOR", "ADMIN", "LIDER"));
-        imgFotoPerfil.setClip(new Circle(69, 69, 69));
+        imgFotoPerfil.setClip(new Circle(55, 55, 55));
 
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        colRol.setCellValueFactory(new PropertyValueFactory<>("rol"));
-        colControlMuestras.setCellValueFactory(new PropertyValueFactory<>("controlMuestrasEfectivo"));
-        colControlTotal.setCellValueFactory(new PropertyValueFactory<>("controlTotalEfectivo"));
+        colId.setCellValueFactory(celda -> new ReadOnlyObjectWrapper<>(celda.getValue().getId()));
+        colNombre.setCellValueFactory(celda -> new ReadOnlyStringWrapper(celda.getValue().getNombre()));
+        colRol.setCellValueFactory(celda -> new ReadOnlyStringWrapper(rolVisible(celda.getValue().getRol())));
+        colControlMuestras.setCellValueFactory(celda -> new ReadOnlyStringWrapper(
+                celda.getValue().isControlMuestrasEfectivo() ? "Sí" : "No"));
+        colControlTotal.setCellValueFactory(celda -> new ReadOnlyStringWrapper(
+                celda.getValue().isControlTotalEfectivo() ? "Sí" : "No"));
         chkControlTotal.selectedProperty().addListener((obs, anterior, seleccionado) -> {
             if (seleccionado) {
                 chkControlMuestras.setSelected(true);
@@ -174,7 +183,13 @@ public class GestionarUsuariosController {
             return;
         }
         limpiarFormulario();
-        lblMensaje.setVisible(false);
+        ocultarMensaje();
+    }
+
+    @FXML
+    void cancelarEdicion() {
+        limpiarFormulario();
+        ocultarMensaje();
     }
 
     @FXML
@@ -298,6 +313,7 @@ public class GestionarUsuariosController {
 
     private void cargarUsuarioEnFormulario(Usuario usuarioEditar) {
         usuarioSeleccionado = usuarioEditar;
+        ocultarMensaje();
         txtNombre.setText(usuarioEditar.getNombre());
         comboRol.setValue(usuarioEditar.getRol().name());
         chkControlMuestras.setSelected(usuarioEditar.isControlMuestras());
@@ -305,7 +321,6 @@ public class GestionarUsuariosController {
         txtPassword.clear();
         rutaFotoSeleccionada = usuarioEditar.getRutaFoto() == null ? "" : usuarioEditar.getRutaFoto();
         cargarImagen(rutaFotoSeleccionada);
-        btnGuardar.setText("Actualizar");
         configurarPermisosFormulario();
     }
 
@@ -319,7 +334,6 @@ public class GestionarUsuariosController {
         txtPassword.clear();
         rutaFotoSeleccionada = "";
         imgFotoPerfil.setImage(null);
-        btnGuardar.setText("Registrar");
         configurarPermisosFormulario();
     }
 
@@ -363,7 +377,20 @@ public class GestionarUsuariosController {
 
     private void mostrarMensaje(String mensaje) {
         lblMensaje.setText(mensaje);
+        lblMensaje.getStyleClass().removeAll("message-success", "message-error");
+        String mensajeNormalizado = mensaje.toLowerCase(Locale.ROOT);
+        if (mensajeNormalizado.contains("correctamente")) {
+            lblMensaje.getStyleClass().add("message-success");
+        } else {
+            lblMensaje.getStyleClass().add("message-error");
+        }
+        lblMensaje.setManaged(true);
         lblMensaje.setVisible(true);
+    }
+
+    private void ocultarMensaje() {
+        lblMensaje.setVisible(false);
+        lblMensaje.setManaged(false);
     }
 
     private void actualizarPerfilPropio() {
@@ -438,7 +465,58 @@ public class GestionarUsuariosController {
         btnSeleccionarImagen.setDisable(false);
         chkControlMuestras.setDisable(!gestor);
         chkControlTotal.setDisable(!gestor);
+        actualizarModoFormulario();
+    }
+
+    private void actualizarModoFormulario() {
+        boolean gestor = puedeGestionarUsuarios();
+        boolean editando = usuarioSeleccionado != null;
+        boolean perfilPropio = editando && !gestor;
+
+        lblModoFormulario.getStyleClass().removeAll("mode-edit", "mode-profile");
+        if (perfilPropio) {
+            lblModoFormulario.setText("MI PERFIL");
+            lblModoFormulario.getStyleClass().add("mode-profile");
+            lblTituloFormulario.setText("Actualizar mi perfil");
+            lblDescripcionFormulario.setText("Puedes cambiar tu foto o establecer una nueva contraseña.");
+            lblAyudaPassword.setText("Déjala vacía si no deseas cambiarla.");
+            btnGuardar.setText("Guardar perfil");
+        } else if (editando) {
+            lblModoFormulario.setText("EDITANDO");
+            lblModoFormulario.getStyleClass().add("mode-edit");
+            lblTituloFormulario.setText("Editar usuario");
+            lblDescripcionFormulario.setText(
+                    "Estás modificando la cuenta de " + usuarioSeleccionado.getNombre() + ".");
+            lblAyudaPassword.setText("Déjala vacía para conservar la contraseña actual.");
+            btnGuardar.setText("Guardar cambios");
+        } else {
+            lblModoFormulario.setText("NUEVO USUARIO");
+            lblTituloFormulario.setText("Crear usuario");
+            lblDescripcionFormulario.setText("Completa los datos para registrar un nuevo acceso.");
+            lblAyudaPassword.setText("Obligatoria para crear un usuario nuevo.");
+            btnGuardar.setText("Registrar usuario");
+        }
+
+        btnNuevo.setVisible(gestor);
+        btnNuevo.setManaged(gestor);
         btnNuevo.setDisable(!gestor);
-        btnEliminar.setDisable(!gestor);
+
+        boolean mostrarAccionesEdicion = gestor && editando;
+        btnCancelarEdicion.setVisible(mostrarAccionesEdicion);
+        btnCancelarEdicion.setManaged(mostrarAccionesEdicion);
+        btnEliminar.setVisible(mostrarAccionesEdicion);
+        btnEliminar.setManaged(mostrarAccionesEdicion);
+        btnEliminar.setDisable(!mostrarAccionesEdicion
+                || (usuario != null && usuario.getId() == usuarioSeleccionado.getId()));
+    }
+
+    private String rolVisible(Rol rol) {
+        return switch (rol) {
+            case AUXILIAR -> "Auxiliar";
+            case TECNICO -> "Técnico";
+            case SUPERVISOR -> "Supervisor";
+            case ADMIN -> "Administrador";
+            case LIDER -> "Líder";
+        };
     }
 }

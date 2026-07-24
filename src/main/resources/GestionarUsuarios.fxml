@@ -6,6 +6,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -14,105 +15,113 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
 
-<HBox spacing="22.0" style="-fx-background-color: #f5f5f5;" stylesheets="@css/dashboard.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.GestionarUsuariosController">
-   <padding>
-      <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
-   </padding>
-   <children>
-      <VBox spacing="14.0" HBox.hgrow="ALWAYS">
-         <children>
-            <VBox spacing="4.0">
-               <children>
-                  <Text text="Gestionar usuarios">
-                     <font>
-                        <Font name="System Bold" size="24.0" />
-                     </font>
-                  </Text>
-                  <Text text="Consulta, registra, actualiza y elimina usuarios del sistema." />
-               </children>
-            </VBox>
-            <TableView fx:id="tblUsuarios" prefHeight="337.0" prefWidth="502.0" VBox.vgrow="ALWAYS">
-               <columns>
-                  <TableColumn fx:id="colId" prefWidth="70.0" text="ID" />
-                  <TableColumn fx:id="colNombre" prefWidth="210.0" text="Nombre" />
-                  <TableColumn fx:id="colRol" prefWidth="125.0" text="Rol" />
-                  <TableColumn fx:id="colControlMuestras" prefWidth="120.0" text="Control muestras" />
-                  <TableColumn fx:id="colControlTotal" prefWidth="105.0" text="Control total" />
-               </columns>
+<VBox prefHeight="900.0" prefWidth="1400.0" spacing="18.0" styleClass="users-root"
+      stylesheets="@css/usuarios.css,@css/botones.css"
+      xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.GestionarUsuariosController">
+    <padding><Insets bottom="24" left="26" right="26" top="22" /></padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="16">
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label styleClass="users-page-title" text="Gestión de usuarios" />
+            <Label styleClass="users-page-subtitle"
+                   text="Administra accesos, roles y permisos del equipo de laboratorio." />
+        </VBox>
+        <Button onAction="#salir" styleClass="btn-secondary" text="Volver al inicio" />
+    </HBox>
+
+    <HBox spacing="20" VBox.vgrow="ALWAYS">
+        <VBox spacing="14" styleClass="users-card" HBox.hgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label styleClass="card-heading" text="Usuarios registrados" />
+                    <Label styleClass="card-caption"
+                           text="Selecciona una fila para consultar o editar ese usuario." />
+                </VBox>
+                <Label styleClass="selection-hint" text="Seleccionar para editar" />
+            </HBox>
+
+            <TableView fx:id="tblUsuarios" styleClass="users-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" maxWidth="70" minWidth="60" prefWidth="65" text="ID" />
+                    <TableColumn fx:id="colNombre" minWidth="190" prefWidth="250" text="NOMBRE" />
+                    <TableColumn fx:id="colRol" minWidth="145" prefWidth="170" text="ROL" />
+                    <TableColumn fx:id="colControlMuestras" minWidth="150" prefWidth="175" text="CONTROL DE MUESTRAS" />
+                    <TableColumn fx:id="colControlTotal" minWidth="125" prefWidth="145" text="CONTROL TOTAL" />
+                </columns>
+                <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN" /></columnResizePolicy>
             </TableView>
-         </children>
-      </VBox>
+        </VBox>
 
-      <VBox maxWidth="360.0" minWidth="320.0" prefWidth="340.0" spacing="14.0" style="-fx-background-color: #009180; -fx-background-radius: 8; -fx-padding: 20;">
-         <children>
-            <Text fill="WHITE" text="Datos del usuario">
-               <font>
-                  <Font name="System Bold" size="20.0" />
-               </font>
-            </Text>
+        <VBox maxWidth="480" minWidth="420" prefWidth="450" spacing="15" styleClass="user-form-card">
+            <HBox alignment="TOP_LEFT" spacing="12">
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblModoFormulario" styleClass="mode-badge" text="NUEVO USUARIO" />
+                    <Label fx:id="lblTituloFormulario" styleClass="form-heading" text="Crear usuario" />
+                    <Label fx:id="lblDescripcionFormulario" maxWidth="330" styleClass="form-caption"
+                           text="Completa los datos para registrar un nuevo acceso." wrapText="true" />
+                </VBox>
+                <Button fx:id="btnNuevo" onAction="#nuevoUsuario" styleClass="new-user-button" text="+ Crear nuevo" />
+            </HBox>
 
-            <VBox spacing="6.0">
-               <children>
-                  <Label text="Nombre *" textFill="WHITE" />
-                  <TextField fx:id="txtNombre" maxWidth="1.7976931348623157E308" promptText="Nombre de usuario" />
-               </children>
+            <Separator />
+
+            <HBox alignment="CENTER_LEFT" spacing="18" styleClass="profile-block">
+                <StackPane minHeight="116" minWidth="116" prefHeight="116" prefWidth="116" styleClass="user-avatar-frame">
+                    <Label styleClass="avatar-placeholder" text="Sin foto" />
+                    <ImageView fx:id="imgFotoPerfil" fitHeight="110" fitWidth="110" pickOnBounds="true" preserveRatio="true" />
+                </StackPane>
+                <VBox spacing="7" HBox.hgrow="ALWAYS">
+                    <Label styleClass="section-label" text="Foto de perfil" />
+                    <Label maxWidth="250" styleClass="field-help"
+                           text="PNG o JPG. La imagen se guarda en la carpeta compartida." wrapText="true" />
+                    <Button fx:id="btnSeleccionarImagen" onAction="#seleccionarImagen"
+                            styleClass="photo-button" text="Seleccionar imagen" />
+                </VBox>
+            </HBox>
+
+            <VBox spacing="6">
+                <Label styleClass="field-label" text="Nombre del usuario *" />
+                <TextField fx:id="txtNombre" maxWidth="Infinity" promptText="Ej. Andrea Gómez" />
             </VBox>
 
-            <VBox spacing="8.0" style="-fx-background-color: rgba(255,255,255,0.10); -fx-padding: 10; -fx-background-radius: 5;">
-               <children>
-                  <Label style="-fx-font-weight: bold;" text="Permisos adicionales" textFill="WHITE" />
-                  <CheckBox fx:id="chkControlMuestras" text="Control de todas las muestras" textFill="WHITE" />
-                  <CheckBox fx:id="chkControlTotal" text="Control total de la aplicación" textFill="WHITE" />
-               </children>
+            <VBox spacing="6">
+                <Label styleClass="field-label" text="Rol *" />
+                <ComboBox fx:id="comboRol" maxWidth="Infinity" promptText="Selecciona el rol" />
             </VBox>
 
-            <VBox spacing="6.0">
-               <children>
-                  <Label text="Rol *" textFill="WHITE" />
-                  <ComboBox fx:id="comboRol" maxWidth="1.7976931348623157E308" promptText="Seleccione el rol" />
-               </children>
+            <VBox spacing="6">
+                <Label styleClass="field-label" text="Contraseña" />
+                <PasswordField fx:id="txtPassword" maxWidth="Infinity" promptText="Crea una contraseña" />
+                <Label fx:id="lblAyudaPassword" styleClass="field-help"
+                       text="Obligatoria para crear un usuario nuevo." wrapText="true" />
             </VBox>
 
-            <VBox spacing="6.0">
-               <children>
-                  <Label text="Contraseña *" textFill="WHITE" />
-                  <PasswordField fx:id="txtPassword" maxWidth="1.7976931348623157E308" promptText="Obligatoria al registrar" />
-               </children>
+            <VBox spacing="9" styleClass="permissions-card">
+                <Label styleClass="section-label" text="Permisos adicionales" />
+                <CheckBox fx:id="chkControlMuestras" text="Puede controlar todas las muestras" />
+                <CheckBox fx:id="chkControlTotal" text="Tiene control total de los procesos" />
+                <Label styleClass="field-help"
+                       text="Los roles Administrador y Supervisor ya incluyen control total." wrapText="true" />
             </VBox>
 
-            <VBox alignment="CENTER" spacing="12.0">
-               <children>
-                  <Label text="Foto de perfil" textFill="WHITE" />
-                  <StackPane prefHeight="150.0" prefWidth="150.0" styleClass="avatar-preview">
-                     <children>
-                        <ImageView fx:id="imgFotoPerfil" fitHeight="138.0" fitWidth="138.0" pickOnBounds="true" preserveRatio="true" />
-                     </children>
-                  </StackPane>
-                  <Button fx:id="btnSeleccionarImagen" mnemonicParsing="false" onAction="#seleccionarImagen" styleClass="btn-avatar" text="Seleccionar imagen" />
-               </children>
-            </VBox>
-
-            <Label style="-fx-font-size: 11;" text="* Campos obligatorios al registrar" textFill="WHITE" />
-
-            <Label fx:id="lblMensaje" contentDisplay="CENTER" prefHeight="48.0" prefWidth="300.0" textAlignment="CENTER" textFill="#970909" visible="false" wrapText="true">
-               <font>
-                  <Font size="14.0" />
-               </font></Label>
+            <Label fx:id="lblMensaje" managed="false" maxWidth="Infinity" styleClass="form-message"
+                   textAlignment="CENTER" visible="false" wrapText="true" />
 
             <Region VBox.vgrow="ALWAYS" />
 
-            <HBox alignment="CENTER" spacing="10.0">
-               <children>
-                  <Button onAction="#salir" text="Salir" />
-                  <Button fx:id="btnNuevo" onAction="#nuevoUsuario" text="Nuevo" />
-                  <Button fx:id="btnGuardar" onAction="#guardarUsuario" text="Registrar" />
-                  <Button fx:id="btnEliminar" onAction="#eliminarUsuario" style="-fx-background-color: #E4002B; -fx-text-fill: white;" text="Eliminar" />
-               </children>
+            <Label styleClass="required-note" text="* Campos obligatorios al crear un usuario" />
+            <Button fx:id="btnGuardar" maxWidth="Infinity" onAction="#guardarUsuario"
+                    styleClass="btn-primary" text="Registrar usuario" />
+            <HBox spacing="10">
+                <Button fx:id="btnCancelarEdicion" managed="false" maxWidth="Infinity"
+                        onAction="#cancelarEdicion" styleClass="btn-secondary" text="Cancelar edición"
+                        visible="false" HBox.hgrow="ALWAYS" />
+                <Button fx:id="btnEliminar" managed="false" maxWidth="Infinity"
+                        onAction="#eliminarUsuario" styleClass="btn-danger" text="Eliminar usuario"
+                        visible="false" HBox.hgrow="ALWAYS" />
             </HBox>
-         </children>
-      </VBox>
-   </children>
-</HBox>
+        </VBox>
+    </HBox>
+</VBox>
