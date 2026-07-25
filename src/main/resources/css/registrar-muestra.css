@@ -1,0 +1,40 @@
+.image-drop-zone {
+    -fx-background-color: #fbfdfd;
+    -fx-background-radius: 12;
+    -fx-border-color: #b8cdcb;
+    -fx-border-radius: 12;
+    -fx-border-style: dashed;
+    -fx-border-width: 2;
+    -fx-cursor: hand;
+    -fx-padding: 10;
+}
+
+.image-drop-zone:hover {
+    -fx-background-color: #f1faf8;
+    -fx-border-color: #64aaa5;
+}
+
+.image-drop-zone.drop-active {
+    -fx-background-color: #dff5f1;
+    -fx-border-color: #008c84;
+    -fx-border-style: solid;
+    -fx-border-width: 3;
+    -fx-effect: dropshadow(gaussian, rgba(0, 140, 132, 0.24), 14, 0, 0, 2);
+}
+
+.drop-instruction {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-background-radius: 16;
+    -fx-border-color: #c4d9d7;
+    -fx-border-radius: 16;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 7 14;
+    -fx-text-fill: #0a6862;
+}
+
+.image-drop-zone.drop-active .drop-instruction {
+    -fx-background-color: #008c84;
+    -fx-border-color: #008c84;
+    -fx-text-fill: white;
+}
