@@ -9,7 +9,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
@@ -111,6 +113,15 @@ public class RegistrarMuestraController {
     }
 
     private void configurarArrastreImagen() {
+        zonaImagen.setFocusTraversable(true);
+        zonaImagen.setOnMouseClicked(evento -> zonaImagen.requestFocus());
+        zonaImagen.setOnKeyPressed(evento -> {
+            if (evento.isControlDown() && evento.getCode() == KeyCode.V) {
+                pegarImagenDesdePortapapeles();
+                evento.consume();
+            }
+        });
+
         zonaImagen.setOnDragOver(evento -> {
             if (contieneImagenValida(evento.getDragboard())) {
                 evento.acceptTransferModes(TransferMode.COPY);
@@ -180,13 +191,36 @@ public class RegistrarMuestraController {
     }
 
     private boolean cargarImagenDesdeDragboard(Dragboard dragboard) {
+        return cargarImagenTemporal(
+                dragboard.getImage(),
+                "No se pudo cargar la imagen arrastrada"
+        );
+    }
+
+    private void pegarImagenDesdePortapapeles() {
+        Clipboard portapapeles = Clipboard.getSystemClipboard();
+        boolean cargada = false;
+        if (portapapeles.hasFiles() && !portapapeles.getFiles().isEmpty()) {
+            cargada = cargarImagenDesdeArchivo(portapapeles.getFiles().get(0));
+        } else if (portapapeles.hasImage()) {
+            cargada = cargarImagenTemporal(
+                    portapapeles.getImage(),
+                    "No se pudo pegar la imagen desde WhatsApp Web"
+            );
+        }
+        if (!cargada && !portapapeles.hasFiles() && !portapapeles.hasImage()) {
+            mostrarErrorImagen("El portapapeles no contiene una imagen. Use Copiar imagen en WhatsApp Web");
+        }
+    }
+
+    private boolean cargarImagenTemporal(Image imagen, String mensajeError) {
         File temporal = null;
         try {
             temporal = File.createTempFile("muestra_arrastrada_", ".png");
-            guardarImagenPng(dragboard.getImage(), temporal);
+            guardarImagenPng(imagen, temporal);
             return cargarImagenDesdeArchivo(temporal);
         } catch (Exception e) {
-            mostrarErrorImagen("No se pudo cargar la imagen arrastrada");
+            mostrarErrorImagen(mensajeError);
             e.printStackTrace();
             return false;
         } finally {
@@ -251,8 +285,8 @@ public class RegistrarMuestraController {
             return;
         }
         lblIndicacionArrastre.setText(rutaFotoSeleccionada == null || rutaFotoSeleccionada.isBlank()
-                ? "Arrastra una imagen aquí"
-                : "Arrastra otra imagen para reemplazarla");
+                ? "Arrastra o pega con Ctrl+V desde WhatsApp Web"
+                : "Arrastra o pega otra imagen con Ctrl+V");
     }
 
     private void mostrarErrorImagen(String mensaje) {

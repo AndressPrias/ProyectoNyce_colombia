@@ -14,6 +14,12 @@
     -fx-border-color: #64aaa5;
 }
 
+.image-drop-zone:focused {
+    -fx-background-color: #f1faf8;
+    -fx-border-color: #008c84;
+    -fx-effect: dropshadow(gaussian, rgba(0, 140, 132, 0.16), 10, 0, 0, 1);
+}
+
 .image-drop-zone.drop-active {
     -fx-background-color: #dff5f1;
     -fx-border-color: #008c84;
