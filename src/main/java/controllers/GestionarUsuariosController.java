@@ -21,10 +21,14 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import utilities.ImageStorage;
 import utilities.Navegacion;
+import utilities.PasswordSecurity;
 import utilities.UsuarioSesion;
 
 import java.io.File;
@@ -50,12 +54,17 @@ public class GestionarUsuariosController {
     @FXML private Label lblTituloFormulario;
     @FXML private Label lblDescripcionFormulario;
     @FXML private Label lblAyudaPassword;
+    @FXML private Label lblTituloPagina;
+    @FXML private Label lblSubtituloPagina;
+    @FXML private Label lblCamposObligatorios;
     @FXML private ImageView imgFotoPerfil;
+    @FXML private VBox pnlListadoUsuarios;
     @FXML private Button btnSeleccionarImagen;
     @FXML private Button btnGuardar;
     @FXML private Button btnNuevo;
     @FXML private Button btnEliminar;
     @FXML private Button btnCancelarEdicion;
+    @FXML private Button btnRestablecerPassword;
     @FXML private CheckBox chkControlMuestras;
     @FXML private CheckBox chkControlTotal;
 
@@ -132,9 +141,9 @@ public class GestionarUsuariosController {
             return;
         }
 
-        String nombre = txtNombre.getText();
+        String nombre = txtNombre.getText() == null ? "" : txtNombre.getText().trim();
         String rolStr = comboRol.getValue();
-        String password = txtPassword.getText();
+        String password = txtPassword.getText() == null ? "" : txtPassword.getText();
         boolean controlMuestras = chkControlMuestras.isSelected();
         boolean controlTotal = chkControlTotal.isSelected();
 
@@ -145,6 +154,10 @@ public class GestionarUsuariosController {
 
         if (nombre.isEmpty() || rolStr == null || (usuarioSeleccionado == null && password.isEmpty())) {
             mostrarMensaje("Debe completar todos los campos");
+            return;
+        }
+        if (!password.isEmpty() && password.length() < 8) {
+            mostrarMensaje("La contraseña debe tener al menos 8 caracteres");
             return;
         }
 
@@ -190,6 +203,82 @@ public class GestionarUsuariosController {
     void cancelarEdicion() {
         limpiarFormulario();
         ocultarMensaje();
+    }
+
+    @FXML
+    void restablecerPassword() {
+        if (!puedeGestionarUsuarios() || usuarioSeleccionado == null) {
+            mostrarMensaje("Seleccione un usuario para restablecer su contraseña");
+            return;
+        }
+
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Restablecer contraseña");
+        confirmacion.setHeaderText("Se generará una contraseña temporal");
+        confirmacion.setContentText("El usuario " + usuarioSeleccionado.getNombre()
+                + " tendrá que crear una contraseña nueva en su próximo inicio de sesión.");
+        if (confirmacion.showAndWait().filter(ButtonType.OK::equals).isEmpty()) {
+            return;
+        }
+
+        String passwordTemporal = PasswordSecurity.generateTemporaryPassword();
+        try (Connection conn = Database.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "UPDATE usuarios SET password=?, cambioPasswordObligatorio=1 WHERE id=?")) {
+                    ps.setString(1, PasswordSecurity.hash(passwordTemporal));
+                    ps.setInt(2, usuarioSeleccionado.getId());
+                    if (ps.executeUpdate() != 1) {
+                        throw new SQLException("El usuario seleccionado ya no existe");
+                    }
+                }
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO restablecimientos_password "
+                                + "(usuarioId, administradorId, usuarioNombre, administradorNombre) "
+                                + "VALUES (?, ?, ?, ?)")) {
+                    ps.setInt(1, usuarioSeleccionado.getId());
+                    ps.setInt(2, usuario.getId());
+                    ps.setString(3, usuarioSeleccionado.getNombre());
+                    ps.setString(4, usuario.getNombre());
+                    ps.executeUpdate();
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            mostrarMensaje("No se pudo restablecer la contraseña");
+            return;
+        }
+
+        TextField claveTemporal = new TextField(passwordTemporal);
+        claveTemporal.setEditable(false);
+        claveTemporal.setStyle("-fx-font-family: 'Consolas'; -fx-font-size: 16px; -fx-font-weight: bold;");
+        Button copiar = new Button("Copiar contraseña");
+        copiar.setOnAction(evento -> {
+            ClipboardContent contenido = new ClipboardContent();
+            contenido.putString(passwordTemporal);
+            Clipboard.getSystemClipboard().setContent(contenido);
+            copiar.setText("Copiada");
+        });
+
+        VBox contenido = new VBox(10,
+                new Label("Entregue esta clave temporal al usuario:"),
+                claveTemporal,
+                copiar,
+                new Label("La clave dejará de ser válida cuando el usuario establezca la nueva contraseña.")
+        );
+        ((Label) contenido.getChildren().get(3)).setWrapText(true);
+
+        Alert resultado = new Alert(Alert.AlertType.INFORMATION);
+        resultado.setTitle("Contraseña temporal generada");
+        resultado.setHeaderText("Acceso restablecido para " + usuarioSeleccionado.getNombre());
+        resultado.getDialogPane().setContent(contenido);
+        resultado.showAndWait();
+        mostrarMensaje("Contraseña temporal generada correctamente");
     }
 
     @FXML
@@ -241,7 +330,7 @@ public class GestionarUsuariosController {
                 "INSERT INTO usuarios (nombre, rol, password, rutaFoto, controlMuestras, controlTotal) VALUES (?, ?, ?, ?, ?, ?)")) {
             ps.setString(1, nombre);
             ps.setString(2, rolStr);
-            ps.setString(3, password);
+            ps.setString(3, PasswordSecurity.hash(password));
             ps.setString(4, rutaFotoSeleccionada.isBlank() ? null : rutaFotoSeleccionada);
             ps.setBoolean(5, controlMuestras);
             ps.setBoolean(6, controlTotal);
@@ -255,7 +344,8 @@ public class GestionarUsuariosController {
         String rutaFotoNueva = rutaFotoSeleccionada.isBlank() ? null : rutaFotoSeleccionada;
         String sql = password.isEmpty()
                 ? "UPDATE usuarios SET nombre=?, rol=?, rutaFoto=?, controlMuestras=?, controlTotal=? WHERE id=?"
-                : "UPDATE usuarios SET nombre=?, rol=?, rutaFoto=?, controlMuestras=?, controlTotal=?, password=? WHERE id=?";
+                : "UPDATE usuarios SET nombre=?, rol=?, rutaFoto=?, controlMuestras=?, controlTotal=?, "
+                + "password=?, cambioPasswordObligatorio=0 WHERE id=?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nombre);
@@ -266,7 +356,7 @@ public class GestionarUsuariosController {
             if (password.isEmpty()) {
                 ps.setInt(6, usuarioSeleccionado.getId());
             } else {
-                ps.setString(6, password);
+                ps.setString(6, PasswordSecurity.hash(password));
                 ps.setInt(7, usuarioSeleccionado.getId());
             }
             ps.executeUpdate();
@@ -400,19 +490,23 @@ public class GestionarUsuariosController {
         }
         String password = txtPassword.getText();
         boolean cambiarPassword = password != null && !password.isBlank();
+        if (cambiarPassword && password.length() < 8) {
+            mostrarMensaje("La contraseña debe tener al menos 8 caracteres");
+            return;
+        }
         String rutaFotoAnterior = usuarioSeleccionado.getRutaFoto();
         String rutaFoto = rutaFotoSeleccionada == null || rutaFotoSeleccionada.isBlank()
                 ? null
                 : rutaFotoSeleccionada;
         String sql = cambiarPassword
-                ? "UPDATE usuarios SET rutaFoto=?, password=? WHERE id=?"
+                ? "UPDATE usuarios SET rutaFoto=?, password=?, cambioPasswordObligatorio=0 WHERE id=?"
                 : "UPDATE usuarios SET rutaFoto=? WHERE id=?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, rutaFoto);
             if (cambiarPassword) {
-                ps.setString(2, password);
+                ps.setString(2, PasswordSecurity.hash(password));
                 ps.setInt(3, usuario.getId());
             } else {
                 ps.setInt(2, usuario.getId());
@@ -460,6 +554,15 @@ public class GestionarUsuariosController {
 
     private void configurarPermisosFormulario() {
         boolean gestor = puedeGestionarUsuarios();
+        pnlListadoUsuarios.setVisible(gestor);
+        pnlListadoUsuarios.setManaged(gestor);
+        lblTituloPagina.setText(gestor ? "Gestión de usuarios" : "Mi perfil");
+        lblSubtituloPagina.setText(gestor
+                ? "Administra accesos, roles y permisos del equipo de laboratorio."
+                : "Consulta tu información y actualiza tu foto o contraseña.");
+        lblCamposObligatorios.setVisible(gestor);
+        lblCamposObligatorios.setManaged(gestor);
+
         txtNombre.setDisable(!gestor);
         comboRol.setDisable(!gestor);
         btnSeleccionarImagen.setDisable(false);
@@ -508,6 +611,9 @@ public class GestionarUsuariosController {
         btnEliminar.setManaged(mostrarAccionesEdicion);
         btnEliminar.setDisable(!mostrarAccionesEdicion
                 || (usuario != null && usuario.getId() == usuarioSeleccionado.getId()));
+        btnRestablecerPassword.setVisible(mostrarAccionesEdicion);
+        btnRestablecerPassword.setManaged(mostrarAccionesEdicion);
+        btnRestablecerPassword.setDisable(!mostrarAccionesEdicion);
     }
 
     private String rolVisible(Rol rol) {

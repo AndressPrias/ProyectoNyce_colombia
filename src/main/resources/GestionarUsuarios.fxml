@@ -24,15 +24,15 @@
 
     <HBox alignment="CENTER_LEFT" spacing="16">
         <VBox spacing="3" HBox.hgrow="ALWAYS">
-            <Label styleClass="users-page-title" text="Gestión de usuarios" />
-            <Label styleClass="users-page-subtitle"
+            <Label fx:id="lblTituloPagina" styleClass="users-page-title" text="Gestión de usuarios" />
+            <Label fx:id="lblSubtituloPagina" styleClass="users-page-subtitle"
                    text="Administra accesos, roles y permisos del equipo de laboratorio." />
         </VBox>
         <Button onAction="#salir" styleClass="btn-secondary" text="Volver al inicio" />
     </HBox>
 
-    <HBox spacing="20" VBox.vgrow="ALWAYS">
-        <VBox spacing="14" styleClass="users-card" HBox.hgrow="ALWAYS">
+    <HBox alignment="CENTER" spacing="20" VBox.vgrow="ALWAYS">
+        <VBox fx:id="pnlListadoUsuarios" spacing="14" styleClass="users-card" HBox.hgrow="ALWAYS">
             <HBox alignment="CENTER_LEFT" spacing="10">
                 <VBox spacing="2" HBox.hgrow="ALWAYS">
                     <Label styleClass="card-heading" text="Usuarios registrados" />
@@ -111,9 +111,13 @@
 
             <Region VBox.vgrow="ALWAYS" />
 
-            <Label styleClass="required-note" text="* Campos obligatorios al crear un usuario" />
+            <Label fx:id="lblCamposObligatorios" styleClass="required-note"
+                   text="* Campos obligatorios al crear un usuario" />
             <Button fx:id="btnGuardar" maxWidth="Infinity" onAction="#guardarUsuario"
                     styleClass="btn-primary" text="Registrar usuario" />
+            <Button fx:id="btnRestablecerPassword" managed="false" maxWidth="Infinity"
+                    onAction="#restablecerPassword" styleClass="btn-reset-password"
+                    text="Restablecer contraseña" visible="false" />
             <HBox spacing="10">
                 <Button fx:id="btnCancelarEdicion" managed="false" maxWidth="Infinity"
                         onAction="#cancelarEdicion" styleClass="btn-secondary" text="Cancelar edición"

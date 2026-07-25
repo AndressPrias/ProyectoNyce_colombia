@@ -59,7 +59,19 @@ public class Database {
                     "password TEXT," +
                     "rutaFoto TEXT," +
                     "controlMuestras INTEGER DEFAULT 0," +
-                    "controlTotal INTEGER DEFAULT 0" +
+                    "controlTotal INTEGER DEFAULT 0," +
+                    "cambioPasswordObligatorio INTEGER DEFAULT 0" +
+                    ");");
+
+            st.execute("CREATE TABLE IF NOT EXISTS restablecimientos_password (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "usuarioId INTEGER," +
+                    "administradorId INTEGER," +
+                    "usuarioNombre TEXT NOT NULL," +
+                    "administradorNombre TEXT NOT NULL," +
+                    "fechaHora TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP," +
+                    "FOREIGN KEY (usuarioId) REFERENCES usuarios(id) ON DELETE SET NULL," +
+                    "FOREIGN KEY (administradorId) REFERENCES usuarios(id) ON DELETE SET NULL" +
                     ");");
 
             st.execute("CREATE TABLE IF NOT EXISTS muestras (" +
@@ -150,6 +162,7 @@ public class Database {
         agregarColumnaSiNoExiste(conn, "usuarios", "rutaFoto", "TEXT");
         agregarColumnaSiNoExiste(conn, "usuarios", "controlMuestras", "INTEGER DEFAULT 0");
         agregarColumnaSiNoExiste(conn, "usuarios", "controlTotal", "INTEGER DEFAULT 0");
+        agregarColumnaSiNoExiste(conn, "usuarios", "cambioPasswordObligatorio", "INTEGER DEFAULT 0");
 
         agregarColumnaSiNoExiste(conn, "muestras", "nombreCliente", "TEXT");
         agregarColumnaSiNoExiste(conn, "muestras", "marca", "TEXT");

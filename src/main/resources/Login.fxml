@@ -137,7 +137,7 @@
                         </HBox>
                         <VBox prefHeight="85.0" prefWidth="244.0" spacing="20.0">
                            <children>
-                              <Label fx:id="txtOlvidoContraseña" alignment="BOTTOM_RIGHT" maxWidth="1.7976931348623157E308" text="¿Olvidó su contraseña?" textFill="RED">
+                              <Label fx:id="txtOlvidoContraseña" alignment="BOTTOM_RIGHT" maxWidth="1.7976931348623157E308" onMouseClicked="#mostrarAyudaRecuperacion" style="-fx-cursor: hand;" text="¿Olvidó su contraseña?" textFill="RED">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
