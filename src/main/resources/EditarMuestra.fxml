@@ -9,11 +9,12 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="831.0" prefWidth="852.0" spacing="20.0" style="-fx-background-color: #EEF2F2;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.EditarMuestraController">
+<VBox prefHeight="831.0" prefWidth="852.0" spacing="20.0" style="-fx-background-color: #EEF2F2;" stylesheets="@css/registrar-muestra.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.EditarMuestraController">
     <padding>
         <Insets bottom="24.0" left="30.0" right="30.0" top="30.0" />
     </padding>
@@ -67,7 +68,21 @@
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font></Label>
-                        <ImageView fx:id="imgProducto" fitHeight="420.0" fitWidth="310.0" preserveRatio="true" style="-fx-border-color: #cccccc; -fx-border-width: 2; -fx-border-style: dashed" VBox.vgrow="ALWAYS" />
+                        <StackPane fx:id="zonaImagen" minHeight="390.0" prefHeight="420.0"
+                                   styleClass="image-drop-zone" VBox.vgrow="ALWAYS">
+                           <children>
+                              <ImageView fx:id="imgProducto" fitHeight="390.0" fitWidth="310.0"
+                                         mouseTransparent="true" preserveRatio="true" smooth="true" />
+                              <Label fx:id="lblIndicacionArrastre" alignment="CENTER"
+                                     mouseTransparent="true" styleClass="drop-instruction"
+                                     text="Arrastra una imagen aquí" wrapText="true"
+                                     StackPane.alignment="BOTTOM_CENTER">
+                                 <StackPane.margin>
+                                    <Insets bottom="14.0" left="14.0" right="14.0" />
+                                 </StackPane.margin>
+                              </Label>
+                           </children>
+                        </StackPane>
                         <Button fx:id="btnSubirImagen" maxWidth="1.7976931348623157E308" onAction="#seleccionarImagen" styleClass="btn-icon" stylesheets="@css/botones.css" text="Seleccionar imagen" textFill="#0a4d4a">
                      <font>
                         <Font name="System Bold" size="12.0" />

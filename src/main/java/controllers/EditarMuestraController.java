@@ -12,6 +12,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import service.MuestraService;
@@ -25,8 +26,12 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class EditarMuestraController {
+
+    private static final String IMAGEN_PRODUCTO_DEFECTO = "/images/default_image.png";
+    private static final long TAMANO_MAXIMO_IMAGEN = 5L * 1024L * 1024L;
 
     @FXML private TextField txtDescripcion;
     @FXML private TextField txtRotuloCliente;
@@ -43,6 +48,8 @@ public class EditarMuestraController {
     @FXML private Label lblMensaje;
     @FXML private Button btnSubirImagen;
     @FXML private ImageView imgProducto;
+    @FXML private StackPane zonaImagen;
+    @FXML private Label lblIndicacionArrastre;
 
     private Muestra muestraEditando = null;
     private String rutaFotoSeleccionada = "";
@@ -54,6 +61,7 @@ public class EditarMuestraController {
         comboEstado.setItems(FXCollections.observableArrayList(Estado.values()));
         comboTecnico.setItems(FXCollections.observableArrayList(UsuarioSesion.obtenerUsuariosAsignables()));
 
+        cargarImagenProducto();
         configurarArrastreImagen();
     }
 
@@ -74,13 +82,7 @@ public class EditarMuestraController {
             txtNumeroCotizacion.setText(formatoEdicion(muestra.getCotizaciones()));
             txtRemision.setText(muestra.getRemision());
             rutaFotoSeleccionada = muestra.getRutaFoto();
-
-            if (rutaFotoSeleccionada != null && !rutaFotoSeleccionada.isEmpty()) {
-                String url = ImageStorage.resolveImageUrl(rutaFotoSeleccionada);
-                if (url != null) {
-                    imgProducto.setImage(new Image(url));
-                }
-            }
+            cargarImagenProducto();
         }
     }
 
@@ -101,16 +103,43 @@ public class EditarMuestraController {
         cargarImagenDesdeArchivo(selectedFile);
     }
 
+    private void cargarImagenProducto() {
+        Image imagen = cargarImagenDefecto();
+        if (rutaFotoSeleccionada != null && !rutaFotoSeleccionada.isBlank()) {
+            String url = ImageStorage.resolveImageUrl(rutaFotoSeleccionada);
+            if (url != null) {
+                imagen = new Image(url);
+            }
+        }
+        imgProducto.setImage(imagen);
+        actualizarIndicacionArrastre();
+    }
+
+    private Image cargarImagenDefecto() {
+        return new Image(getClass().getResource(IMAGEN_PRODUCTO_DEFECTO).toExternalForm());
+    }
+
     private void configurarArrastreImagen() {
-        imgProducto.setOnDragOver(evento -> {
-            Dragboard dragboard = evento.getDragboard();
-            if (dragboard.hasFiles() || dragboard.hasImage()) {
+        zonaImagen.setOnDragOver(evento -> {
+            if (contieneImagenValida(evento.getDragboard())) {
                 evento.acceptTransferModes(TransferMode.COPY);
             }
             evento.consume();
         });
 
-        imgProducto.setOnDragDropped(evento -> {
+        zonaImagen.setOnDragEntered(evento -> {
+            if (contieneImagenValida(evento.getDragboard())) {
+                activarEstadoArrastre();
+            }
+            evento.consume();
+        });
+
+        zonaImagen.setOnDragExited(evento -> {
+            desactivarEstadoArrastre();
+            evento.consume();
+        });
+
+        zonaImagen.setOnDragDropped(evento -> {
             Dragboard dragboard = evento.getDragboard();
             boolean cargada = false;
 
@@ -120,24 +149,42 @@ public class EditarMuestraController {
                 cargada = cargarImagenDesdeDragboard(dragboard);
             }
 
+            desactivarEstadoArrastre();
             evento.setDropCompleted(cargada);
             evento.consume();
         });
     }
 
+    private boolean contieneImagenValida(Dragboard dragboard) {
+        if (dragboard.hasImage()) {
+            return true;
+        }
+        return dragboard.hasFiles()
+                && dragboard.getFiles().size() == 1
+                && tieneExtensionPermitida(dragboard.getFiles().get(0));
+    }
+
     private boolean cargarImagenDesdeArchivo(File archivo) {
-        if (archivo == null) return false;
+        String error = validarArchivoImagen(archivo);
+        if (error != null) {
+            mostrarErrorImagen(error);
+            return false;
+        }
 
         try {
+            Image vistaPrevia = new Image(archivo.toURI().toString(), false);
+            if (vistaPrevia.isError() || vistaPrevia.getWidth() <= 0 || vistaPrevia.getHeight() <= 0) {
+                mostrarErrorImagen("El archivo seleccionado no contiene una imagen válida");
+                return false;
+            }
+
             rutaFotoSeleccionada = ImageStorage.copySamplePhoto(archivo);
-            String url = ImageStorage.resolveImageUrl(rutaFotoSeleccionada);
-            imgProducto.setImage(url == null ? null : new Image(url));
+            cargarImagenProducto();
             System.out.println("Foto copiada a carpeta compartida: " + rutaFotoSeleccionada);
             lblMensaje.setVisible(false);
             return true;
         } catch (Exception e) {
-            lblMensaje.setText("No se pudo copiar la foto a la carpeta configurada");
-            lblMensaje.setVisible(true);
+            mostrarErrorImagen("No se pudo copiar la foto a la carpeta configurada");
             e.printStackTrace();
             return false;
         }
@@ -150,18 +197,41 @@ public class EditarMuestraController {
             guardarImagenPng(dragboard.getImage(), temporal);
             return cargarImagenDesdeArchivo(temporal);
         } catch (Exception e) {
-            lblMensaje.setText("No se pudo cargar la imagen arrastrada");
-            lblMensaje.setVisible(true);
+            mostrarErrorImagen("No se pudo cargar la imagen arrastrada");
             e.printStackTrace();
             return false;
         } finally {
-            if (temporal != null && temporal.exists()) {
-                temporal.delete();
+            if (temporal != null && temporal.exists() && !temporal.delete()) {
+                temporal.deleteOnExit();
             }
         }
     }
 
+    private String validarArchivoImagen(File archivo) {
+        if (archivo == null || !archivo.isFile()) {
+            return "Arrastre un único archivo de imagen";
+        }
+        if (!tieneExtensionPermitida(archivo)) {
+            return "Formato no permitido. Use JPG, PNG o JPEG";
+        }
+        if (archivo.length() > TAMANO_MAXIMO_IMAGEN) {
+            return "La imagen supera el tamaño máximo de 5 MB";
+        }
+        return null;
+    }
+
+    private boolean tieneExtensionPermitida(File archivo) {
+        if (archivo == null) {
+            return false;
+        }
+        String nombre = archivo.getName().toLowerCase(Locale.ROOT);
+        return nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png");
+    }
+
     private void guardarImagenPng(Image imagen, File destino) throws IOException {
+        if (imagen == null || imagen.getPixelReader() == null) {
+            throw new IOException("La imagen arrastrada no tiene contenido");
+        }
         int ancho = (int) imagen.getWidth();
         int alto = (int) imagen.getHeight();
         BufferedImage salida = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_ARGB);
@@ -170,7 +240,35 @@ public class EditarMuestraController {
                 salida.setRGB(x, y, imagen.getPixelReader().getArgb(x, y));
             }
         }
-        ImageIO.write(salida, "png", destino);
+        if (!ImageIO.write(salida, "png", destino)) {
+            throw new IOException("No se pudo convertir la imagen a PNG");
+        }
+    }
+
+    private void activarEstadoArrastre() {
+        if (!zonaImagen.getStyleClass().contains("drop-active")) {
+            zonaImagen.getStyleClass().add("drop-active");
+        }
+        lblIndicacionArrastre.setText("Suelta la imagen para cargarla");
+    }
+
+    private void desactivarEstadoArrastre() {
+        zonaImagen.getStyleClass().remove("drop-active");
+        actualizarIndicacionArrastre();
+    }
+
+    private void actualizarIndicacionArrastre() {
+        if (lblIndicacionArrastre == null) {
+            return;
+        }
+        lblIndicacionArrastre.setText(rutaFotoSeleccionada == null || rutaFotoSeleccionada.isBlank()
+                ? "Arrastra una imagen aquí"
+                : "Arrastra otra imagen para reemplazarla");
+    }
+
+    private void mostrarErrorImagen(String mensaje) {
+        lblMensaje.setText(mensaje);
+        lblMensaje.setVisible(true);
     }
 
     /** Actualizar la muestra existente */
@@ -272,7 +370,7 @@ public class EditarMuestraController {
         txtNumeroCotizacion.clear();
         txtRemision.clear();
         rutaFotoSeleccionada = "";
-        imgProducto.setImage(null);
+        cargarImagenProducto();
         lblMensaje.setVisible(false);
     }
 
