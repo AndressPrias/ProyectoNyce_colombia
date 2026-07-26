@@ -155,7 +155,7 @@ public class LoginController {
         dialogo.initOwner(txtPassword.getScene().getWindow());
 
         PasswordField nueva = new PasswordField();
-        nueva.setPromptText("Mínimo 8 caracteres");
+        nueva.setPromptText("Mínimo 4 caracteres");
         PasswordField confirmacion = new PasswordField();
         confirmacion.setPromptText("Repita la contraseña");
         Label error = new Label();
@@ -176,8 +176,8 @@ public class LoginController {
         dialogo.getDialogPane().setContent(contenido);
         dialogo.getDialogPane().lookupButton(confirmar).addEventFilter(ActionEvent.ACTION, evento -> {
             String valor = nueva.getText() == null ? "" : nueva.getText();
-            if (valor.length() < 8) {
-                error.setText("La contraseña debe tener al menos 8 caracteres.");
+            if (valor.length() < PasswordSecurity.MINIMUM_LENGTH) {
+                error.setText("La contraseña debe tener al menos 4 caracteres.");
                 evento.consume();
             } else if (!valor.equals(confirmacion.getText())) {
                 error.setText("Las contraseñas no coinciden.");

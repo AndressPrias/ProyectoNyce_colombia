@@ -156,8 +156,8 @@ public class GestionarUsuariosController {
             mostrarMensaje("Debe completar todos los campos");
             return;
         }
-        if (!password.isEmpty() && password.length() < 8) {
-            mostrarMensaje("La contraseña debe tener al menos 8 caracteres");
+        if (!password.isEmpty() && password.length() < PasswordSecurity.MINIMUM_LENGTH) {
+            mostrarMensaje("La clave debe tener al menos 4 caracteres");
             return;
         }
 
@@ -490,8 +490,8 @@ public class GestionarUsuariosController {
         }
         String password = txtPassword.getText();
         boolean cambiarPassword = password != null && !password.isBlank();
-        if (cambiarPassword && password.length() < 8) {
-            mostrarMensaje("La contraseña debe tener al menos 8 caracteres");
+        if (cambiarPassword && password.length() < PasswordSecurity.MINIMUM_LENGTH) {
+            mostrarMensaje("La clave debe tener al menos 4 caracteres");
             return;
         }
         String rutaFotoAnterior = usuarioSeleccionado.getRutaFoto();

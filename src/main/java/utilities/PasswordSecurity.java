@@ -8,6 +8,7 @@ import java.util.Base64;
 
 public final class PasswordSecurity {
 
+    public static final int MINIMUM_LENGTH = 4;
     private static final String PREFIX = "pbkdf2";
     private static final int ITERATIONS = 210_000;
     private static final int SALT_BYTES = 16;
