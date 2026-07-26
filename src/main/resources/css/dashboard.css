@@ -4,6 +4,12 @@
     -fx-font-family: "Arial";
 }
 
+.dashboard-avatar {
+    -fx-stroke: #b8d9d5;
+    -fx-stroke-width: 3;
+    -fx-effect: dropshadow(gaussian, rgba(0, 90, 82, 0.14), 9, 0, 0, 2);
+}
+
 .card {
     -fx-background-color: #009180;
     -fx-background-radius: 15;

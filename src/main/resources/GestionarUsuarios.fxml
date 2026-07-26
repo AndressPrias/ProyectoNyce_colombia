@@ -98,7 +98,7 @@
                        text="Obligatoria para crear un usuario nuevo." wrapText="true" />
             </VBox>
 
-            <VBox spacing="9" styleClass="permissions-card">
+            <VBox fx:id="pnlPermisosAdicionales" spacing="9" styleClass="permissions-card">
                 <Label styleClass="section-label" text="Permisos adicionales" />
                 <CheckBox fx:id="chkControlMuestras" text="Puede controlar todas las muestras" />
                 <CheckBox fx:id="chkControlTotal" text="Tiene control total de los procesos" />

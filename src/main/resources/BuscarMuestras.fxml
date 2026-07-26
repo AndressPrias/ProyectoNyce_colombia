@@ -8,10 +8,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
@@ -51,48 +48,67 @@
                         </VBox>
                     </HBox>
 
-                    <GridPane hgap="8.0" maxWidth="1.7976931348623157E308" prefHeight="150.0" vgap="9.0">
-                        <columnConstraints>
-                            <ColumnConstraints minWidth="72.0" prefWidth="82.0" />
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="105.0" percentWidth="18.0" prefWidth="170.0" />
-                            <ColumnConstraints minWidth="72.0" prefWidth="78.0" />
-                            <ColumnConstraints minWidth="82.0" percentWidth="10.0" prefWidth="105.0" />
-                            <ColumnConstraints minWidth="70.0" prefWidth="78.0" />
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="100.0" percentWidth="18.0" prefWidth="165.0" />
-                            <ColumnConstraints minWidth="82.0" prefWidth="88.0" />
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="100.0" percentWidth="18.0" prefWidth="165.0" />
-                        </columnConstraints>
-                        <children>
-                            <Label styleClass="detail-label" text="ID" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                            <Label fx:id="lblDetalleCodigoInterno" maxWidth="1.7976931348623157E308" styleClass="detail-value-strong" textOverrun="ELLIPSIS" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                            <Label styleClass="detail-label" text="Fecha de ingreso" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                            <Label fx:id="lblDetalleFecha" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-                            <Label styleClass="detail-label" text="Nombre del cliente" GridPane.columnIndex="4" GridPane.rowIndex="0" />
-                            <Label fx:id="lblDetalleCliente" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="5" GridPane.rowIndex="0" />
-                            <Label styleClass="detail-label" text="Marca" GridPane.columnIndex="6" GridPane.rowIndex="0" />
-                            <Label fx:id="lblDetalleMarca" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="7" GridPane.rowIndex="0" />
+                    <VBox spacing="10.0">
+                        <HBox spacing="12.0">
+                            <VBox minWidth="0.0" spacing="3.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="ID" />
+                                <Label fx:id="lblDetalleCodigoInterno" maxWidth="1.7976931348623157E308"
+                                       styleClass="detail-value-strong" textOverrun="ELLIPSIS" />
+                            </VBox>
+                            <VBox minWidth="0.0" spacing="3.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Fecha de ingreso" />
+                                <Label fx:id="lblDetalleFecha" maxWidth="1.7976931348623157E308"
+                                       styleClass="detail-value" textOverrun="ELLIPSIS" />
+                            </VBox>
+                            <VBox minWidth="0.0" spacing="3.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Nombre del cliente" />
+                                <Label fx:id="lblDetalleCliente" maxWidth="1.7976931348623157E308"
+                                       styleClass="detail-value" textOverrun="ELLIPSIS" />
+                            </VBox>
+                            <VBox minWidth="0.0" spacing="3.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Marca" />
+                                <Label fx:id="lblDetalleMarca" maxWidth="1.7976931348623157E308"
+                                       styleClass="detail-value" textOverrun="ELLIPSIS" />
+                            </VBox>
+                        </HBox>
+                        <HBox spacing="12.0">
+                            <VBox minWidth="0.0" spacing="3.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Técnico" />
+                                <Label fx:id="lblDetalleTecnico" maxWidth="1.7976931348623157E308"
+                                       styleClass="detail-value" textOverrun="ELLIPSIS" />
+                            </VBox>
+                            <VBox minWidth="0.0" spacing="3.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Responsable" />
+                                <Label fx:id="lblDetalleResponsable" maxWidth="1.7976931348623157E308"
+                                       styleClass="detail-value" textOverrun="ELLIPSIS" />
+                            </VBox>
+                            <VBox minWidth="0.0" spacing="3.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Informes" />
+                                <Label fx:id="lblDetalleInforme" maxWidth="1.7976931348623157E308"
+                                       styleClass="detail-value" wrapText="true" />
+                            </VBox>
+                            <VBox minWidth="0.0" spacing="3.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Cotizaciones" />
+                                <Label fx:id="lblDetalleCotizacion" maxWidth="1.7976931348623157E308"
+                                       styleClass="detail-value" wrapText="true" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
 
-                            <Label styleClass="detail-label" text="Tecnico" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                            <Label fx:id="lblDetalleTecnico" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                            <Label styleClass="detail-label" text="Responsable" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                            <Label fx:id="lblDetalleResponsable" maxWidth="1.7976931348623157E308" styleClass="detail-value" textOverrun="ELLIPSIS" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                            <Label styleClass="detail-label" text="Informes" GridPane.columnIndex="4" GridPane.rowIndex="1" />
-                            <Label fx:id="lblDetalleInforme" maxWidth="1.7976931348623157E308" styleClass="detail-value" wrapText="true" GridPane.columnIndex="5" GridPane.rowIndex="1" />
-                            <Label styleClass="detail-label" text="Cotizaciones" GridPane.columnIndex="6" GridPane.rowIndex="1" />
-                            <Label fx:id="lblDetalleCotizacion" maxWidth="1.7976931348623157E308" styleClass="detail-value" wrapText="true" GridPane.columnIndex="7" GridPane.rowIndex="1" />
-
-                            <Label minWidth="120.0" styleClass="detail-label" text="Descripción Muestra" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                            <Label fx:id="lblDetalleDescripcion" maxWidth="1.7976931348623157E308" minHeight="32.0" prefHeight="32.0" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="2" />
-                            <Label minWidth="92.0" styleClass="detail-label" text="Observaciones" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                            <Label fx:id="lblDetalleObservaciones" maxWidth="1.7976931348623157E308" minHeight="32.0" prefHeight="32.0" styleClass="detail-text-block" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="3" />
-                        </children>
-                  <rowConstraints>
-                     <RowConstraints />
-                     <RowConstraints />
-                     <RowConstraints />
-                     <RowConstraints />
-                  </rowConstraints>
-                    </GridPane>
+                    <HBox alignment="TOP_LEFT" spacing="8.0">
+                        <Label minWidth="155.0" prefWidth="155.0" styleClass="detail-label"
+                               text="Descripción Muestra" />
+                        <Label fx:id="lblDetalleDescripcion" maxWidth="1.7976931348623157E308"
+                               minHeight="32.0" styleClass="detail-text-block" wrapText="true"
+                               HBox.hgrow="ALWAYS" />
+                    </HBox>
+                    <HBox alignment="TOP_LEFT" spacing="8.0">
+                        <Label minWidth="155.0" prefWidth="155.0" styleClass="detail-label"
+                               text="Observaciones" />
+                        <Label fx:id="lblDetalleObservaciones" maxWidth="1.7976931348623157E308"
+                               minHeight="32.0" styleClass="detail-text-block" wrapText="true"
+                               HBox.hgrow="ALWAYS" />
+                    </HBox>
                 </VBox>
 
                 <VBox alignment="TOP_CENTER" minWidth="170.0" prefHeight="300.0" prefWidth="170.0" spacing="8.0">

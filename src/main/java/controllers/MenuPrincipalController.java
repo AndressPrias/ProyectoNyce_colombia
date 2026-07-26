@@ -6,9 +6,11 @@ import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
@@ -22,6 +24,8 @@ import utilities.ImageStorage;
 import utilities.Navegacion;
 import utilities.UsuarioSesion;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class MenuPrincipalController {
@@ -32,6 +36,8 @@ public class MenuPrincipalController {
     @FXML private VBox cardRegistrarMuestra;
     @FXML private VBox cardCargarDatos;
     @FXML private VBox cardRemisionMuestras;
+    @FXML private HBox filaTarjetasSuperior;
+    @FXML private HBox filaTarjetasInferior;
 
     private Timeline timelineFechaHora;
 
@@ -50,14 +56,32 @@ public class MenuPrincipalController {
         configurarTarjetaRestringida(cardRegistrarMuestra, controlMuestras);
         configurarTarjetaRestringida(cardCargarDatos, controlMuestras);
         configurarTarjetaRestringida(cardRemisionMuestras, controlMuestras);
+        reorganizarTarjetasVisibles();
         verificarActualizacionDisponible();
         notificarNuevaVersionSiAplica();
     }
 
     private void configurarTarjetaRestringida(VBox tarjeta, boolean habilitada) {
-        tarjeta.setVisible(true);
-        tarjeta.setManaged(true);
+        tarjeta.setVisible(habilitada);
+        tarjeta.setManaged(habilitada);
         tarjeta.setDisable(!habilitada);
+    }
+
+    private void reorganizarTarjetasVisibles() {
+        List<Node> tarjetas = new ArrayList<>(filaTarjetasSuperior.getChildren());
+        tarjetas.addAll(filaTarjetasInferior.getChildren());
+        tarjetas.removeIf(tarjeta -> !tarjeta.isVisible());
+
+        filaTarjetasSuperior.getChildren().clear();
+        filaTarjetasInferior.getChildren().clear();
+
+        int limitePrimeraFila = Math.min(3, tarjetas.size());
+        filaTarjetasSuperior.getChildren().addAll(tarjetas.subList(0, limitePrimeraFila));
+        filaTarjetasInferior.getChildren().addAll(tarjetas.subList(limitePrimeraFila, tarjetas.size()));
+
+        boolean haySegundaFila = !filaTarjetasInferior.getChildren().isEmpty();
+        filaTarjetasInferior.setVisible(haySegundaFila);
+        filaTarjetasInferior.setManaged(haySegundaFila);
     }
 
     private void cargarFotoPerfil(Usuario usuarioLogueado) {

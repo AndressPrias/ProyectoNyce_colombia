@@ -15,7 +15,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="796.0" prefWidth="1184.0" spacing="20.0" style="-fx-background-color: #f5f5f5;" stylesheets="@css/registrar-muestra.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RegistrarMuestraController">
+<VBox alignment="TOP_CENTER" prefHeight="796.0" prefWidth="1184.0" spacing="20.0" style="-fx-background-color: #f5f5f5;" stylesheets="@css/registrar-muestra.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RegistrarMuestraController">
    <padding>
       <Insets bottom="24.0" left="30.0" right="30.0" top="30.0" />
    </padding>
@@ -36,70 +36,44 @@
          </children>
       </VBox>
 
-      <HBox spacing="20.0" VBox.vgrow="ALWAYS">
+      <HBox alignment="TOP_CENTER" spacing="20.0" VBox.vgrow="ALWAYS">
          <children>
-            <VBox maxWidth="1.7976931348623157E308" prefHeight="677.0" prefWidth="307.0" spacing="14.0" style="-fx-background-color: white; -fx-border-radius: 5; -fx-padding: 15; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
+            <VBox alignment="TOP_CENTER" maxWidth="630.0" prefHeight="677.0" prefWidth="630.0" spacing="14.0" style="-fx-background-color: white; -fx-border-radius: 5; -fx-padding: 15; -fx-background-radius: 5;">
                <children>
                   <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="624.0" style="-fx-font-weight: bold;" text="Datos de la muestra" textAlignment="CENTER" textFill="#0a4d4a">
                      <VBox.margin>
                         <Insets />
                      </VBox.margin></Label>
-                  <VBox spacing="5.0">
+                  <VBox maxWidth="600.0" prefWidth="600.0" spacing="10.0">
                      <Label style="-fx-font-weight: bold;" text="Descripción Muestra *" textFill="#0a4d4a" />
                      <TextField fx:id="txtDescripcion" maxWidth="1.7976931348623157E308"
                                 promptText="Ingrese la descripción de la muestra..." />
-                  </VBox>
-
-                  <HBox spacing="16.0">
-                     <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                        <Label style="-fx-font-weight: bold;" text="Referencia Externa *" textFill="#0a4d4a" />
-                        <TextField fx:id="txtRotuloCliente" maxWidth="1.7976931348623157E308"
-                                   promptText="Ingrese la referencia externa" />
-                     </VBox>
-                     <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                        <Label style="-fx-font-weight: bold;" text="Nombre del cliente" textFill="#0a4d4a" />
-                        <TextField fx:id="txtNombreCliente" maxWidth="1.7976931348623157E308"
-                                   promptText="Nombre del cliente" />
-                     </VBox>
-                  </HBox>
-
-                  <HBox spacing="16.0">
-                     <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                        <Label style="-fx-font-weight: bold;" text="Marca" textFill="#0a4d4a" />
-                        <TextField fx:id="txtMarca" maxWidth="1.7976931348623157E308"
-                                   promptText="Marca de la muestra" />
-                     </VBox>
-                     <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                        <Label style="-fx-font-weight: bold;" text="Referencia" textFill="#0a4d4a" />
-                        <TextField fx:id="txtReferencia" maxWidth="1.7976931348623157E308"
-                                   promptText="Referencia del producto" />
-                     </VBox>
-                  </HBox>
-
-                  <HBox spacing="16.0">
-                     <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                        <Label style="-fx-font-weight: bold;" text="Estado *" textFill="#0a4d4a" />
-                        <ComboBox fx:id="comboEstado" maxWidth="1.7976931348623157E308"
-                                  promptText="Seleccione un estado..." />
-                     </VBox>
-                     <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                        <Label style="-fx-font-weight: bold;" text="Fecha de ingreso" textFill="#0a4d4a" />
-                        <DatePicker fx:id="fechaRecepcionPicker" maxWidth="1.7976931348623157E308" />
-                     </VBox>
-                  </HBox>
-
-                  <VBox spacing="5.0">
+                     <Label style="-fx-font-weight: bold;" text="Referencia Externa *" textFill="#0a4d4a" />
+                     <TextField fx:id="txtRotuloCliente" maxWidth="1.7976931348623157E308"
+                                promptText="Ingrese la referencia externa" />
+                     <Label style="-fx-font-weight: bold;" text="Nombre del cliente" textFill="#0a4d4a" />
+                     <TextField fx:id="txtNombreCliente" maxWidth="1.7976931348623157E308"
+                                promptText="Nombre del cliente" />
+                     <Label style="-fx-font-weight: bold;" text="Marca" textFill="#0a4d4a" />
+                     <TextField fx:id="txtMarca" maxWidth="1.7976931348623157E308"
+                                promptText="Marca de la muestra" />
+                     <Label style="-fx-font-weight: bold;" text="Referencia" textFill="#0a4d4a" />
+                     <TextField fx:id="txtReferencia" maxWidth="1.7976931348623157E308"
+                                promptText="Referencia del producto" />
+                     <Label style="-fx-font-weight: bold;" text="Estado *" textFill="#0a4d4a" />
+                     <ComboBox fx:id="comboEstado" maxWidth="1.7976931348623157E308"
+                               promptText="Seleccione un estado..." />
+                     <Label style="-fx-font-weight: bold;" text="Fecha de ingreso" textFill="#0a4d4a" />
+                     <DatePicker fx:id="fechaRecepcionPicker" maxWidth="1.7976931348623157E308" />
                      <Label style="-fx-font-weight: bold;" text="Ubicación" textFill="#0a4d4a" />
                      <TextField fx:id="txtUbicacion" maxWidth="1.7976931348623157E308"
                                 promptText="Ubicación de la muestra" />
-                  </VBox>
-                  <VBox spacing="5.0" VBox.vgrow="ALWAYS">
                      <Label style="-fx-font-weight: bold;" text="Observaciones" textFill="#0a4d4a" />
                      <TextArea fx:id="txtObservaciones" maxWidth="1.7976931348623157E308"
                                prefHeight="88.0" promptText="Ingrese observaciones de la muestra"
-                               wrapText="true" VBox.vgrow="ALWAYS" />
+                               wrapText="true" />
+                     <Label style="-fx-font-size: 11;" text="* Campos obligatorios" textFill="#d32f2f" />
                   </VBox>
-                  <Label style="-fx-font-size: 11;" text="* Campos obligatorios" textFill="#d32f2f" />
                </children>
             </VBox>
 
@@ -130,7 +104,7 @@
          </children>
       </HBox>
 
-      <HBox alignment="CENTER_LEFT" spacing="20.0">
+      <HBox alignment="CENTER_LEFT" maxWidth="990.0" prefWidth="990.0" spacing="20.0">
          <children>
             <Button fx:id="btnLimpiar" onAction="#limpiarCampos" prefHeight="31.0" prefWidth="109.0" styleClass="btn-secondary" stylesheets="@css/botones.css" text="Limpiar" />
             <Region HBox.hgrow="ALWAYS" />

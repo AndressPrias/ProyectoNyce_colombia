@@ -59,6 +59,7 @@ public class GestionarUsuariosController {
     @FXML private Label lblCamposObligatorios;
     @FXML private ImageView imgFotoPerfil;
     @FXML private VBox pnlListadoUsuarios;
+    @FXML private VBox pnlPermisosAdicionales;
     @FXML private Button btnSeleccionarImagen;
     @FXML private Button btnGuardar;
     @FXML private Button btnNuevo;
@@ -556,6 +557,8 @@ public class GestionarUsuariosController {
         boolean gestor = puedeGestionarUsuarios();
         pnlListadoUsuarios.setVisible(gestor);
         pnlListadoUsuarios.setManaged(gestor);
+        pnlPermisosAdicionales.setVisible(gestor);
+        pnlPermisosAdicionales.setManaged(gestor);
         lblTituloPagina.setText(gestor ? "Gestión de usuarios" : "Mi perfil");
         lblSubtituloPagina.setText(gestor
                 ? "Administra accesos, roles y permisos del equipo de laboratorio."
