@@ -150,6 +150,37 @@
     -fx-border-radius: 4;
     -fx-background-radius: 4;
     -fx-padding: 4;
+    -fx-cursor: hand;
+}
+
+.detail-image-frame:hover,
+.detail-image-frame:focused {
+    -fx-background-color: #f1faf8;
+    -fx-border-color: #008c84;
+}
+
+.detail-image-frame.drop-active {
+    -fx-background-color: #dff5f1;
+    -fx-border-color: #008c84;
+    -fx-border-width: 3;
+    -fx-effect: dropshadow(gaussian, rgba(0, 140, 132, 0.24), 14, 0, 0, 2);
+}
+
+.detail-image-instruction {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-background-radius: 16;
+    -fx-border-color: #c4d9d7;
+    -fx-border-radius: 16;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 12;
+    -fx-text-fill: #0a6862;
+}
+
+.detail-image-frame.drop-active .detail-image-instruction {
+    -fx-background-color: #008c84;
+    -fx-border-color: #008c84;
+    -fx-text-fill: white;
 }
 
 .detail-label {

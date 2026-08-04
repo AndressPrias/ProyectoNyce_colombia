@@ -45,7 +45,9 @@ public final class ExcelHelper {
             "FECHA DE INGRESO",
             "NOMBRE DEL CLIENTE",
             "DESCRIPCIÓN MUESTRA",
+            "CANTIDAD",
             "MARCA",
+            "REFERENCIA",
             "REFERENCIA EXTERNA",
             "ID",
             "INFORME",
@@ -90,15 +92,17 @@ public final class ExcelHelper {
                 }
                 escribirTexto(fila, 1, muestra.getNombreCliente(), null);
                 escribirTexto(fila, 2, muestra.getDescripcion(), null);
-                escribirTexto(fila, 3, muestra.getMarca(), null);
-                escribirTexto(fila, 4, muestra.getRotuloCliente(), null);
-                escribirTexto(fila, 5, muestra.getCodigoInterno(), texto);
-                escribirTexto(fila, 6, formatoReferenciasCompletas(muestra.getInformes(), "I"), texto);
-                escribirTexto(fila, 7, formatoReferenciasCompletas(muestra.getCotizaciones(), "C"), texto);
-                escribirTexto(fila, 8, muestra.getUbicacion(), null);
-                escribirTexto(fila, 9, muestra.getRemision(), texto);
-                escribirTexto(fila, 10, muestra.getEstado() == null ? "" : muestra.getEstado().toString(), null);
-                escribirTexto(fila, 11, muestra.getObservacionAlmacenamiento(), null);
+                fila.createCell(3).setCellValue(muestra.getCantidad());
+                escribirTexto(fila, 4, muestra.getMarca(), null);
+                escribirTexto(fila, 5, muestra.getReferencia(), null);
+                escribirTexto(fila, 6, muestra.getRotuloCliente(), null);
+                escribirTexto(fila, 7, muestra.getCodigoInterno(), texto);
+                escribirTexto(fila, 8, formatoReferenciasCompletas(muestra.getInformes(), "I"), texto);
+                escribirTexto(fila, 9, formatoReferenciasCompletas(muestra.getCotizaciones(), "C"), texto);
+                escribirTexto(fila, 10, muestra.getUbicacion(), null);
+                escribirTexto(fila, 11, muestra.getRemision(), texto);
+                escribirTexto(fila, 12, muestra.getEstado() == null ? "" : muestra.getEstado().toString(), null);
+                escribirTexto(fila, 13, muestra.getObservacionAlmacenamiento(), null);
             }
 
             if (!muestras.isEmpty()) {
@@ -238,9 +242,10 @@ public final class ExcelHelper {
             cell.setCellValue(ENCABEZADOS[i]);
             cell.setCellStyle(estilo);
             sheet.setColumnWidth(i, switch (i) {
-                case 1, 2, 11 -> 30 * 256;
-                case 4, 8, 9 -> 24 * 256;
-                case 6, 7 -> 34 * 256;
+                case 1, 2, 13 -> 30 * 256;
+                case 5, 6, 10, 11 -> 24 * 256;
+                case 8, 9 -> 34 * 256;
+                case 3 -> 12 * 256;
                 default -> 20 * 256;
             });
         }
@@ -248,7 +253,7 @@ public final class ExcelHelper {
         CellStyle texto = workbook.createCellStyle();
         texto.setDataFormat(workbook.createDataFormat().getFormat("@"));
         texto.setAlignment(HorizontalAlignment.LEFT);
-        for (int columna : new int[]{5, 6, 7, 9}) {
+        for (int columna : new int[]{7, 8, 9, 11}) {
             sheet.setDefaultColumnStyle(columna, texto);
         }
         sheet.createFreezePane(0, 1);
@@ -270,7 +275,9 @@ public final class ExcelHelper {
         String[] lineas = {
                 "Complete una muestra por fila en la hoja Datos.",
                 "No cambie los nombres de los encabezados.",
-                "Campos obligatorios: REFERENCIA EXTERNA y DESCRIPCIÓN MUESTRA.",
+                "Campos obligatorios: REFERENCIA EXTERNA, DESCRIPCIÓN MUESTRA y CANTIDAD.",
+                "CANTIDAD: indique un número entero mayor que cero.",
+                "REFERENCIA: dato opcional correspondiente a la referencia del producto.",
                 "ESTADO: seleccione un valor de la lista disponible.",
                 "Fecha de ingreso: use una fecha de Excel o el formato dd/MM/yyyy.",
                 "INFORME y COTIZACIÓN son opcionales.",
@@ -295,7 +302,7 @@ public final class ExcelHelper {
     }
 
     private static void agregarValidacionEstados(Workbook workbook, Sheet datos) {
-        int columnaEstado = 10;
+        int columnaEstado = 12;
         int ultimaFilaCatalogo = Estado.values().length + 1;
         Name rangoEstados = workbook.createName();
         rangoEstados.setNameName("EstadosValidos");
@@ -344,6 +351,23 @@ public final class ExcelHelper {
                 "nombredelcliente", "nombrecliente"));
         muestra.setDescripcion(valorConAlias(row, columnas, formatter, evaluator,
                 "descripcionmuestra", "descripcion"));
+        String cantidad = valor(row, columnas, "cantidad", formatter, evaluator);
+        if (cantidad.isBlank()) {
+            muestra.setCantidad(1);
+        } else {
+            try {
+                if (!cantidad.matches("\\d+")) {
+                    throw new NumberFormatException();
+                }
+                int valorCantidad = Integer.parseInt(cantidad);
+                if (valorCantidad < 1) {
+                    throw new NumberFormatException();
+                }
+                muestra.setCantidad(valorCantidad);
+            } catch (NumberFormatException e) {
+                errores.add("Fila " + numeroFila + ": CANTIDAD debe ser un número entero mayor que cero.");
+            }
+        }
         muestra.setMarca(valor(row, columnas, "marca", formatter, evaluator));
         muestra.setReferencia(columnas.containsKey("referencia")
                 ? valor(row, columnas, "referencia", formatter, evaluator) : null);

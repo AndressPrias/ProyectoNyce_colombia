@@ -1,0 +1,143 @@
+<?php
+declare(strict_types=1);
+
+$localConfig = __DIR__ . '/config.local.php';
+$config = is_file($localConfig)
+    ? require $localConfig
+    : [
+        'sync_token' => '',
+        'session_name' => 'lenc_web_session',
+        'timezone' => 'America/Bogota',
+    ];
+
+date_default_timezone_set((string)($config['timezone'] ?? 'America/Bogota'));
+
+function database_path(): string
+{
+    return __DIR__ . '/data/lencdb.db';
+}
+
+function database_available(): bool
+{
+    return is_file(database_path()) && filesize(database_path()) > 100;
+}
+
+function db(): PDO
+{
+    static $connection = null;
+    if ($connection instanceof PDO) {
+        return $connection;
+    }
+    if (!database_available()) {
+        throw new RuntimeException('La copia de consulta aún no ha sido sincronizada.');
+    }
+
+    $connection = new PDO('sqlite:' . database_path(), null, null, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_TIMEOUT => 5,
+    ]);
+    $connection->exec('PRAGMA query_only = ON');
+    $connection->exec('PRAGMA busy_timeout = 5000');
+    return $connection;
+}
+
+function start_secure_session(array $config): void
+{
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        return;
+    }
+    session_name((string)($config['session_name'] ?? 'lenc_web_session'));
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => true,
+        'httponly' => true,
+        'samesite' => 'Strict',
+    ]);
+    session_start();
+}
+
+function is_authenticated(): bool
+{
+    return isset($_SESSION['user_id'], $_SESSION['user_name']);
+}
+
+function require_authentication(bool $json = false): void
+{
+    if (is_authenticated()) {
+        return;
+    }
+    if ($json) {
+        http_response_code(401);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => 'Sesión no válida'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    header('Location: /');
+    exit;
+}
+
+function verify_lenc_password(string $password, string $stored): bool
+{
+    if (!str_starts_with($stored, 'pbkdf2$')) {
+        return hash_equals($stored, $password);
+    }
+
+    $parts = explode('$', $stored);
+    if (count($parts) !== 4 || !ctype_digit($parts[1])) {
+        return false;
+    }
+    $iterations = (int)$parts[1];
+    $salt = base64_decode($parts[2], true);
+    $expected = base64_decode($parts[3], true);
+    if ($salt === false || $expected === false || $iterations < 1) {
+        return false;
+    }
+    $actual = hash_pbkdf2('sha256', $password, $salt, $iterations, strlen($expected), true);
+    return hash_equals($expected, $actual);
+}
+
+function e(?string $value): string
+{
+    return htmlspecialchars($value ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function display_value(mixed $value, string $fallback = 'Sin datos'): string
+{
+    $text = trim((string)($value ?? ''));
+    return $text === '' ? $fallback : $text;
+}
+
+function state_label(?string $state): string
+{
+    $labels = [
+        'EN_CUSTODIA' => 'En custodia',
+        'ALMACENADO' => 'Almacenado',
+        'EN_CURSO' => 'En curso',
+        'REALIZAR_DISPOSICION_FINAL' => 'Disposición final',
+        'ENVIADO' => 'Enviado',
+        'DESTRUCCION' => 'Destrucción',
+    ];
+    $key = strtoupper(trim((string)$state));
+    return $labels[$key] ?? ucwords(strtolower(str_replace('_', ' ', $key)));
+}
+
+function format_date(?string $date): string
+{
+    $value = trim((string)$date);
+    if ($value === '') {
+        return 'Sin datos';
+    }
+    $timestamp = strtotime($value);
+    return $timestamp === false ? $value : date('d/m/Y', $timestamp);
+}
+
+function full_documents_sql(string $table, string $alias = 'm'): string
+{
+    return "(SELECT group_concat(documento, ' / ') FROM (" .
+        "SELECT 'LENC - ' || printf('%02d', anio % 100) || " .
+        ($table === 'muestra_informes' ? "' - I '" : "' - C '") .
+        " || numero AS documento FROM {$table} " .
+        "WHERE muestraId = {$alias}.id ORDER BY anio, numero))";
+}

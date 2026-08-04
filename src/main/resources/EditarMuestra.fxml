@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
@@ -42,6 +43,8 @@
                         <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="17.0" style="-fx-font-weight: bold;" text="Datos de la muestra" textFill="#0a4d4a" />
                         <Label style="-fx-font-weight: bold;" text="Descripción Muestra *" textFill="#0a4d4a" />
                   <TextField fx:id="txtDescripcion" promptText="Ingrese la descripción de la muestra..." />
+                  <Label style="-fx-font-weight: bold;" text="Cantidad *" textFill="#0a4d4a" />
+                  <Spinner fx:id="spnCantidad" editable="true" maxWidth="1.7976931348623157E308" />
                         <Label style="-fx-font-weight: bold;" text="Referencia Externa *" textFill="#0a4d4a" />
                         <TextField fx:id="txtRotuloCliente" maxWidth="1.7976931348623157E308" promptText="Ingrese la referencia externa" />
                   <Label style="-fx-font-weight: bold;" text="Nombre del cliente" textFill="#0a4d4a" />

@@ -36,6 +36,7 @@ public class RemisionService {
                     muestra.setRotuloCliente(rs.getString("rotuloCliente"));
                     muestra.setNombreCliente(rs.getString("nombreCliente"));
                     muestra.setDescripcion(rs.getString("descripcion"));
+                    muestra.setCantidad(rs.getInt("cantidad"));
                     muestra.setMarca(rs.getString("marca"));
                     muestra.setReferencia(rs.getString("referencia"));
                     muestra.setEstado(Estado.desdeTexto(rs.getString("estado")));

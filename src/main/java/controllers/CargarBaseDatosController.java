@@ -181,7 +181,8 @@ public class CargarBaseDatosController {
                             muestra.getInformes(),
                             muestra.getCotizaciones(),
                             muestra.getRemision(),
-                            muestra.getObservacionAlmacenamiento()
+                            muestra.getObservacionAlmacenamiento(),
+                            muestra.getCantidad()
                     );
                     switch (resultado) {
                         case NUEVA -> nuevas++;

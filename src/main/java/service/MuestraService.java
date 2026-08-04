@@ -27,7 +27,7 @@ public class MuestraService {
         return generarCodigoInternoParaFecha(LocalDate.now());
     }
 
-    private String generarCodigoInternoParaFecha(LocalDate fechaRecepcion) {
+    public String generarCodigoInternoParaFecha(LocalDate fechaRecepcion) {
         LocalDate fechaBase = fechaRecepcion != null ? fechaRecepcion : LocalDate.now();
         String prefijo = fechaBase.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         int ultimoConsecutivo = 0;
@@ -63,23 +63,24 @@ public class MuestraService {
     public boolean registrarMuestra(String rotuloCliente, String descripcion,
                                  String ubicacion, Usuario custodio, String rutaFoto) {
         return registrarMuestra(rotuloCliente, null, descripcion, null, null, ubicacion, custodio, rutaFoto,
-                null, null, List.of(), List.of(), false, null, null, null);
+                null, null, List.of(), List.of(), false, null, null, null, 1);
     }
 
     public boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,
                                     String referencia, String ubicacion, Usuario custodio, String rutaFoto,
                                     Estado estadoUI, LocalDate fechaRecepcionUI) {
         return registrarMuestra(rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
-                custodio, rutaFoto, estadoUI, fechaRecepcionUI, null);
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, null, 1);
     }
 
     public boolean registrarMuestra(String rotuloCliente, String nombreCliente, String descripcion, String marca,
                                     String referencia, String ubicacion, Usuario custodio, String rutaFoto,
-                                    Estado estadoUI, LocalDate fechaRecepcionUI, String observaciones) {
+                                    Estado estadoUI, LocalDate fechaRecepcionUI, String observaciones,
+                                    int cantidad) {
         return registrarMuestra(
                 rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
-                custodio, rutaFoto, estadoUI, fechaRecepcionUI, List.of(), List.of(), false,
-                null, null, observaciones
+                custodio, rutaFoto, estadoUI, fechaRecepcionUI, List.of(), List.of(), true,
+                null, null, observaciones, cantidad
         );
     }
 
@@ -89,7 +90,7 @@ public class MuestraService {
         return registrarMuestra(
                 rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
                 custodio, rutaFoto, estadoUI, fechaRecepcionUI, List.of(), List.of(), true,
-                null, null, null
+                null, null, null, 1
         );
     }
 
@@ -99,7 +100,7 @@ public class MuestraService {
                                                         Estado estadoUI, LocalDate fechaRecepcionUI,
                                                         List<ReferenciaDocumento> informes,
                                                         List<ReferenciaDocumento> cotizaciones,
-                                                        String remision, String observaciones) {
+                                                        String remision, String observaciones, int cantidad) {
         if (custodio == null || !custodio.puedeControlarMuestras()) return ResultadoImportacion.ERROR;
         LocalDate fecha = fechaRecepcionUI != null ? fechaRecepcionUI : LocalDate.now();
         Estado estado = estadoUI != null ? estadoUI : Estado.EN_CUSTODIA;
@@ -110,7 +111,7 @@ public class MuestraService {
             if (muestraId == null) {
                 return registrarMuestra(rotuloCliente, nombreCliente, descripcion, marca, referencia, ubicacion,
                         custodio, rutaFoto, estado, fecha, informes, cotizaciones, true,
-                        codigoInterno, remision, observaciones)
+                        codigoInterno, remision, observaciones, cantidad)
                         ? ResultadoImportacion.NUEVA : ResultadoImportacion.ERROR;
             }
 
@@ -136,7 +137,7 @@ public class MuestraService {
                         "UPDATE muestras SET rotuloCliente=?, nombreCliente=?, descripcion=?, marca=?, " +
                                 "referencia=COALESCE(?, referencia), estado=?, ubicacion=?, custodioId=?, " +
                                 "fechaRecepcion=?, rutaFoto=?, remision=COALESCE(?, remision), " +
-                                "observacionAlmacenamiento=COALESCE(?, observacionAlmacenamiento) WHERE id=?")) {
+                                "observacionAlmacenamiento=COALESCE(?, observacionAlmacenamiento), cantidad=? WHERE id=?")) {
                     actualizar.setString(1, rotuloCliente);
                     actualizar.setString(2, nombreCliente);
                     actualizar.setString(3, descripcion);
@@ -149,7 +150,8 @@ public class MuestraService {
                     actualizar.setString(10, rutaFinal);
                     actualizar.setString(11, remision);
                     actualizar.setString(12, observaciones);
-                    actualizar.setInt(13, muestraId);
+                    actualizar.setInt(13, cantidadValida(cantidad));
+                    actualizar.setInt(14, muestraId);
                     actualizar.executeUpdate();
                 }
 
@@ -215,7 +217,7 @@ public class MuestraService {
                                      Estado estadoUI, LocalDate fechaRecepcionUI,
                                      List<ReferenciaDocumento> informes, List<ReferenciaDocumento> cotizaciones,
                                      boolean codigoDesdeFechaRecepcion, String codigoImportado,
-                                     String remision, String observaciones) {
+                                     String remision, String observaciones, int cantidad) {
 
         if (custodio == null) {
             throw new IllegalArgumentException("No hay un usuario autenticado para registrar la muestra");
@@ -237,8 +239,8 @@ public class MuestraService {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(
                      "INSERT INTO muestras (codigoInterno, rotuloCliente, nombreCliente, descripcion, marca, referencia, " +
-                             "estado, ubicacion, custodioId, fechaRecepcion, rutaFoto, remision, observacionAlmacenamiento) " +
-                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+                             "estado, ubicacion, custodioId, fechaRecepcion, rutaFoto, remision, observacionAlmacenamiento, cantidad) " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, codigo);
             ps.setString(2, rotuloCliente);
@@ -253,6 +255,7 @@ public class MuestraService {
             ps.setString(11, rutaFotoNormalizada);
             ps.setString(12, remision);
             ps.setString(13, observaciones);
+            ps.setInt(14, cantidadValida(cantidad));
             ps.executeUpdate();
 
             ResultSet rs = ps.getGeneratedKeys();
@@ -324,6 +327,7 @@ public class MuestraService {
                 m.setRotuloCliente(rs.getString("rotuloCliente"));
                 m.setNombreCliente(rs.getString("nombreCliente"));
                 m.setDescripcion(rs.getString("descripcion"));
+                m.setCantidad(rs.getInt("cantidad"));
                 m.setMarca(rs.getString("marca"));
                 m.setReferencia(rs.getString("referencia"));
                 // Convertir String a Enum Estado
@@ -382,7 +386,7 @@ public class MuestraService {
                         : muestra.getCodigoInterno()
         );
         String sql = "UPDATE muestras SET descripcion=?, rotuloCliente=?, nombreCliente=?, marca=?, referencia=?, estado=?, " +
-                "fechaRecepcion=?, ubicacion=?, tecnicoId=?, rutaFoto=?, observacionAlmacenamiento=? WHERE id=?";
+                "fechaRecepcion=?, ubicacion=?, tecnicoId=?, rutaFoto=?, observacionAlmacenamiento=?, cantidad=? WHERE id=?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -398,7 +402,8 @@ public class MuestraService {
             setUsuarioIdNullable(ps, 9, muestra.getTecnico());
             ps.setString(10, rutaFoto);
             ps.setString(11, muestra.getObservacionAlmacenamiento());
-            ps.setInt(12, muestra.getId());
+            ps.setInt(12, cantidadValida(muestra.getCantidad()));
+            ps.setInt(13, muestra.getId());
 
             return ps.executeUpdate() == 1;
 
@@ -739,6 +744,13 @@ public class MuestraService {
 
     private String normalizarOpcional(String valor) {
         return valor == null || valor.isBlank() ? null : valor.trim();
+    }
+
+    private int cantidadValida(int cantidad) {
+        if (cantidad < 1) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor que cero");
+        }
+        return cantidad;
     }
 
     private String limitarLongitud(String valor, int maximo) {

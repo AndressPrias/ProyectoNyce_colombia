@@ -48,6 +48,7 @@ public class RemisionMuestrasController {
     @FXML private TableColumn<Muestra, String> colDisponibleInterna;
     @FXML private TableColumn<Muestra, String> colDisponibleExterna;
     @FXML private TableColumn<Muestra, String> colDisponibleDescripcion;
+    @FXML private TableColumn<Muestra, String> colDisponibleCantidad;
     @FXML private TableColumn<Muestra, String> colDisponibleCliente;
     @FXML private TableColumn<Muestra, String> colDisponibleEstado;
 
@@ -66,6 +67,7 @@ public class RemisionMuestrasController {
     @FXML private TableColumn<Muestra, String> colInterna;
     @FXML private TableColumn<Muestra, String> colExterna;
     @FXML private TableColumn<Muestra, String> colDescripcion;
+    @FXML private TableColumn<Muestra, String> colCantidad;
     @FXML private TableColumn<Muestra, String> colMarca;
     @FXML private TableColumn<Muestra, String> colObservaciones;
     @FXML private TableColumn<Muestra, String> colRecepcion;
@@ -127,6 +129,8 @@ public class RemisionMuestrasController {
         colDisponibleInterna.setCellValueFactory(c -> new ReadOnlyStringWrapper(identificacionInterna(c.getValue())));
         colDisponibleExterna.setCellValueFactory(c -> new ReadOnlyStringWrapper(texto(c.getValue().getRotuloCliente(), "")));
         colDisponibleDescripcion.setCellValueFactory(c -> new ReadOnlyStringWrapper(texto(c.getValue().getDescripcion(), "")));
+        colDisponibleCantidad.setCellValueFactory(c -> new ReadOnlyStringWrapper(
+                String.valueOf(c.getValue().getCantidad())));
         colDisponibleCliente.setCellValueFactory(c -> new ReadOnlyStringWrapper(texto(c.getValue().getNombreCliente(), "")));
         colDisponibleEstado.setCellValueFactory(c -> new ReadOnlyStringWrapper(
                 c.getValue().getEstado() == null ? "" : c.getValue().getEstado().toString()));
@@ -134,6 +138,8 @@ public class RemisionMuestrasController {
         colInterna.setCellValueFactory(c -> new ReadOnlyStringWrapper(identificacionInterna(c.getValue())));
         colExterna.setCellValueFactory(c -> new ReadOnlyStringWrapper(texto(c.getValue().getRotuloCliente(), "")));
         colDescripcion.setCellValueFactory(c -> new ReadOnlyStringWrapper(texto(c.getValue().getDescripcion(), "")));
+        colCantidad.setCellValueFactory(c -> new ReadOnlyStringWrapper(
+                String.valueOf(c.getValue().getCantidad())));
         colMarca.setCellValueFactory(c -> new ReadOnlyStringWrapper(texto(c.getValue().getMarca(), "")));
         colObservaciones.setCellValueFactory(c -> new ReadOnlyStringWrapper(
                 texto(c.getValue().getObservacionAlmacenamiento(), "Ninguna")));
@@ -179,6 +185,7 @@ public class RemisionMuestrasController {
                 texto(muestra.getRotuloCliente(), ""),
                 texto(muestra.getNombreCliente(), ""),
                 texto(muestra.getDescripcion(), ""),
+                String.valueOf(muestra.getCantidad()),
                 texto(muestra.getMarca(), ""),
                 texto(muestra.getReferencia(), ""),
                 texto(muestra.getUbicacion(), ""),
@@ -302,6 +309,7 @@ public class RemisionMuestrasController {
                         identificacionInterna(muestra),
                         texto(muestra.getRotuloCliente(), ""),
                         texto(muestra.getDescripcion(), ""),
+                        muestra.getCantidad(),
                         texto(muestra.getMarca(), ""),
                         texto(muestra.getObservacionAlmacenamiento(), "Ninguna"),
                         formatearFecha(muestra.getFechaRecepcion()),

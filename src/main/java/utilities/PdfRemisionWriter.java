@@ -41,7 +41,7 @@ public final class PdfRemisionWriter {
     private PdfRemisionWriter() {}
 
     public record Fila(String identificacionInterna, String referenciaExterna,
-                       String descripcion, String marca, String observaciones,
+                       String descripcion, int cantidad, String marca, String observaciones,
                        String fechaIngreso, String fechaEntrega) {}
 
     public record Datos(String fechaElaboracion, String consecutivo, String cliente,
@@ -102,9 +102,8 @@ public final class PdfRemisionWriter {
             double anchoCopia = ANCHO_DOCUMENTO * escala;
             double altoCopia = altoDocumento * escala;
             double x = (ANCHO_CARTA - anchoCopia) / 2;
-            double bloque = altoCopia * 2 + ESPACIO_ENTRE_COPIAS;
-            double yInferior = (ALTO_CARTA - bloque) / 2;
-            double ySuperior = yInferior + altoCopia + ESPACIO_ENTRE_COPIAS;
+            double ySuperior = ALTO_CARTA - MARGEN - altoCopia;
+            double yInferior = ySuperior - ESPACIO_ENTRE_COPIAS - altoCopia;
 
             try (PDPageContentStream contenido = new PDPageContentStream(documento, pagina)) {
                 dibujarCopia(new Renderizador(contenido, fuenteNormal, fuenteNegrita, logo,
@@ -140,9 +139,10 @@ public final class PdfRemisionWriter {
         r.celda(790, 152, 370, 36, BLANCO, VERDE, datos.tipoSalida(), NEGRO, 12, false);
 
         double yTabla = 198;
-        double[] anchos = {205, 135, 255, 135, 205, 105, 104};
+        double[] anchos = {185, 125, 220, 65, 125, 180, 122, 122};
         String[] titulos = {"IDENTIFICACIÓN\nINTERNA", "REFERENCIA\nEXTERNA", "DESCRIPCIÓN\nMUESTRA",
-                "FABRICANTE / MARCA", "OBSERVACIONES", "FECHA DE\nINGRESO", "FECHA DE\nENTREGA"};
+                "CANTIDAD", "FABRICANTE / MARCA", "OBSERVACIONES",
+                "FECHA DE\nINGRESO", "FECHA DE\nENTREGA"};
         double x = 16;
         for (int i = 0; i < titulos.length; i++) {
             r.celda(x, yTabla, anchos[i], 44, VERDE, BLANCO, titulos[i], BLANCO, 9, true);
@@ -152,7 +152,8 @@ public final class PdfRemisionWriter {
         double y = yTabla + 44;
         for (Fila fila : datos.filas()) {
             String[] valores = {fila.identificacionInterna(), fila.referenciaExterna(), fila.descripcion(),
-                    fila.marca(), fila.observaciones(), fila.fechaIngreso(), fila.fechaEntrega()};
+                    String.valueOf(fila.cantidad()), fila.marca(), fila.observaciones(),
+                    fila.fechaIngreso(), fila.fechaEntrega()};
             x = 16;
             for (int i = 0; i < valores.length; i++) {
                 r.celda(x, y, anchos[i], altoFila, BLANCO, BORDE, valores[i], NEGRO, 10, false);

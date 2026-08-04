@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import utilities.AppConfig;
 import utilities.Paths;
+import utilities.WebDatabaseSyncService;
 
 public class App extends Application {
 
@@ -18,6 +19,7 @@ public class App extends Application {
         // Seleccionar la carpeta compartida en el primer arranque y luego inicializar SQLite.
         AppConfig.ensureStorageFolderSelected(stage);
         Database.init();
+        WebDatabaseSyncService.start();
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource(Paths.LOGIN));
         Parent root = loader.load();
@@ -27,5 +29,10 @@ public class App extends Application {
         stage.setResizable(false);
         stage.show();
         stage.centerOnScreen();
+    }
+
+    @Override
+    public void stop() {
+        WebDatabaseSyncService.stop();
     }
 }

@@ -41,3 +41,9 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Portal web Hostinger ###
+web/hostinger/config.local.php
+web/hostinger/data/*.db
+web/hostinger/data/*.bak
+web/hostinger/data/*.tmp

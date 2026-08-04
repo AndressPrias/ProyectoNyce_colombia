@@ -31,8 +31,18 @@
 
         <VBox spacing="22.0" VBox.vgrow="ALWAYS">
             <HBox fx:id="vboxVistaMuestra" alignment="TOP_LEFT" minHeight="330.0" minWidth="0.0" prefHeight="340.0" spacing="16.0" styleClass="detail-panel">
-                <StackPane minHeight="292.0" minWidth="292.0" prefHeight="300.0" prefWidth="315.0" styleClass="detail-image-frame">
-                    <ImageView fx:id="imgDetalle" fitHeight="288.0" fitWidth="305.0" preserveRatio="true" smooth="true" />
+                <StackPane fx:id="zonaImagenDetalle" minHeight="292.0" minWidth="292.0"
+                           prefHeight="300.0" prefWidth="315.0" styleClass="detail-image-frame">
+                    <ImageView fx:id="imgDetalle" fitHeight="288.0" fitWidth="305.0"
+                               mouseTransparent="true" preserveRatio="true" smooth="true" />
+                    <Label fx:id="lblIndicacionImagenDetalle" alignment="CENTER"
+                           mouseTransparent="true" styleClass="detail-image-instruction"
+                           text="Selecciona una muestra" wrapText="true"
+                           StackPane.alignment="BOTTOM_CENTER">
+                        <StackPane.margin>
+                            <Insets bottom="10.0" left="10.0" right="10.0" />
+                        </StackPane.margin>
+                    </Label>
                 </StackPane>
 
                 <VBox minWidth="0.0" spacing="13.0" HBox.hgrow="ALWAYS">
@@ -81,6 +91,11 @@
                                 <Label styleClass="detail-label" text="Responsable" />
                                 <Label fx:id="lblDetalleResponsable" maxWidth="1.7976931348623157E308"
                                        styleClass="detail-value" textOverrun="ELLIPSIS" />
+                            </VBox>
+                            <VBox minWidth="0.0" spacing="3.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Cantidad" />
+                                <Label fx:id="lblDetalleCantidad" maxWidth="1.7976931348623157E308"
+                                       styleClass="detail-value-strong" textOverrun="ELLIPSIS" />
                             </VBox>
                             <VBox minWidth="0.0" spacing="3.0" HBox.hgrow="ALWAYS">
                                 <Label styleClass="detail-label" text="Informes" />
@@ -140,6 +155,7 @@
                 <columns>
                     <TableColumn fx:id="colCodigoInterno" prefWidth="45.0" text="ID" />
                     <TableColumn fx:id="colDescripcion" prefWidth="145.0" text="Descripción Muestra" />
+                    <TableColumn fx:id="colCantidad" prefWidth="75.0" text="Cantidad" />
                     <TableColumn fx:id="colRotulo" prefWidth="130.0" text="Referencia Externa" />
                     <TableColumn fx:id="colCliente" prefWidth="120.0" text="Nombre del cliente" />
                     <TableColumn fx:id="colMarca" prefWidth="70.0" text="Marca" />

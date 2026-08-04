@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
@@ -45,9 +46,15 @@
                         <Insets />
                      </VBox.margin></Label>
                   <VBox maxWidth="600.0" prefWidth="600.0" spacing="10.0">
+                     <Label style="-fx-font-weight: bold;" text="ID de la muestra" textFill="#0a4d4a" />
+                     <TextField fx:id="txtCodigoInterno" editable="false"
+                                focusTraversable="false" maxWidth="1.7976931348623157E308"
+                                style="-fx-background-color: #eef4f3; -fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #0a4d4a;" />
                      <Label style="-fx-font-weight: bold;" text="Descripción Muestra *" textFill="#0a4d4a" />
                      <TextField fx:id="txtDescripcion" maxWidth="1.7976931348623157E308"
                                 promptText="Ingrese la descripción de la muestra..." />
+                     <Label style="-fx-font-weight: bold;" text="Cantidad *" textFill="#0a4d4a" />
+                     <Spinner fx:id="spnCantidad" editable="true" maxWidth="1.7976931348623157E308" />
                      <Label style="-fx-font-weight: bold;" text="Referencia Externa *" textFill="#0a4d4a" />
                      <TextField fx:id="txtRotuloCliente" maxWidth="1.7976931348623157E308"
                                 promptText="Ingrese la referencia externa" />

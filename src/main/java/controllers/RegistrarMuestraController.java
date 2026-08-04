@@ -31,7 +31,9 @@ public class RegistrarMuestraController {
     private static final String IMAGEN_PRODUCTO_DEFECTO = "/images/default_image.png";
     private static final long TAMANO_MAXIMO_IMAGEN = 5L * 1024L * 1024L;
 
+    @FXML private TextField txtCodigoInterno;
     @FXML private TextField txtDescripcion;
+    @FXML private Spinner<Integer> spnCantidad;
     @FXML private TextField txtRotuloCliente;
     @FXML private TextField txtNombreCliente;
     @FXML private TextField txtMarca;
@@ -78,6 +80,10 @@ public class RegistrarMuestraController {
     @FXML
     public void initialize() {
         comboEstado.setItems(FXCollections.observableArrayList(Estado.values()));
+        spnCantidad.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999_999, 1));
+        fechaRecepcionPicker.valueProperty().addListener((obs, anterior, nuevaFecha) ->
+                actualizarCodigoVisualizado());
+        actualizarCodigoVisualizado();
         cargarImagenProducto();
         configurarArrastreImagen();
     }
@@ -85,7 +91,9 @@ public class RegistrarMuestraController {
     public void setMuestraEditando(Muestra muestra) {
         this.muestraEditando = muestra;
         if (muestra != null) {
+            txtCodigoInterno.setText(muestra.getCodigoInterno());
             txtDescripcion.setText(muestra.getDescripcion());
+            spnCantidad.getValueFactory().setValue(muestra.getCantidad());
             txtRotuloCliente.setText(muestra.getRotuloCliente());
             txtNombreCliente.setText(muestra.getNombreCliente());
             txtMarca.setText(muestra.getMarca());
@@ -308,9 +316,20 @@ public class RegistrarMuestraController {
         MuestraService service = new MuestraService();
         Estado estado = comboEstado.getValue();
         LocalDate fecha = fechaRecepcionPicker.getValue();
+        int cantidad;
+        try {
+            spnCantidad.commitValue();
+            cantidad = spnCantidad.getValue();
+            if (cantidad < 1) throw new IllegalArgumentException();
+        } catch (Exception e) {
+            txtInformativos.setText("La cantidad debe ser un número entero mayor que cero");
+            txtInformativos.setVisible(true);
+            return;
+        }
 
         try {
             if (muestraEditando == null) {
+                actualizarCodigoVisualizado();
                 boolean guardada = service.registrarMuestra(
                         txtRotuloCliente.getText(),
                         txtNombreCliente.getText(),
@@ -322,7 +341,8 @@ public class RegistrarMuestraController {
                         rutaFotoSeleccionada,
                         estado,
                         fecha,
-                        txtObservaciones.getText()
+                        txtObservaciones.getText(),
+                        cantidad
                 );
                 if (!guardada) {
                     txtInformativos.setText("No se pudo registrar la muestra");
@@ -332,6 +352,7 @@ public class RegistrarMuestraController {
                 txtInformativos.setText("Muestra registrada correctamente");
             } else {
                 muestraEditando.setDescripcion(txtDescripcion.getText());
+                muestraEditando.setCantidad(cantidad);
                 muestraEditando.setRotuloCliente(txtRotuloCliente.getText());
                 muestraEditando.setNombreCliente(txtNombreCliente.getText());
                 muestraEditando.setMarca(txtMarca.getText());
@@ -362,6 +383,7 @@ public class RegistrarMuestraController {
     @FXML
     private void limpiarCampos() {
         txtDescripcion.clear();
+        spnCantidad.getValueFactory().setValue(1);
         txtRotuloCliente.clear();
         txtNombreCliente.clear();
         txtMarca.clear();
@@ -370,6 +392,7 @@ public class RegistrarMuestraController {
         txtUbicacion.clear();
         txtObservaciones.clear();
         fechaRecepcionPicker.setValue(null);
+        actualizarCodigoVisualizado();
         rutaFotoSeleccionada = "";
         imgProducto.setImage(null);
         cargarImagenProducto();
@@ -379,6 +402,13 @@ public class RegistrarMuestraController {
         this.usuario = usuario;
     }
 
+    private void actualizarCodigoVisualizado() {
+        if (txtCodigoInterno == null || muestraEditando != null) {
+            return;
+        }
+        LocalDate fecha = fechaRecepcionPicker == null ? null : fechaRecepcionPicker.getValue();
+        txtCodigoInterno.setText(new MuestraService().generarCodigoInternoParaFecha(fecha));
+    }
 
 
 

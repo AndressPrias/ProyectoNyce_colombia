@@ -19,16 +19,23 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 
+import javax.imageio.ImageIO;
 import java.awt.Desktop;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -41,6 +48,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.prefs.Preferences;
@@ -57,6 +65,7 @@ import utilities.UsuarioSesion;
 public class BuscarMuestrasController {
 
     private static final String IMAGEN_PRODUCTO_DEFECTO = "/images/default_image.png";
+    private static final long TAMANO_MAXIMO_IMAGEN = 5L * 1024L * 1024L;
     private static final double ANCHO_MINIMO_COLUMNA = 45.0;
     private static final double MARGEN_TEXTO_COLUMNA = 30.0;
     private static final String PREF_ORDER = "buscarMuestras.columnOrder";
@@ -77,6 +86,7 @@ public class BuscarMuestrasController {
     @FXML private TableView<Muestra> tblResultados;
     @FXML private TableColumn<Muestra, String> colCodigoInterno;
     @FXML private TableColumn<Muestra, String> colDescripcion;
+    @FXML private TableColumn<Muestra, Integer> colCantidad;
     @FXML private TableColumn<Muestra, String> colRotulo;
     @FXML private TableColumn<Muestra, String> colCliente;
     @FXML private TableColumn<Muestra, String> colMarca;
@@ -90,11 +100,14 @@ public class BuscarMuestrasController {
     @FXML private TableColumn<Muestra, String> colRemision;
 
     @FXML private ImageView imgDetalle;
+    @FXML private StackPane zonaImagenDetalle;
+    @FXML private Label lblIndicacionImagenDetalle;
     @FXML private Label lblDetalleEstado;
     @FXML private Label lblDetalleUbicacion;
     @FXML private Label lblTituloDetalleUbicacion;
     @FXML private Label lblDetalleCodigoInterno;
     @FXML private Label lblDetalleDescripcion;
+    @FXML private Label lblDetalleCantidad;
     @FXML private Label lblDetalleCliente;
     @FXML private Label lblDetalleMarca;
     @FXML private Label lblDetalleFecha;
@@ -126,6 +139,7 @@ public class BuscarMuestrasController {
         // Configurar columnas de la tabla
         colCodigoInterno.setCellValueFactory(new PropertyValueFactory<>("codigoInterno"));
         colDescripcion.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+        colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
         colRotulo.setCellValueFactory(new PropertyValueFactory<>("rotuloCliente"));
         colCliente.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         colMarca.setCellValueFactory(new PropertyValueFactory<>("marca"));
@@ -171,6 +185,7 @@ public class BuscarMuestrasController {
         });
 
         cargarImagenDetalle(null);
+        configurarCargaImagenDetalle();
         // Cargar todos los datos inicialmente
         buscarMuestras();
     }
@@ -317,11 +332,12 @@ public class BuscarMuestrasController {
                              "EXISTS (SELECT 1 FROM muestra_cotizaciones mc WHERE mc.muestraId=m.id AND (mc.numero LIKE ? OR CAST(mc.anio AS TEXT) LIKE ?)) OR " +
                              "LOWER(COALESCE(m.remision, '')) LIKE ? OR " +
                              "LOWER(COALESCE(m.observacionAlmacenamiento, '')) LIKE ? OR " +
+                             "CAST(m.cantidad AS TEXT) LIKE ? OR " +
                              "CAST(m.fechaRecepcion AS VARCHAR) LIKE ?")) {
 
             String textoBusqueda = txtBusquedaGeneral.getText().trim();
             String busqueda = "%" + textoBusqueda.toLowerCase() + "%";
-            for (int i = 1; i <= 17; i++) {
+            for (int i = 1; i <= 18; i++) {
                 ps.setString(i, busqueda);
             }
             try {
@@ -336,6 +352,7 @@ public class BuscarMuestrasController {
                 m.setId(rs.getInt("id"));
                 m.setCodigoInterno(rs.getString("codigoInterno"));
                 m.setDescripcion(rs.getString("descripcion"));
+                m.setCantidad(rs.getInt("cantidad"));
                 m.setRotuloCliente(rs.getString("rotuloCliente"));
                 m.setNombreCliente(rs.getString("nombreCliente"));
                 m.setMarca(rs.getString("marca"));
@@ -382,6 +399,7 @@ public class BuscarMuestrasController {
     private void configurarPersistenciaColumnas() {
         registrarColumna("codigoInterno", colCodigoInterno);
         registrarColumna("descripcion", colDescripcion);
+        registrarColumna("cantidad", colCantidad);
         registrarColumna("rotuloCliente", colRotulo);
         registrarColumna("cliente", colCliente);
         registrarColumna("marca", colMarca);
@@ -565,6 +583,7 @@ public class BuscarMuestrasController {
                 ? "Sin asignar"
                 : textoDetalle(muestra.getResponsableAlmacenamiento().getNombre()));
         lblDetalleCliente.setText(textoDetalle(muestra.getNombreCliente()));
+        lblDetalleCantidad.setText(String.valueOf(muestra.getCantidad()));
         lblDetalleMarca.setText(textoDetalle(muestra.getMarca()));
         boolean muestraEnviada = muestra.getEstado() == Estado.ENVIADO;
         lblTituloDetalleUbicacion.setText(muestraEnviada ? "REMISIÓN" : "UBICACIÓN");
@@ -579,6 +598,7 @@ public class BuscarMuestrasController {
         actualizarAccionFinalizarEnsayos(muestra);
 
         cargarImagenDetalle(muestra.getRutaFoto());
+        actualizarIndicacionImagenDetalle();
     }
 
     private void actualizarAccionFinalizarEnsayos(Muestra muestra) {
@@ -644,6 +664,210 @@ public class BuscarMuestrasController {
     private Image cargarImagenProductoDefecto() {
         URL recurso = getClass().getResource(IMAGEN_PRODUCTO_DEFECTO);
         return recurso == null ? null : new Image(recurso.toExternalForm());
+    }
+
+    private void configurarCargaImagenDetalle() {
+        zonaImagenDetalle.setFocusTraversable(true);
+        zonaImagenDetalle.setOnMouseClicked(evento -> zonaImagenDetalle.requestFocus());
+        zonaImagenDetalle.setOnKeyPressed(evento -> {
+            if (evento.isControlDown() && evento.getCode() == KeyCode.V) {
+                pegarImagenDetalle();
+                evento.consume();
+            }
+        });
+        zonaImagenDetalle.setOnDragOver(evento -> {
+            if (contieneImagenValida(evento.getDragboard())) {
+                evento.acceptTransferModes(TransferMode.COPY);
+            }
+            evento.consume();
+        });
+        zonaImagenDetalle.setOnDragEntered(evento -> {
+            if (contieneImagenValida(evento.getDragboard())) {
+                if (!zonaImagenDetalle.getStyleClass().contains("drop-active")) {
+                    zonaImagenDetalle.getStyleClass().add("drop-active");
+                }
+                lblIndicacionImagenDetalle.setText("Suelta la imagen para guardarla");
+            }
+            evento.consume();
+        });
+        zonaImagenDetalle.setOnDragExited(evento -> {
+            zonaImagenDetalle.getStyleClass().remove("drop-active");
+            actualizarIndicacionImagenDetalle();
+            evento.consume();
+        });
+        zonaImagenDetalle.setOnDragDropped(evento -> {
+            Dragboard dragboard = evento.getDragboard();
+            boolean guardada = false;
+            if (dragboard.hasFiles() && dragboard.getFiles().size() == 1) {
+                guardada = guardarImagenDetalleDesdeArchivo(dragboard.getFiles().get(0));
+            } else if (dragboard.hasImage()) {
+                guardada = guardarImagenDetalleTemporal(
+                        dragboard.getImage(),
+                        "No se pudo cargar la imagen arrastrada"
+                );
+            }
+            zonaImagenDetalle.getStyleClass().remove("drop-active");
+            evento.setDropCompleted(guardada);
+            evento.consume();
+        });
+    }
+
+    private boolean contieneImagenValida(Dragboard dragboard) {
+        return dragboard.hasImage()
+                || (dragboard.hasFiles()
+                && dragboard.getFiles().size() == 1
+                && tieneExtensionImagenPermitida(dragboard.getFiles().get(0)));
+    }
+
+    private void pegarImagenDetalle() {
+        Clipboard portapapeles = Clipboard.getSystemClipboard();
+        boolean guardada = false;
+        if (portapapeles.hasFiles() && portapapeles.getFiles().size() == 1) {
+            guardada = guardarImagenDetalleDesdeArchivo(portapapeles.getFiles().get(0));
+        } else if (portapapeles.hasImage()) {
+            guardada = guardarImagenDetalleTemporal(
+                    portapapeles.getImage(),
+                    "No se pudo pegar la imagen desde WhatsApp Web"
+            );
+        }
+        if (!guardada && !portapapeles.hasFiles() && !portapapeles.hasImage()) {
+            mostrarAlerta(
+                    Alert.AlertType.WARNING,
+                    "Pegar imagen",
+                    "El portapapeles no contiene una imagen. Use Copiar imagen en WhatsApp Web."
+            );
+        }
+    }
+
+    private boolean guardarImagenDetalleDesdeArchivo(File archivo) {
+        Muestra muestra = tblResultados.getSelectionModel().getSelectedItem();
+        if (muestra == null) {
+            mostrarAlerta(
+                    Alert.AlertType.WARNING,
+                    "Imagen de la muestra",
+                    "Seleccione primero la muestra a la que desea agregar la imagen."
+            );
+            return false;
+        }
+        if (!verificarControlMuestras()) {
+            return false;
+        }
+
+        String error = validarArchivoImagen(archivo);
+        if (error != null) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Imagen no válida", error);
+            return false;
+        }
+
+        try {
+            Image vistaPrevia = new Image(archivo.toURI().toString(), false);
+            if (vistaPrevia.isError() || vistaPrevia.getWidth() <= 0 || vistaPrevia.getHeight() <= 0) {
+                mostrarAlerta(
+                        Alert.AlertType.WARNING,
+                        "Imagen no válida",
+                        "El archivo seleccionado no contiene una imagen válida."
+                );
+                return false;
+            }
+
+            String rutaAnterior = muestra.getRutaFoto();
+            String rutaNueva = ImageStorage.copySamplePhoto(archivo);
+            muestra.setRutaFoto(rutaNueva);
+            if (!new MuestraService().actualizarMuestra(muestra, usuarioActual())) {
+                muestra.setRutaFoto(rutaAnterior);
+                File copia = ImageStorage.resolveImageFile(rutaNueva);
+                if (copia != null && copia.exists() && !copia.delete()) {
+                    copia.deleteOnExit();
+                }
+                mostrarAlerta(
+                        Alert.AlertType.ERROR,
+                        "Imagen de la muestra",
+                        "No se pudo guardar la imagen en la muestra."
+                );
+                return false;
+            }
+
+            buscarMuestras();
+            lblIndicacionImagenDetalle.setText("Imagen guardada · arrastra o pega otra");
+            return true;
+        } catch (Exception e) {
+            mostrarAlerta(
+                    Alert.AlertType.ERROR,
+                    "Imagen de la muestra",
+                    "No se pudo copiar la imagen a la carpeta configurada."
+            );
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean guardarImagenDetalleTemporal(Image imagen, String mensajeError) {
+        File temporal = null;
+        try {
+            temporal = File.createTempFile("muestra_detalle_", ".png");
+            guardarImagenPng(imagen, temporal);
+            return guardarImagenDetalleDesdeArchivo(temporal);
+        } catch (Exception e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Imagen de la muestra", mensajeError);
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (temporal != null && temporal.exists() && !temporal.delete()) {
+                temporal.deleteOnExit();
+            }
+        }
+    }
+
+    private String validarArchivoImagen(File archivo) {
+        if (archivo == null || !archivo.isFile()) {
+            return "Arrastre un único archivo de imagen.";
+        }
+        if (!tieneExtensionImagenPermitida(archivo)) {
+            return "Formato no permitido. Use JPG, PNG o JPEG.";
+        }
+        if (archivo.length() > TAMANO_MAXIMO_IMAGEN) {
+            return "La imagen supera el tamaño máximo de 5 MB.";
+        }
+        return null;
+    }
+
+    private boolean tieneExtensionImagenPermitida(File archivo) {
+        if (archivo == null) {
+            return false;
+        }
+        String nombre = archivo.getName().toLowerCase(Locale.ROOT);
+        return nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png");
+    }
+
+    private void guardarImagenPng(Image imagen, File destino) throws IOException {
+        if (imagen == null || imagen.getPixelReader() == null) {
+            throw new IOException("La imagen no tiene contenido");
+        }
+        int ancho = (int) imagen.getWidth();
+        int alto = (int) imagen.getHeight();
+        BufferedImage salida = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < alto; y++) {
+            for (int x = 0; x < ancho; x++) {
+                salida.setRGB(x, y, imagen.getPixelReader().getArgb(x, y));
+            }
+        }
+        if (!ImageIO.write(salida, "png", destino)) {
+            throw new IOException("No se pudo convertir la imagen a PNG");
+        }
+    }
+
+    private void actualizarIndicacionImagenDetalle() {
+        if (lblIndicacionImagenDetalle == null) {
+            return;
+        }
+        Muestra muestra = tblResultados.getSelectionModel().getSelectedItem();
+        if (muestra == null) {
+            lblIndicacionImagenDetalle.setText("Selecciona una muestra");
+        } else if (muestra.getRutaFoto() == null || muestra.getRutaFoto().isBlank()) {
+            lblIndicacionImagenDetalle.setText("Arrastra o pega una imagen con Ctrl+V");
+        } else {
+            lblIndicacionImagenDetalle.setText("Arrastra o pega otra imagen con Ctrl+V");
+        }
     }
 
     @FXML
@@ -1143,6 +1367,7 @@ public class BuscarMuestrasController {
 
     private void limpiarDetalle() {
         cargarImagenDetalle(null);
+        actualizarIndicacionImagenDetalle();
         lblDetalleCodigoInterno.setText("");
         lblDetalleEstado.setText("");
         lblDetalleFecha.setText("");
@@ -1150,6 +1375,7 @@ public class BuscarMuestrasController {
         lblDetalleResponsable.setText("");
         lblDetalleCliente.setText("");
         lblDetalleDescripcion.setText("");
+        lblDetalleCantidad.setText("");
         lblDetalleMarca.setText("");
         lblDetalleUbicacion.setText("");
         lblTituloDetalleUbicacion.setText("UBICACIÓN");

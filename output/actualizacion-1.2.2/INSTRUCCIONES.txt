@@ -1,0 +1,20 @@
+CONTROL MUESTRAS LENC 1.2.2 - ACTUALIZACIÓN PRIVADA
+
+ARCHIVOS
+- ControlMuestrasLENC-Setup-Usuario.exe
+- latest.properties
+
+PC PRINCIPAL DEL LABORATORIO
+1. Confirme que la carpeta BD_Control_Muestras esté sincronizada con OneDrive y que lencdb.db esté disponible sin conexión.
+2. Cierre Control Muestras LENC.
+3. Ejecute ControlMuestrasLENC-Setup-Usuario.exe.
+4. Marque “Activar la sincronización con el portal web en este equipo”.
+5. Finalice la instalación y abra la aplicación. La primera copia se enviará aproximadamente 15 segundos después.
+
+OTROS COMPUTADORES
+Instale la misma actualización, pero NO marque la opción de sincronización web.
+
+ACTUALIZACIÓN AUTOMÁTICA
+Copie el instalador y latest.properties dentro de la carpeta actualizaciones de la base definitiva.
+
+Portal: https://muestras.andev.com.co

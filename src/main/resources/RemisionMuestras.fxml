@@ -54,6 +54,7 @@
                     <TableColumn fx:id="colDisponibleInterna" prefWidth="190" text="IDENTIFICACIÓN INTERNA" />
                     <TableColumn fx:id="colDisponibleExterna" prefWidth="165" text="REFERENCIA EXTERNA" />
                     <TableColumn fx:id="colDisponibleDescripcion" prefWidth="300" text="DESCRIPCIÓN MUESTRA" />
+                    <TableColumn fx:id="colDisponibleCantidad" prefWidth="95" text="CANTIDAD" />
                     <TableColumn fx:id="colDisponibleCliente" prefWidth="210" text="NOMBRE DEL CLIENTE" />
                     <TableColumn fx:id="colDisponibleEstado" prefWidth="190" text="ESTADO" />
                 </columns>
@@ -133,6 +134,7 @@
                                 <TableColumn fx:id="colInterna" prefWidth="205" text="IDENTIFICACIÓN INTERNA" />
                                 <TableColumn fx:id="colExterna" prefWidth="145" text="REFERENCIA EXTERNA" />
                                 <TableColumn fx:id="colDescripcion" prefWidth="255" text="DESCRIPCIÓN MUESTRA" />
+                                <TableColumn fx:id="colCantidad" prefWidth="80" text="CANTIDAD" />
                                 <TableColumn fx:id="colMarca" prefWidth="125" text="FABRICANTE / MARCA" />
                                 <TableColumn fx:id="colObservaciones" prefWidth="210" text="OBSERVACIONES" />
                                 <TableColumn fx:id="colRecepcion" prefWidth="105" text="FECHA DE INGRESO" />

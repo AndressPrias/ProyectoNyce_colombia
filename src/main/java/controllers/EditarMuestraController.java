@@ -36,6 +36,7 @@ public class EditarMuestraController {
     private static final long TAMANO_MAXIMO_IMAGEN = 5L * 1024L * 1024L;
 
     @FXML private TextField txtDescripcion;
+    @FXML private Spinner<Integer> spnCantidad;
     @FXML private TextField txtRotuloCliente;
     @FXML private TextField txtNombreCliente;
     @FXML private TextField txtMarca;
@@ -61,6 +62,7 @@ public class EditarMuestraController {
     @FXML
     public void initialize() {
         comboEstado.setItems(FXCollections.observableArrayList(Estado.values()));
+        spnCantidad.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999_999, 1));
         comboTecnico.setItems(FXCollections.observableArrayList(UsuarioSesion.obtenerUsuariosAsignables()));
 
         cargarImagenProducto();
@@ -72,6 +74,7 @@ public class EditarMuestraController {
         this.muestraEditando = muestra;
         if (muestra != null) {
             txtDescripcion.setText(muestra.getDescripcion());
+            spnCantidad.getValueFactory().setValue(muestra.getCantidad());
             txtRotuloCliente.setText(muestra.getRotuloCliente());
             txtNombreCliente.setText(muestra.getNombreCliente());
             txtMarca.setText(muestra.getMarca());
@@ -332,6 +335,11 @@ public class EditarMuestraController {
         }
 
         try {
+            spnCantidad.commitValue();
+            int cantidad = spnCantidad.getValue();
+            if (cantidad < 1) {
+                throw new IllegalArgumentException("La cantidad debe ser mayor que cero");
+            }
             Estado estado = comboEstado.getValue();
             LocalDate fecha = fechaRecepcionPicker.getValue();
             List<ReferenciaDocumento> informes = leerReferencias(txtNumeroInforme.getText(), fecha.getYear());
@@ -339,6 +347,7 @@ public class EditarMuestraController {
 
             if (muestraEditando != null) {
                 muestraEditando.setDescripcion(txtDescripcion.getText());
+                muestraEditando.setCantidad(cantidad);
                 muestraEditando.setRotuloCliente(txtRotuloCliente.getText());
                 muestraEditando.setNombreCliente(txtNombreCliente.getText());
                 muestraEditando.setMarca(txtMarca.getText());
@@ -381,6 +390,9 @@ public class EditarMuestraController {
                 lblMensaje.setVisible(true);
             }
 
+        } catch (IllegalArgumentException e) {
+            lblMensaje.setText(e.getMessage());
+            lblMensaje.setVisible(true);
         } catch (Exception e) {
             lblMensaje.setText("Error al actualizar la muestra");
             lblMensaje.setVisible(true);
@@ -392,6 +404,7 @@ public class EditarMuestraController {
     @FXML
     private void limpiarCampos() {
         txtDescripcion.clear();
+        spnCantidad.getValueFactory().setValue(1);
         txtRotuloCliente.clear();
         txtNombreCliente.clear();
         txtMarca.clear();

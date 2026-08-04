@@ -12,6 +12,7 @@ public class Muestra {
     private String nombreCliente;
     private String referencia;
     private String descripcion;
+    private int cantidad = 1;
     private String marca;
     private Estado estado;
     private String ubicacion;
@@ -71,6 +72,14 @@ public class Muestra {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public int getCantidad() {
+        return cantidad;
+    }
+
+    public void setCantidad(int cantidad) {
+        this.cantidad = Math.max(1, cantidad);
     }
 
     public String getMarca() {

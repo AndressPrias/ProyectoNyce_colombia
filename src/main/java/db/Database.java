@@ -80,6 +80,7 @@ public class Database {
                     "rotuloCliente TEXT," +
                     "nombreCliente TEXT," +
                     "descripcion TEXT," +
+                    "cantidad INTEGER NOT NULL DEFAULT 1 CHECK(cantidad > 0)," +
                     "marca TEXT," +
                     "referencia TEXT," +
                     "estado TEXT NOT NULL," +
@@ -165,6 +166,8 @@ public class Database {
         agregarColumnaSiNoExiste(conn, "usuarios", "cambioPasswordObligatorio", "INTEGER DEFAULT 0");
 
         agregarColumnaSiNoExiste(conn, "muestras", "nombreCliente", "TEXT");
+        agregarColumnaSiNoExiste(conn, "muestras", "cantidad",
+                "INTEGER NOT NULL DEFAULT 1 CHECK(cantidad > 0)");
         agregarColumnaSiNoExiste(conn, "muestras", "marca", "TEXT");
         agregarColumnaSiNoExiste(conn, "muestras", "referencia", "TEXT");
         agregarColumnaSiNoExiste(conn, "muestras", "observacionAlmacenamiento", "TEXT");

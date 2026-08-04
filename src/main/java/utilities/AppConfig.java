@@ -16,6 +16,10 @@ public final class AppConfig {
 
     private static final String CONFIG_FILE_NAME = "config.properties";
     private static final String KEY_STORAGE_FOLDER = "storage.folder";
+    private static final String KEY_WEB_SYNC_ENABLED = "web.sync.enabled";
+    private static final String KEY_WEB_SYNC_URL = "web.sync.url";
+    private static final String KEY_WEB_SYNC_TOKEN = "web.sync.token";
+    private static final String KEY_WEB_SYNC_INTERVAL_MINUTES = "web.sync.interval.minutes";
     private static final String DB_FILE_NAME = "lencdb.db";
     private static final String PHOTOS_FOLDER_NAME = "fotos_muestras";
     private static final String REMISSIONS_FOLDER_NAME = "remisiones";
@@ -117,6 +121,21 @@ public final class AppConfig {
         return getAppFolder().resolve(CONFIG_FILE_NAME);
     }
 
+    public static WebSyncSettings getWebSyncSettings() {
+        try {
+            Properties properties = loadProperties();
+            boolean enabled = Boolean.parseBoolean(
+                    properties.getProperty(KEY_WEB_SYNC_ENABLED, "false").trim());
+            String url = properties.getProperty(KEY_WEB_SYNC_URL, "").trim();
+            String token = properties.getProperty(KEY_WEB_SYNC_TOKEN, "").trim();
+            int intervalMinutes = parsePositiveInteger(
+                    properties.getProperty(KEY_WEB_SYNC_INTERVAL_MINUTES), 5);
+            return new WebSyncSettings(enabled, url, token, intervalMinutes);
+        } catch (IOException e) {
+            return new WebSyncSettings(false, "", "", 5);
+        }
+    }
+
     private static Path getAppFolder() {
         return Paths.get(System.getProperty("user.dir")).toAbsolutePath().normalize();
     }
@@ -140,6 +159,15 @@ public final class AppConfig {
         }
     }
 
+    private static int parsePositiveInteger(String value, int fallback) {
+        try {
+            int parsed = Integer.parseInt(value == null ? "" : value.trim());
+            return parsed > 0 ? parsed : fallback;
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+    }
+
     private static void initializeFolders(Path folder) throws IOException {
         Files.createDirectories(folder);
         Files.createDirectories(folder.resolve(PHOTOS_FOLDER_NAME));
@@ -148,6 +176,14 @@ public final class AppConfig {
         Files.createDirectories(folder.resolve(UPDATES_FOLDER_NAME));
         if (!Files.isWritable(folder)) {
             throw new IOException("La carpeta seleccionada no permite escritura: " + folder);
+        }
+    }
+
+    public record WebSyncSettings(boolean enabled, String url, String token, int intervalMinutes) {
+        public boolean isConfigured() {
+            return enabled
+                    && url != null && url.startsWith("https://")
+                    && token != null && !token.isBlank();
         }
     }
 }
