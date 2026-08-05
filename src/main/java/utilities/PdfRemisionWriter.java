@@ -29,7 +29,7 @@ public final class PdfRemisionWriter {
     private static final float ALTO_CARTA = 792;
     private static final float MARGEN = 18;
     private static final float ESPACIO_ENTRE_COPIAS = 12;
-    private static final double ANCHO_DOCUMENTO = 1180;
+    private static final double ANCHO_DOCUMENTO = 850;
 
     private static final int[] VERDE = {0, 148, 134};
     private static final int[] GRIS = {138, 139, 139};
@@ -88,58 +88,99 @@ public final class PdfRemisionWriter {
     static byte[] crearPdf(Datos datos) throws IOException {
         try (PDDocument documento = new PDDocument();
              ByteArrayOutputStream salida = new ByteArrayOutputStream()) {
-            PDPage pagina = new PDPage(PDRectangle.LETTER);
-            documento.addPage(pagina);
             PDFont fuenteNormal = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
             PDFont fuenteNegrita = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
             PDImageXObject logo = cargarLogo(documento);
 
-            double altoFila = Math.max(28, Math.min(42, 170.0 / Math.max(1, datos.filas().size())));
-            double altoDocumento = 517 + altoFila * Math.max(1, datos.filas().size());
-            double anchoDisponible = ANCHO_CARTA - MARGEN * 2;
-            double altoMaximo = (ALTO_CARTA - MARGEN * 2 - ESPACIO_ENTRE_COPIAS) / 2;
-            double escala = Math.min(anchoDisponible / ANCHO_DOCUMENTO, altoMaximo / altoDocumento);
-            double anchoCopia = ANCHO_DOCUMENTO * escala;
-            double altoCopia = altoDocumento * escala;
-            double x = (ANCHO_CARTA - anchoCopia) / 2;
-            double ySuperior = ALTO_CARTA - MARGEN - altoCopia;
-            double yInferior = ySuperior - ESPACIO_ENTRE_COPIAS - altoCopia;
-
-            try (PDPageContentStream contenido = new PDPageContentStream(documento, pagina)) {
-                dibujarCopia(new Renderizador(contenido, fuenteNormal, fuenteNegrita, logo,
-                        x, ySuperior, escala, altoDocumento), datos, altoFila);
-                dibujarCopia(new Renderizador(contenido, fuenteNormal, fuenteNegrita, logo,
-                        x, yInferior, escala, altoDocumento), datos, altoFila);
-
-                contenido.setStrokingColor(128 / 255f, 128 / 255f, 128 / 255f);
-                contenido.setLineWidth(0.8f);
-                contenido.setLineDashPattern(new float[]{5, 3}, 0);
-                float ySeparador = (float) (yInferior + altoCopia + ESPACIO_ENTRE_COPIAS / 2);
-                contenido.moveTo(MARGEN, ySeparador);
-                contenido.lineTo(ANCHO_CARTA - MARGEN, ySeparador);
-                contenido.stroke();
+            int numeroFilas = Math.max(1, datos.filas().size());
+            double altoFila = calcularAltoFila(numeroFilas);
+            double altoDocumento = 590 + altoFila * numeroFilas;
+            if (datos.filas().size() <= 1) {
+                dibujarDosMediasPaginas(documento, fuenteNormal, fuenteNegrita, logo,
+                        datos, altoFila, altoDocumento);
+            } else {
+                dibujarPaginaCompleta(documento, fuenteNormal, fuenteNegrita, logo,
+                        datos, altoFila, altoDocumento, "ORIGINAL");
+                dibujarPaginaCompleta(documento, fuenteNormal, fuenteNegrita, logo,
+                        datos, altoFila, altoDocumento, "COPIA");
             }
             documento.save(salida);
             return salida.toByteArray();
         }
     }
 
-    private static void dibujarCopia(Renderizador r, Datos datos, double altoFila) throws IOException {
-        r.imagen(16, 10, 150, 64);
-        r.celda(180, 15, 980, 36, VERDE, VERDE, "REMISIÓN DE MUESTRAS", BLANCO, 17, true);
-        r.celda(540, 66, 145, 42, VERDE, VERDE, "FECHA DE\nELABORACIÓN", BLANCO, 11, true);
-        r.celda(685, 66, 210, 42, BLANCO, VERDE, datos.fechaElaboracion(), NEGRO, 14, false);
-        r.celda(895, 66, 145, 42, VERDE, VERDE, "CONSECUTIVO", BLANCO, 11, true);
-        r.celda(1040, 66, 120, 42, BLANCO, VERDE, datos.consecutivo(), NEGRO, 25, true);
-        r.celda(16, 116, 1144, 28, GRIS, GRIS,
+    private static double calcularAltoFila(int numeroFilas) {
+        if (numeroFilas <= 1) {
+            return 48;
+        }
+        return Math.max(30, Math.min(58, 500.0 / numeroFilas));
+    }
+
+    private static void dibujarDosMediasPaginas(
+            PDDocument documento, PDFont normal, PDFont negrita, PDImageXObject logo,
+            Datos datos, double altoFila, double altoDocumento) throws IOException {
+        PDPage pagina = new PDPage(PDRectangle.LETTER);
+        documento.addPage(pagina);
+        double anchoDisponible = ANCHO_CARTA - MARGEN * 2;
+        double altoDisponible = (ALTO_CARTA - MARGEN * 2 - ESPACIO_ENTRE_COPIAS) / 2;
+        double escala = Math.min(anchoDisponible / ANCHO_DOCUMENTO, altoDisponible / altoDocumento);
+        double anchoCopia = ANCHO_DOCUMENTO * escala;
+        double altoCopia = altoDocumento * escala;
+        double x = (ANCHO_CARTA - anchoCopia) / 2;
+        double ySuperior = ALTO_CARTA - MARGEN - altoCopia;
+        double yInferior = MARGEN;
+
+        try (PDPageContentStream contenido = new PDPageContentStream(documento, pagina)) {
+            dibujarCopia(new Renderizador(contenido, normal, negrita, logo,
+                    x, ySuperior, escala, altoDocumento), datos, altoFila, "ORIGINAL");
+            dibujarCopia(new Renderizador(contenido, normal, negrita, logo,
+                    x, yInferior, escala, altoDocumento), datos, altoFila, "COPIA");
+
+            contenido.setStrokingColor(128 / 255f, 128 / 255f, 128 / 255f);
+            contenido.setLineWidth(0.8f);
+            contenido.setLineDashPattern(new float[]{5, 3}, 0);
+            contenido.moveTo(MARGEN, ALTO_CARTA / 2);
+            contenido.lineTo(ANCHO_CARTA - MARGEN, ALTO_CARTA / 2);
+            contenido.stroke();
+        }
+    }
+
+    private static void dibujarPaginaCompleta(
+            PDDocument documento, PDFont normal, PDFont negrita, PDImageXObject logo,
+            Datos datos, double altoFila, double altoDocumento, String tipoCopia) throws IOException {
+        PDPage pagina = new PDPage(PDRectangle.LETTER);
+        documento.addPage(pagina);
+        double escala = Math.min(
+                (ANCHO_CARTA - MARGEN * 2) / ANCHO_DOCUMENTO,
+                (ALTO_CARTA - MARGEN * 2) / altoDocumento);
+        double anchoCopia = ANCHO_DOCUMENTO * escala;
+        double altoCopia = altoDocumento * escala;
+        double x = (ANCHO_CARTA - anchoCopia) / 2;
+        double y = ALTO_CARTA - MARGEN - altoCopia;
+        try (PDPageContentStream contenido = new PDPageContentStream(documento, pagina)) {
+            dibujarCopia(new Renderizador(contenido, normal, negrita, logo,
+                    x, y, escala, altoDocumento), datos, altoFila, tipoCopia);
+        }
+    }
+
+    private static void dibujarCopia(
+            Renderizador r, Datos datos, double altoFila, String tipoCopia) throws IOException {
+        r.imagen(16, 10, 120, 51);
+        r.celda(145, 15, 689, 36, VERDE, VERDE, "REMISIÓN DE MUESTRAS", BLANCO, 17, true);
+        r.celda(16, 76, 120, 27, BLANCO, VERDE, tipoCopia, VERDE, 10, true);
+        r.celda(348, 66, 110, 42, VERDE, VERDE, "FECHA DE\nELABORACIÓN", BLANCO, 10, true);
+        r.celda(458, 66, 160, 42, BLANCO, VERDE, datos.fechaElaboracion(), NEGRO, 13, false);
+        r.celda(618, 66, 110, 42, VERDE, VERDE, "CONSECUTIVO", BLANCO, 10, true);
+        r.celda(728, 66, 106, 42, BLANCO, VERDE, datos.consecutivo(), NEGRO, 22, true);
+        r.celda(16, 116, 818, 28, GRIS, GRIS,
                 "LABORATORIO DE ENSAYOS  NYCE COLOMBIA S.A.S", BLANCO, 11, true);
-        r.celda(16, 152, 140, 36, VERDE, VERDE, "NOMBRE DEL CLIENTE", BLANCO, 9, true);
-        r.celda(156, 152, 360, 36, BLANCO, VERDE, datos.cliente(), NEGRO, 12, false);
-        r.celda(640, 152, 150, 36, VERDE, VERDE, "TIPO DE SALIDA", BLANCO, 11, true);
-        r.celda(790, 152, 370, 36, BLANCO, VERDE, datos.tipoSalida(), NEGRO, 12, false);
+        r.celda(16, 152, 110, 36, VERDE, VERDE, "NOMBRE DEL CLIENTE", BLANCO, 9, true);
+        r.celda(126, 152, 260, 36, BLANCO, VERDE, datos.cliente(), NEGRO, 11, false);
+        r.celda(455, 152, 110, 36, VERDE, VERDE, "TIPO DE SALIDA", BLANCO, 10, true);
+        r.celda(565, 152, 269, 36, BLANCO, VERDE, datos.tipoSalida(), NEGRO, 11, false);
 
         double yTabla = 198;
-        double[] anchos = {185, 125, 220, 65, 125, 180, 122, 122};
+        double[] anchos = {132, 89, 157, 47, 89, 129, 87, 88};
         String[] titulos = {"IDENTIFICACIÓN\nINTERNA", "REFERENCIA\nEXTERNA", "DESCRIPCIÓN\nMUESTRA",
                 "CANTIDAD", "FABRICANTE / MARCA", "OBSERVACIONES",
                 "FECHA DE\nINGRESO", "FECHA DE\nENTREGA"};
@@ -162,31 +203,31 @@ public final class PdfRemisionWriter {
             y += altoFila;
         }
         y += 12;
-        r.celda(16, y, 140, 52, VERDE, VERDE, "TOTAL MUESTRAS", BLANCO, 10, true);
-        r.celda(156, y, 100, 52, BLANCO, VERDE, String.valueOf(datos.filas().size()), NEGRO, 13, false);
-        r.celda(256, y, 160, 52, VERDE, VERDE, "NÚMERO DE EMPAQUES", BLANCO, 10, true);
-        r.celda(416, y, 100, 52, BLANCO, VERDE, String.valueOf(datos.numeroEmpaques()), NEGRO, 13, false);
-        r.celda(516, y, 245, 52, VERDE, VERDE,
-                "OBSERVACIÓN FINAL DE LAS MUESTRAS", BLANCO, 9, true);
-        r.celda(761, y, 399, 52, BLANCO, VERDE, datos.observacionFinal(), NEGRO, 10, false);
+        r.celda(16, y, 100, 52, VERDE, VERDE, "TOTAL MUESTRAS", BLANCO, 9, true);
+        r.celda(116, y, 65, 52, BLANCO, VERDE, String.valueOf(datos.filas().size()), NEGRO, 13, false);
+        r.celda(181, y, 120, 52, VERDE, VERDE, "NÚMERO DE EMPAQUES", BLANCO, 9, true);
+        r.celda(301, y, 65, 52, BLANCO, VERDE, String.valueOf(datos.numeroEmpaques()), NEGRO, 13, false);
+        r.celda(366, y, 170, 52, VERDE, VERDE,
+                "OBSERVACIÓN FINAL DE LAS MUESTRAS", BLANCO, 8, true);
+        r.celda(536, y, 298, 52, BLANCO, VERDE, datos.observacionFinal(), NEGRO, 9, false);
 
         y += 64;
-        r.celda(130, y, 470, 32, VERDE, VERDE, "ENTREGADO POR:", BLANCO, 15, true);
-        r.celda(600, y, 450, 32, VERDE, VERDE, "ENTREGADO A:", BLANCO, 15, true);
-        r.celda(130, y + 32, 470, 50, BLANCO, VERDE, datos.entregadoPor(), NEGRO, 12, true);
-        r.celda(600, y + 32, 450, 25, BLANCO, VERDE, "FIRMA: " + valor(datos.firma()), TEXTO_GRIS, 10, false);
-        r.celda(600, y + 57, 450, 25, BLANCO, VERDE, "CÉDULA: " + valor(datos.cedula()), TEXTO_GRIS, 10, false);
-        r.celda(130, y + 82, 470, 25, BLANCO, VERDE, datos.cargoEntregadoPor(), NEGRO, 10, false);
-        r.celda(600, y + 82, 450, 25, BLANCO, VERDE,
-                "NOMBRE Y PLACA: " + valor(datos.nombrePlaca()), TEXTO_GRIS, 10, false);
+        r.celda(16, y, 409, 32, VERDE, VERDE, "ENTREGADO POR:", BLANCO, 14, true);
+        r.celda(425, y, 409, 32, VERDE, VERDE, "ENTREGADO A:", BLANCO, 14, true);
+        r.celda(16, y + 32, 409, 50, BLANCO, VERDE, datos.entregadoPor(), NEGRO, 12, true);
+        r.celda(425, y + 32, 409, 25, BLANCO, VERDE, "NOMBRE: " + valor(datos.firma()), TEXTO_GRIS, 10, false);
+        r.celda(425, y + 57, 409, 25, BLANCO, VERDE, "CÉDULA: " + valor(datos.cedula()), TEXTO_GRIS, 10, false);
+        r.celda(16, y + 82, 409, 25, BLANCO, VERDE, datos.cargoEntregadoPor(), NEGRO, 10, false);
+        r.celda(425, y + 82, 409, 25, BLANCO, VERDE,
+                "PLACA: " + valor(datos.nombrePlaca()), TEXTO_GRIS, 10, false);
 
         double yPie = r.altoDocumento() - 74;
-        r.texto(16, yPie - 20, 1144, 16, "ENTRADA EN VIGOR 2023-08-30", TEXTO_GRIS, 9, false, false);
-        r.rectangulo(16, yPie, 1144, 62, GRIS, GRIS);
-        r.texto(16, yPie + 8, 1144, 22,
+        r.texto(16, yPie - 20, 818, 16, "ENTRADA EN VIGOR 2023-08-30", TEXTO_GRIS, 9, false, false);
+        r.rectangulo(16, yPie, 818, 62, GRIS, GRIS);
+        r.texto(16, yPie + 8, 818, 22,
                 "Se prohíbe la reproducción total o parcial sin previa autorización",
                 BLANCO, 10, false, true);
-        r.texto(16, yPie + 32, 1144, 22,
+        r.texto(16, yPie + 32, 818, 22,
                 "NYCE Colombia S.A.S. | Calle 30 No. 17 - 52 | Teusaquillo - Bogotá D.C. Colombia | Tel. +571 756 84 85 ext. 129",
                 BLANCO, 10, false, true);
     }

@@ -179,6 +179,37 @@ public class RemisionMuestrasController {
         muestrasFiltradas.setPredicate(muestra -> filtro.isBlank() || parametrosBusqueda(muestra).contains(filtro));
     }
 
+    @FXML
+    private void buscarMuestra() {
+        String busqueda = txtBuscarMuestra.getText();
+        String filtro = normalizar(busqueda);
+        filtrarMuestras(busqueda);
+        if (filtro.isBlank() || !muestrasFiltradas.isEmpty()) {
+            return;
+        }
+
+        try {
+            List<Muestra> enviadas = remisionService.obtenerMuestrasEnviadas().stream()
+                    .filter(muestra -> parametrosBusqueda(muestra).contains(filtro))
+                    .toList();
+            if (enviadas.isEmpty()) {
+                return;
+            }
+
+            Muestra primera = enviadas.get(0);
+            String identificador = texto(primera.getCodigoInterno(), "Sin ID");
+            String remision = texto(primera.getRemision(), "una remisión anterior");
+            String detalle = enviadas.size() == 1
+                    ? "La muestra " + identificador + " ya fue enviada en la remisión " + remision
+                    + " y por eso no aparece entre las muestras disponibles."
+                    : "Se encontraron " + enviadas.size()
+                    + " muestras que ya fueron enviadas. Por eso no aparecen entre las muestras disponibles.";
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Muestra ya enviada", detalle);
+        } catch (Exception e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Búsqueda de muestras", mensajeRaiz(e));
+        }
+    }
+
     private String parametrosBusqueda(Muestra muestra) {
         return normalizar(String.join(" ",
                 texto(muestra.getCodigoInterno(), ""),

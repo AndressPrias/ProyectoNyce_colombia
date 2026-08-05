@@ -21,7 +21,15 @@
 
     const date = (value) => {
         if (!value) return 'Sin datos';
-        const [day] = String(value).split(' ');
+        const normalized = String(value).trim();
+        if (/^\d{13}$/.test(normalized)) {
+            return new Intl.DateTimeFormat('es-CO', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }).format(new Date(Number(normalized)));
+        }
+        const [day] = normalized.split(' ');
         const parts = day.split('-');
         return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : value;
     };

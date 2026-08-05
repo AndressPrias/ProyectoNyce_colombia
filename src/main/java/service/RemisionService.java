@@ -20,13 +20,26 @@ import java.util.List;
 public class RemisionService {
 
     public List<Muestra> obtenerMuestrasDisponibles() {
+        return consultarMuestrasPorEstado(
+                "estado NOT IN (?, ?)",
+                Estado.ENVIADO.name(),
+                Estado.DESTRUCCION.name());
+    }
+
+    public List<Muestra> obtenerMuestrasEnviadas() {
+        return consultarMuestrasPorEstado("estado = ?", Estado.ENVIADO.name());
+    }
+
+    private List<Muestra> consultarMuestrasPorEstado(String condicionEstado, String... estados) {
         List<Muestra> muestras = new ArrayList<>();
-        String sql = "SELECT * FROM muestras WHERE estado NOT IN (?, ?) ORDER BY fechaRecepcion, codigoInterno";
+        String sql = "SELECT * FROM muestras WHERE " + condicionEstado
+                + " ORDER BY fechaRecepcion, codigoInterno";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, Estado.ENVIADO.name());
-            ps.setString(2, Estado.DESTRUCCION.name());
+            for (int indice = 0; indice < estados.length; indice++) {
+                ps.setString(indice + 1, estados[indice]);
+            }
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

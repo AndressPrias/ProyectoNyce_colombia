@@ -23,8 +23,11 @@
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane prefHeight="900.0" prefWidth="1300.0" styleClass="remision-root" stylesheets="@css/remision.css,@css/botones.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RemisionMuestrasController">
-    <top>
-        <VBox minHeight="634.0" prefHeight="634.0" prefWidth="1300.0" spacing="12.0" styleClass="remision-tools">
+    <center>
+        <ScrollPane fitToWidth="true" pannable="true" styleClass="document-scroll" BorderPane.alignment="CENTER">
+            <content>
+                <VBox>
+        <VBox prefWidth="1300.0" spacing="12.0" styleClass="remision-tools">
             <padding><Insets bottom="14" left="20" right="20" top="16" /></padding>
             <HBox alignment="CENTER_LEFT" spacing="14">
                 <VBox HBox.hgrow="ALWAYS">
@@ -46,9 +49,10 @@
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="10" styleClass="search-box">
                 <Label styleClass="form-label" text="Buscar muestra" />
-                <TextField fx:id="txtBuscarMuestra" maxWidth="Infinity" promptText="Nombre del cliente, referencia externa, fecha, código, descripción muestra, marca, estado..." HBox.hgrow="ALWAYS" />
+                <TextField fx:id="txtBuscarMuestra" maxWidth="Infinity" onAction="#buscarMuestra" promptText="Nombre del cliente, referencia externa, fecha, código, descripción muestra, marca, estado..." HBox.hgrow="ALWAYS" />
+                <Button minWidth="120.0" onAction="#buscarMuestra" prefHeight="32.0" prefWidth="120.0" styleClass="btn-primary" text="Buscar" />
             </HBox>
-            <TableView fx:id="tblDisponibles" fixedCellSize="42.0" minHeight="455.0" prefHeight="455.0" VBox.vgrow="NEVER">
+            <TableView fx:id="tblDisponibles" fixedCellSize="42.0" minHeight="468.0" prefHeight="468.0" VBox.vgrow="NEVER">
                 <columns>
                     <TableColumn fx:id="colSeleccion" editable="true" maxWidth="72" minWidth="72" prefWidth="72" resizable="false" text="MARCAR" />
                     <TableColumn fx:id="colDisponibleInterna" prefWidth="190" text="IDENTIFICACIÓN INTERNA" />
@@ -87,10 +91,6 @@
             </rowConstraints>
             </GridPane>
         </VBox>
-    </top>
-   <bottom>
-        <ScrollPane fitToWidth="true" pannable="true" styleClass="document-scroll" BorderPane.alignment="CENTER">
-            <content>
                 <VBox alignment="TOP_CENTER" spacing="16">
                     <padding><Insets bottom="32" left="24" right="24" top="24" /></padding>
                     <VBox maxWidth="1180" minWidth="980" prefWidth="1180" spacing="12" styleClass="document-page">
@@ -152,7 +152,7 @@
                             <Label fx:id="lblObservacionDocumento" alignment="CENTER" maxWidth="Infinity" minHeight="58" styleClass="summary-value" wrapText="true" HBox.hgrow="ALWAYS" />
                         </HBox>
 
-                        <GridPane prefHeight="135.0" prefWidth="930.0" styleClass="delivery-grid">
+                        <GridPane maxWidth="Infinity" styleClass="delivery-grid">
                             <columnConstraints>
                                 <ColumnConstraints halignment="CENTER" percentWidth="50.0" />
                                 <ColumnConstraints percentWidth="50.0" />
@@ -166,9 +166,9 @@
                             <Label alignment="CENTER" maxWidth="Infinity" styleClass="delivery-title" text="ENTREGADO A:" GridPane.columnIndex="1" />
                             <Label fx:id="lblEntregadoPor" alignment="CENTER" maxWidth="Infinity" styleClass="delivered-name" GridPane.rowIndex="1" />
                             <VBox spacing="2" styleClass="receiver-fields" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.rowSpan="2">
-                                <TextField fx:id="txtFirma" promptText="FIRMA:" />
+                                <TextField fx:id="txtFirma" promptText="NOMBRE:" />
                                 <TextField fx:id="txtCedula" promptText="CÉDULA:" />
-                                <TextField fx:id="txtNombrePlaca" promptText="NOMBRE Y PLACA:" />
+                                <TextField fx:id="txtNombrePlaca" promptText="PLACA:" />
                             </VBox>
                             <Label fx:id="lblCargoEntregadoPor" alignment="CENTER" maxWidth="Infinity" prefHeight="15.0" prefWidth="466.0" styleClass="delivered-role" GridPane.rowIndex="2" />
                         </GridPane>
@@ -180,7 +180,8 @@
                         </VBox>
                     </VBox>
                 </VBox>
+                </VBox>
             </content>
         </ScrollPane>
-   </bottom>
+    </center>
 </BorderPane>

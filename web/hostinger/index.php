@@ -115,7 +115,7 @@ if ($authenticated) {
 
     $informeSql = full_documents_sql('muestra_informes');
     $cotizacionSql = full_documents_sql('muestra_cotizaciones');
-    $sql = "SELECT m.id, m.codigoInterno, m.nombreCliente, m.descripcion, m.cantidad," .
+    $sql = "SELECT m.id, m.codigoInterno, m.rotuloCliente, m.nombreCliente, m.descripcion, m.cantidad," .
         " m.estado, m.ubicacion, m.fechaRecepcion, m.remision," .
         " {$informeSql} AS informes, {$cotizacionSql} AS cotizaciones" .
         " FROM muestras m{$where} ORDER BY m.fechaRecepcion DESC, m.id DESC LIMIT :limite OFFSET :offset";
@@ -138,7 +138,7 @@ $syncTime = database_available() ? date('d/m/Y H:i', filemtime(database_path()))
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title>Control Muestras LENC</title>
-    <link rel="stylesheet" href="/assets/styles.css?v=1">
+    <link rel="stylesheet" href="/assets/styles.css?v=3">
 </head>
 <body class="<?= $authenticated ? 'app-shell' : 'login-shell' ?>">
 <?php if (!$authenticated): ?>
@@ -250,6 +250,7 @@ $syncTime = database_available() ? date('d/m/Y H:i', filemtime(database_path()))
                     <thead>
                     <tr>
                         <th>ID</th>
+                        <th>Referencia externa</th>
                         <th>Fecha de ingreso</th>
                         <th>Nombre del cliente</th>
                         <th>Descripción muestra</th>
@@ -263,11 +264,12 @@ $syncTime = database_available() ? date('d/m/Y H:i', filemtime(database_path()))
                     </thead>
                     <tbody>
                     <?php if (!$rows): ?>
-                        <tr><td colspan="10" class="empty-state">No se encontraron muestras con estos filtros.</td></tr>
+                        <tr><td colspan="11" class="empty-state">No se encontraron muestras con estos filtros.</td></tr>
                     <?php endif; ?>
                     <?php foreach ($rows as $row): ?>
                         <tr>
                             <td><strong><?= e($row['codigoInterno']) ?></strong></td>
+                            <td><?= e(display_value($row['rotuloCliente'])) ?></td>
                             <td><?= e(format_date($row['fechaRecepcion'])) ?></td>
                             <td><?= e(display_value($row['nombreCliente'])) ?></td>
                             <td><?= e(display_value($row['descripcion'])) ?></td>
@@ -282,6 +284,66 @@ $syncTime = database_available() ? date('d/m/Y H:i', filemtime(database_path()))
                     </tbody>
                 </table>
             </div>
+
+            <section class="mobile-samples" aria-label="Muestras registradas en formato de tarjetas">
+                <?php if (!$rows): ?>
+                    <div class="empty-state">No se encontraron muestras con estos filtros.</div>
+                <?php endif; ?>
+                <?php foreach ($rows as $row): ?>
+                    <article class="sample-card">
+                        <header class="sample-card-header">
+                            <div>
+                                <span class="sample-card-label">ID de muestra</span>
+                                <strong><?= e($row['codigoInterno']) ?></strong>
+                            </div>
+                            <span class="state state-<?= e(strtolower((string)$row['estado'])) ?>">
+                                <?= e(state_label($row['estado'])) ?>
+                            </span>
+                        </header>
+
+                        <div class="sample-card-reference">
+                            <span class="sample-card-label">Referencia externa</span>
+                            <strong><?= e(display_value($row['rotuloCliente'])) ?></strong>
+                        </div>
+
+                        <dl class="sample-card-grid">
+                            <div>
+                                <dt>Fecha de ingreso</dt>
+                                <dd><?= e(format_date($row['fechaRecepcion'])) ?></dd>
+                            </div>
+                            <div>
+                                <dt>Cantidad</dt>
+                                <dd><?= (int)$row['cantidad'] ?></dd>
+                            </div>
+                            <div class="sample-card-wide">
+                                <dt>Nombre del cliente</dt>
+                                <dd><?= e(display_value($row['nombreCliente'])) ?></dd>
+                            </div>
+                            <div class="sample-card-wide">
+                                <dt>Descripción</dt>
+                                <dd><?= e(display_value($row['descripcion'])) ?></dd>
+                            </div>
+                            <div class="sample-card-wide">
+                                <dt>Ubicación</dt>
+                                <dd><?= e(display_value($row['ubicacion'])) ?></dd>
+                            </div>
+                            <div>
+                                <dt>Informe</dt>
+                                <dd><?= e(display_value($row['informes'], 'Sin asignar')) ?></dd>
+                            </div>
+                            <div>
+                                <dt>Cotización</dt>
+                                <dd><?= e(display_value($row['cotizaciones'], 'Sin asignar')) ?></dd>
+                            </div>
+                        </dl>
+
+                        <button class="detail-button sample-card-button" type="button"
+                                data-sample-id="<?= (int)$row['id'] ?>">
+                            Ver detalle
+                        </button>
+                    </article>
+                <?php endforeach; ?>
+            </section>
 
             <?php if ($totalPages > 1): ?>
                 <nav class="pagination" aria-label="Paginación">
@@ -308,7 +370,7 @@ $syncTime = database_available() ? date('d/m/Y H:i', filemtime(database_path()))
         </div>
         <div id="dialog-content" class="dialog-content" aria-live="polite"></div>
     </dialog>
-    <script src="/assets/app.js?v=1" defer></script>
+    <script src="/assets/app.js?v=4" defer></script>
 <?php endif; ?>
 </body>
 </html>

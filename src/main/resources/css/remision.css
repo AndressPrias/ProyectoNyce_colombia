@@ -105,7 +105,6 @@
 .delivery-grid {
     -fx-border-color: -nyce-green;
     -fx-border-width: 1;
-    -fx-max-width: 930px;
     -fx-alignment: center;
 }
 .delivery-title { -fx-font-size: 16px; -fx-padding: 7; }

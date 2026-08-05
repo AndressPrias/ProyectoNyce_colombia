@@ -1,0 +1,25 @@
+CONTROL MUESTRAS LENC 1.2.3 - ACTUALIZACIÓN PRIVADA
+
+ARCHIVOS DE ESCRITORIO
+- ControlMuestrasLENC-Setup-Usuario.exe
+- latest.properties
+
+INSTALACIÓN EN LOS COMPUTADORES
+1. Cierre Control Muestras LENC.
+2. Ejecute ControlMuestrasLENC-Setup-Usuario.exe.
+3. Finalice la instalación y abra nuevamente la aplicación.
+4. La configuración existente de OneDrive y de sincronización web se conserva.
+
+ACTUALIZACIÓN AUTOMÁTICA
+Copie ControlMuestrasLENC-Setup-Usuario.exe y latest.properties dentro de la
+carpeta actualizaciones de la base definitiva.
+
+PORTAL WEB
+El archivo control-muestras-web-1.2.3.zip contiene los cambios del portal.
+1. Descomprima el archivo.
+2. Cargue su contenido en la carpeta del subdominio muestras.andev.com.co,
+   reemplazando los archivos existentes.
+3. El paquete no contiene lencdb.db ni config.local.php, por lo que no reemplaza
+   la base de consulta ni las credenciales privadas del servidor.
+
+Portal: https://muestras.andev.com.co

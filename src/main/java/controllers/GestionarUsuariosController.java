@@ -8,6 +8,7 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.geometry.Rectangle2D;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Alert;
@@ -431,12 +432,23 @@ public class GestionarUsuariosController {
     private void cargarImagen(String rutaFoto) {
         String url = ImageStorage.resolveImageUrl(rutaFoto);
         if (url == null || url.isBlank()) {
+            imgFotoPerfil.setViewport(null);
             imgFotoPerfil.setImage(null);
             return;
         }
 
         Image image = new Image(url, false);
-        imgFotoPerfil.setImage(image.isError() ? null : image);
+        if (image.isError()) {
+            imgFotoPerfil.setViewport(null);
+            imgFotoPerfil.setImage(null);
+            return;
+        }
+
+        double lado = Math.min(image.getWidth(), image.getHeight());
+        double origenX = (image.getWidth() - lado) / 2.0;
+        double origenY = (image.getHeight() - lado) / 2.0;
+        imgFotoPerfil.setViewport(new Rectangle2D(origenX, origenY, lado, lado));
+        imgFotoPerfil.setImage(image);
     }
 
     private void actualizarUsuarioActivo(String nombre, String rolStr,

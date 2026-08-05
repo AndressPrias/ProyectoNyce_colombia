@@ -70,7 +70,7 @@
             <HBox alignment="CENTER_LEFT" spacing="18" styleClass="profile-block">
                 <StackPane minHeight="116" minWidth="116" prefHeight="116" prefWidth="116" styleClass="user-avatar-frame">
                     <Label styleClass="avatar-placeholder" text="Sin foto" />
-                    <ImageView fx:id="imgFotoPerfil" fitHeight="110" fitWidth="110" pickOnBounds="true" preserveRatio="true" />
+                    <ImageView fx:id="imgFotoPerfil" fitHeight="110" fitWidth="110" pickOnBounds="true" preserveRatio="true" smooth="true" />
                 </StackPane>
                 <VBox spacing="7" HBox.hgrow="ALWAYS">
                     <Label styleClass="section-label" text="Foto de perfil" />

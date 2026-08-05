@@ -129,6 +129,9 @@ function format_date(?string $date): string
     if ($value === '') {
         return 'Sin datos';
     }
+    if (preg_match('/^\d{13}$/', $value) === 1) {
+        return date('d/m/Y', intdiv((int)$value, 1000));
+    }
     $timestamp = strtotime($value);
     return $timestamp === false ? $value : date('d/m/Y', $timestamp);
 }
