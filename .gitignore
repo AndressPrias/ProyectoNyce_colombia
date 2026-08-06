@@ -47,3 +47,6 @@ web/hostinger/config.local.php
 web/hostinger/data/*.db
 web/hostinger/data/*.bak
 web/hostinger/data/*.tmp
+web/hostinger/data/fotos_pendientes/*
+!web/hostinger/data/fotos_pendientes/.gitkeep
+!web/hostinger/data/fotos_pendientes/.htaccess

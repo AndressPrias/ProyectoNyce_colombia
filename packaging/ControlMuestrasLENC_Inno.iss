@@ -1,5 +1,5 @@
 #define MyAppName "Control Muestras LENC"
-#define MyAppVersion "1.2.3"
+#define MyAppVersion "1.2.4"
 #define MyAppPublisher "Andres Prias"
 #define MyAppURL "https://andresprias.dev"
 #define MyAppExeName "ControlMuestrasLENC.exe"

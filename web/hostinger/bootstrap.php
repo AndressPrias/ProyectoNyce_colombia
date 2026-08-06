@@ -63,6 +63,58 @@ function is_authenticated(): bool
     return isset($_SESSION['user_id'], $_SESSION['user_name']);
 }
 
+function csrf_token(): string
+{
+    if (!isset($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function require_valid_csrf(): void
+{
+    $provided = trim((string)($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ''));
+    if ($provided === '' || !hash_equals(csrf_token(), $provided)) {
+        http_response_code(403);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => 'La sesión de carga no es válida. Recarga la página.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
+function can_upload_sample_photos(): bool
+{
+    if (!is_authenticated()) {
+        return false;
+    }
+
+    $statement = db()->prepare(
+        'SELECT rol, controlMuestras FROM usuarios WHERE id = :id LIMIT 1'
+    );
+    $statement->execute(['id' => (int)$_SESSION['user_id']]);
+    $user = $statement->fetch();
+    if (!$user) {
+        return false;
+    }
+
+    $role = strtoupper(trim((string)$user['rol']));
+    if ($role === 'ADMIN' || $role === 'SUPERVISOR') {
+        return true;
+    }
+    return $role === 'AUXILIAR' && (int)$user['controlMuestras'] === 1;
+}
+
+function require_sample_photo_upload_permission(): void
+{
+    if (can_upload_sample_photos()) {
+        return;
+    }
+    http_response_code(403);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['error' => 'No tienes permiso para cargar fotografías.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 function require_authentication(bool $json = false): void
 {
     if (is_authenticated()) {

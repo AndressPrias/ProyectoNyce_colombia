@@ -4,12 +4,17 @@ import db.Database;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.Duration;
 import java.util.concurrent.Executors;
@@ -19,6 +24,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class WebDatabaseSyncService {
 
+    private static final int MAX_PENDING_PHOTOS_PER_RUN = 10;
+    private static final int MAX_PHOTO_BYTES = 8 * 1024 * 1024;
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(20))
@@ -60,6 +67,12 @@ public final class WebDatabaseSyncService {
 
     private static void synchronizeSafely(AppConfig.WebSyncSettings settings) {
         try {
+            downloadPendingPhotos(settings);
+        } catch (Exception e) {
+            System.err.println("No fue posible descargar las fotos pendientes: " + e.getMessage());
+        }
+
+        try {
             Path databasePath = AppConfig.getDatabasePath();
             if (!Files.isRegularFile(databasePath)) {
                 return;
@@ -80,6 +93,114 @@ public final class WebDatabaseSyncService {
             }
         } catch (Exception e) {
             System.err.println("No fue posible sincronizar la copia web: " + e.getMessage());
+        }
+    }
+
+    private static void downloadPendingPhotos(
+            AppConfig.WebSyncSettings settings) throws Exception {
+        URI endpoint = URI.create(settings.url()).resolve("fotos-pendientes.php");
+
+        for (int index = 0; index < MAX_PENDING_PHOTOS_PER_RUN; index++) {
+            HttpRequest request = HttpRequest.newBuilder(endpoint)
+                    .timeout(Duration.ofMinutes(1))
+                    .header("X-Sync-Token", settings.token())
+                    .GET()
+                    .build();
+            HttpResponse<byte[]> response = HTTP_CLIENT.send(
+                    request, HttpResponse.BodyHandlers.ofByteArray());
+
+            if (response.statusCode() == 204) {
+                return;
+            }
+            if (response.statusCode() != 200) {
+                throw new IOException(
+                        "El servidor respondió con estado " + response.statusCode() + ".");
+            }
+
+            String jobId = requiredHeader(response, "X-Photo-ID");
+            String sampleCode = URLDecoder.decode(
+                    requiredHeader(response, "X-Sample-Code"), StandardCharsets.UTF_8);
+            String extension = requiredHeader(response, "X-Photo-Extension").toLowerCase();
+            int sampleId = Integer.parseInt(requiredHeader(response, "X-Sample-ID"));
+            byte[] imageBytes = response.body();
+
+            if (!jobId.matches("[a-f0-9]{32}")
+                    || !extension.matches("jpg|png|webp")
+                    || sampleId < 1
+                    || sampleCode.isBlank()
+                    || imageBytes.length < 1
+                    || imageBytes.length > MAX_PHOTO_BYTES) {
+                throw new IOException("La foto pendiente no superó la validación.");
+            }
+
+            if (!sampleExists(sampleId, sampleCode)) {
+                acknowledgePhoto(endpoint, settings.token(), jobId);
+                continue;
+            }
+
+            Path temporaryPhoto = Files.createTempFile(
+                    AppConfig.getStorageFolder(), "foto-movil-", "." + extension);
+            try {
+                Files.write(temporaryPhoto, imageBytes);
+                String storedPath = ImageStorage.copySamplePhoto(
+                        temporaryPhoto.toFile(), sampleCode);
+                updateSamplePhoto(sampleId, sampleCode, storedPath);
+                acknowledgePhoto(endpoint, settings.token(), jobId);
+                System.out.println("Foto móvil sincronizada para la muestra " + sampleCode + ".");
+            } finally {
+                Files.deleteIfExists(temporaryPhoto);
+            }
+        }
+    }
+
+    private static String requiredHeader(
+            HttpResponse<?> response, String headerName) throws IOException {
+        return response.headers().firstValue(headerName)
+                .orElseThrow(() -> new IOException(
+                        "La respuesta no incluyó el encabezado " + headerName + "."));
+    }
+
+    private static boolean sampleExists(int sampleId, String sampleCode) throws Exception {
+        try (Connection connection = Database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT 1 FROM muestras WHERE id=? AND codigoInterno=? LIMIT 1")) {
+            statement.setInt(1, sampleId);
+            statement.setString(2, sampleCode);
+            try (ResultSet result = statement.executeQuery()) {
+                return result.next();
+            }
+        }
+    }
+
+    private static void updateSamplePhoto(
+            int sampleId, String sampleCode, String storedPath) throws Exception {
+        try (Connection connection = Database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "UPDATE muestras SET rutaFoto=? WHERE id=? AND codigoInterno=?")) {
+            statement.setString(1, storedPath);
+            statement.setInt(2, sampleId);
+            statement.setString(3, sampleCode);
+            if (statement.executeUpdate() != 1) {
+                throw new IOException("La muestra cambió antes de guardar la fotografía.");
+            }
+        }
+    }
+
+    private static void acknowledgePhoto(
+            URI endpoint, String token, String jobId) throws Exception {
+        URI acknowledgementUri = URI.create(
+                endpoint + "?id=" + URLEncoder.encode(jobId, StandardCharsets.UTF_8));
+        HttpRequest request = HttpRequest.newBuilder(acknowledgementUri)
+                .timeout(Duration.ofSeconds(30))
+                .header("X-Sync-Token", token)
+                .DELETE()
+                .build();
+        HttpResponse<Void> response = HTTP_CLIENT.send(
+                request, HttpResponse.BodyHandlers.discarding());
+        if (response.statusCode() != 204) {
+            throw new IOException(
+                    "No fue posible confirmar la foto sincronizada ("
+                            + response.statusCode() + ").");
         }
     }
 

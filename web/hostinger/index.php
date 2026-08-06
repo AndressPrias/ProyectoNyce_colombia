@@ -58,6 +58,7 @@ $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 25;
 $totalRows = 0;
 $totalPages = 1;
+$canUploadPhotos = false;
 $query = trim((string)($_GET['q'] ?? ''));
 $selectedState = trim((string)($_GET['estado'] ?? ''));
 $dateFrom = trim((string)($_GET['desde'] ?? ''));
@@ -65,6 +66,7 @@ $dateTo = trim((string)($_GET['hasta'] ?? ''));
 
 if ($authenticated) {
     $pdo = db();
+    $canUploadPhotos = can_upload_sample_photos();
     $summaryRow = $pdo->query(
         "SELECT COUNT(*) total," .
         " SUM(CASE WHEN estado = 'EN_CUSTODIA' THEN 1 ELSE 0 END) custodia," .
@@ -138,7 +140,7 @@ $syncTime = database_available() ? date('d/m/Y H:i', filemtime(database_path()))
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title>Control Muestras LENC</title>
-    <link rel="stylesheet" href="/assets/styles.css?v=3">
+    <link rel="stylesheet" href="/assets/styles.css?v=4">
 </head>
 <body class="<?= $authenticated ? 'app-shell' : 'login-shell' ?>">
 <?php if (!$authenticated): ?>
@@ -360,7 +362,9 @@ $syncTime = database_available() ? date('d/m/Y H:i', filemtime(database_path()))
         </section>
     </main>
 
-    <dialog id="sample-dialog" class="sample-dialog" aria-labelledby="dialog-title">
+    <dialog id="sample-dialog" class="sample-dialog" aria-labelledby="dialog-title"
+            data-photo-upload-enabled="<?= $canUploadPhotos ? 'true' : 'false' ?>"
+            data-csrf-token="<?= $canUploadPhotos ? e(csrf_token()) : '' ?>">
         <div class="dialog-header">
             <div>
                 <span class="eyebrow">Detalle de la muestra</span>
@@ -370,7 +374,7 @@ $syncTime = database_available() ? date('d/m/Y H:i', filemtime(database_path()))
         </div>
         <div id="dialog-content" class="dialog-content" aria-live="polite"></div>
     </dialog>
-    <script src="/assets/app.js?v=4" defer></script>
+    <script src="/assets/app.js?v=6" defer></script>
 <?php endif; ?>
 </body>
 </html>
