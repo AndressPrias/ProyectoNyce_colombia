@@ -8,6 +8,8 @@
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -47,9 +49,18 @@
                      </VBox.margin></Label>
                   <VBox maxWidth="600.0" prefWidth="600.0" spacing="10.0">
                      <Label style="-fx-font-weight: bold;" text="ID de la muestra" textFill="#0a4d4a" />
-                     <TextField fx:id="txtCodigoInterno" editable="false"
-                                focusTraversable="false" maxWidth="1.7976931348623157E308"
-                                style="-fx-background-color: #eef4f3; -fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #0a4d4a;" />
+                     <HBox alignment="CENTER_LEFT" spacing="7.0">
+                        <TextField fx:id="txtCodigoInterno" editable="false"
+                                   focusTraversable="false" maxWidth="1.7976931348623157E308"
+                                   style="-fx-background-color: #eef4f3; -fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #0a4d4a;" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="btnImprimirEtiqueta" accessibleText="Imprimir etiqueta DYMO"
+                                managed="false" minHeight="30.0" minWidth="30.0"
+                                onAction="#imprimirEtiqueta" prefHeight="30.0" prefWidth="30.0"
+                                styleClass="btn-print-label" visible="false">
+                           <tooltip><Tooltip text="Imprimir etiqueta en DYMO" /></tooltip>
+                           <graphic><ImageView fitHeight="16.0" fitWidth="16.0" preserveRatio="true"><image><Image url="@icons/imprimirVerde.png" /></image></ImageView></graphic>
+                        </Button>
+                     </HBox>
                      <Label style="-fx-font-weight: bold;" text="Descripción Muestra *" textFill="#0a4d4a" />
                      <TextField fx:id="txtDescripcion" maxWidth="1.7976931348623157E308"
                                 promptText="Ingrese la descripción de la muestra..." />

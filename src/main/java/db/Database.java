@@ -39,6 +39,7 @@ public class Database {
     public static void init() {
         try (Connection conn = getConnection()) {
             crearTablas(conn);
+            migrarInformesTextoLibre(conn);
             migrarColumnas(conn);
             migrarRemisionesEnMuestras(conn);
             migrarEstados(conn);
@@ -142,7 +143,7 @@ public class Database {
 
             st.execute("CREATE TABLE IF NOT EXISTS muestra_informes (" +
                     "muestraId INTEGER NOT NULL," +
-                    "numero TEXT NOT NULL CHECK(length(numero) = 4 AND numero NOT GLOB '*[^0-9]*')," +
+                    "numero TEXT NOT NULL CHECK(length(TRIM(numero)) > 0)," +
                     "anio INTEGER NOT NULL CHECK(anio BETWEEN 2000 AND 9999)," +
                     "PRIMARY KEY (muestraId, numero, anio)," +
                     "FOREIGN KEY (muestraId) REFERENCES muestras(id) ON DELETE CASCADE" +
@@ -155,6 +156,39 @@ public class Database {
                     "PRIMARY KEY (muestraId, numero, anio)," +
                     "FOREIGN KEY (muestraId) REFERENCES muestras(id) ON DELETE CASCADE" +
                     ");");
+        }
+    }
+
+    private static void migrarInformesTextoLibre(Connection conn) throws SQLException {
+        String definicion = null;
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT sql FROM sqlite_master WHERE type='table' AND name='muestra_informes'");
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) definicion = rs.getString("sql");
+        }
+
+        if (definicion == null || !definicion.contains("numero NOT GLOB")) return;
+
+        boolean autoCommitAnterior = conn.getAutoCommit();
+        conn.setAutoCommit(false);
+        try (Statement st = conn.createStatement()) {
+            st.execute("ALTER TABLE muestra_informes RENAME TO muestra_informes_anterior");
+            st.execute("CREATE TABLE muestra_informes (" +
+                    "muestraId INTEGER NOT NULL," +
+                    "numero TEXT NOT NULL CHECK(length(TRIM(numero)) > 0)," +
+                    "anio INTEGER NOT NULL CHECK(anio BETWEEN 2000 AND 9999)," +
+                    "PRIMARY KEY (muestraId, numero, anio)," +
+                    "FOREIGN KEY (muestraId) REFERENCES muestras(id) ON DELETE CASCADE" +
+                    ")");
+            st.execute("INSERT INTO muestra_informes (muestraId, numero, anio) " +
+                    "SELECT muestraId, numero, anio FROM muestra_informes_anterior");
+            st.execute("DROP TABLE muestra_informes_anterior");
+            conn.commit();
+        } catch (SQLException e) {
+            conn.rollback();
+            throw e;
+        } finally {
+            conn.setAutoCommit(autoCommitAnterior);
         }
     }
 

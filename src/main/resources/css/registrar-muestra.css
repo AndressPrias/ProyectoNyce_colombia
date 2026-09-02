@@ -44,3 +44,16 @@
     -fx-border-color: #008c84;
     -fx-text-fill: white;
 }
+
+.btn-print-label {
+    -fx-background-color: #e5f4f2;
+    -fx-background-radius: 4;
+    -fx-border-color: #8cc9c2;
+    -fx-border-radius: 4;
+    -fx-padding: 5;
+    -fx-cursor: hand;
+}
+
+.btn-print-label:hover {
+    -fx-background-color: #cdebe7;
+}

@@ -50,6 +50,7 @@
 }
 
 .document-title { -fx-font-size: 17px; -fx-padding: 9 12; }
+.format-number { -fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #111; }
 .laboratory-band { -fx-background-color: -nyce-gray; -fx-padding: 6; }
 .field-heading, .summary-heading {
     -fx-background-color: -nyce-green;

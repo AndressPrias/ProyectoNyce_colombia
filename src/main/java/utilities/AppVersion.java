@@ -1,7 +1,8 @@
 package utilities;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -66,9 +67,11 @@ public final class AppVersion {
 
     private static Properties loadProperties() {
         Properties properties = new Properties();
-        try (InputStream input = AppVersion.class.getResourceAsStream(RESOURCE)) {
+        try (var input = AppVersion.class.getResourceAsStream(RESOURCE)) {
             if (input != null) {
-                properties.load(input);
+                try (Reader reader = new java.io.InputStreamReader(input, StandardCharsets.UTF_8)) {
+                    properties.load(reader);
+                }
             }
         } catch (IOException ignored) {
             // Si no se puede leer la version, la app sigue funcionando con valores locales.

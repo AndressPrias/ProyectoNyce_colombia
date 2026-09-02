@@ -104,6 +104,33 @@ function can_upload_sample_photos(): bool
     return $role === 'AUXILIAR' && (int)$user['controlMuestras'] === 1;
 }
 
+function can_edit_samples(): bool
+{
+    if (!is_authenticated()) {
+        return false;
+    }
+
+    $statement = db()->prepare(
+        'SELECT nombre, controlMuestras FROM usuarios WHERE id = :id LIMIT 1'
+    );
+    $statement->execute(['id' => (int)$_SESSION['user_id']]);
+    $user = $statement->fetch();
+    return is_array($user)
+        && (int)$user['controlMuestras'] === 1
+        && hash_equals((string)$user['nombre'], (string)$_SESSION['user_name']);
+}
+
+function require_sample_edit_permission(): void
+{
+    if (can_edit_samples()) {
+        return;
+    }
+    http_response_code(403);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['error' => 'Tu usuario no tiene el permiso para controlar todas las muestras.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 function require_sample_photo_upload_permission(): void
 {
     if (can_upload_sample_photos()) {

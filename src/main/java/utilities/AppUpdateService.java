@@ -2,12 +2,12 @@ package utilities;
 
 import java.awt.Desktop;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -24,20 +24,22 @@ public final class AppUpdateService {
         }
 
         Properties properties = new Properties();
-        try (InputStream input = Files.newInputStream(manifest)) {
-            properties.load(input);
+        try (Reader reader = Files.newBufferedReader(manifest, StandardCharsets.UTF_8)) {
+            properties.load(reader);
         } catch (IOException e) {
             return Optional.empty();
         }
 
         String build = clean(properties.getProperty("app.build"));
         String installer = clean(properties.getProperty("installer.path"));
-        if (build == null || installer == null || !isNewerBuild(build, AppVersion.getBuild())) {
+        String version = clean(properties.getProperty("app.version"));
+        if (version == null || build == null || installer == null
+                || compareVersions(version, AppVersion.getVersion()) <= 0) {
             return Optional.empty();
         }
 
         return Optional.of(new UpdateInfo(
-                clean(properties.getProperty("app.version"), AppVersion.getVersion()),
+                version,
                 build,
                 clean(properties.getProperty("app.notes"), "Hay una actualizacion disponible."),
                 installer
@@ -76,11 +78,26 @@ public final class AppUpdateService {
         return Path.of(installer);
     }
 
-    private static boolean isNewerBuild(String candidate, String current) {
+    private static int compareVersions(String left, String right) {
+        String[] leftParts = left.split("\\.");
+        String[] rightParts = right.split("\\.");
+        int length = Math.max(leftParts.length, rightParts.length);
+        for (int i = 0; i < length; i++) {
+            int leftValue = parseVersionPart(leftParts, i);
+            int rightValue = parseVersionPart(rightParts, i);
+            if (leftValue != rightValue) {
+                return Integer.compare(leftValue, rightValue);
+            }
+        }
+        return 0;
+    }
+
+    private static int parseVersionPart(String[] parts, int index) {
+        if (index >= parts.length) return 0;
         try {
-            return Instant.parse(candidate).isAfter(Instant.parse(current));
-        } catch (Exception ignored) {
-            return !candidate.equals(current);
+            return Integer.parseInt(parts[index].replaceAll("[^0-9].*$", ""));
+        } catch (NumberFormatException ignored) {
+            return 0;
         }
     }
 

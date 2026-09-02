@@ -96,14 +96,17 @@
                     <VBox maxWidth="1180" minWidth="980" prefWidth="1180" spacing="12" styleClass="document-page">
                         <padding><Insets bottom="22" left="22" right="22" top="22" /></padding>
 
-                        <HBox alignment="CENTER_LEFT" spacing="16">
-                            <VBox alignment="CENTER" prefWidth="155">
-                                <ImageView fitHeight="62" fitWidth="155" preserveRatio="true">
-                                    <image><Image url="@icons/logo-nyce-7.jpg" /></image>
-                                </ImageView>
-                            </VBox>
-                            <Label alignment="CENTER" maxWidth="Infinity" styleClass="document-title" text="REMISIÓN DE MUESTRAS" HBox.hgrow="ALWAYS" />
-                        </HBox>
+                        <VBox spacing="0">
+                            <HBox alignment="CENTER_LEFT" spacing="16">
+                                <VBox alignment="CENTER" prefWidth="155">
+                                    <ImageView fitHeight="62" fitWidth="155" preserveRatio="true">
+                                        <image><Image url="@icons/logo-nyce-7.jpg" /></image>
+                                    </ImageView>
+                                </VBox>
+                                <Label alignment="CENTER" maxWidth="Infinity" styleClass="document-title" text="REMISIÓN DE MUESTRAS" HBox.hgrow="ALWAYS" />
+                            </HBox>
+                            <Label alignment="CENTER_RIGHT" maxWidth="Infinity" styleClass="format-number" text="F9T09-03" />
+                        </VBox>
 
                         <HBox alignment="CENTER_RIGHT" spacing="0">
                             <Region HBox.hgrow="ALWAYS" />

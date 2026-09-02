@@ -1,8 +1,12 @@
 #define MyAppName "Control Muestras LENC"
-#define MyAppVersion "1.2.4"
+#define MyAppVersion "1.3.9"
 #define MyAppPublisher "Andres Prias"
 #define MyAppURL "https://andresprias.dev"
 #define MyAppExeName "ControlMuestrasLENC.exe"
+
+#ifndef AppImageDir
+  #define AppImageDir "..\dist\ControlMuestrasLENC"
+#endif
 
 #ifndef WebSyncToken
   #define WebSyncToken ""
@@ -47,7 +51,8 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "websync"; Description: "Activar la sincronización con el portal web en este equipo"; GroupDescription: "Equipo principal:"; Flags: unchecked; Check: WebSyncAvailable
 
 [Files]
-Source: "..\dist\ControlMuestrasLENC\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#AppImageDir}\*"; DestDir: "{app}"; Excludes: "config.properties"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#AppImageDir}\config.properties"; DestDir: "{app}"; Flags: onlyifdoesntexist
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\{#MyAppExeName}"
@@ -98,10 +103,55 @@ begin
   end;
 end;
 
+procedure EnsureStorageConfig;
+var
+  ConfigPath, SourceFolder, StorageFolder, ConfiguredFolder, Line, Prefix: String;
+  Lines: TStringList;
+  I: Integer;
+begin
+  ConfigPath := ExpandConstant('{app}\config.properties');
+  SourceFolder := ExpandConstant('{src}');
+  StorageFolder := ExtractFileDir(RemoveBackslashUnlessRoot(SourceFolder));
+  Prefix := 'storage.folder=';
+  ConfiguredFolder := '';
+  Lines := TStringList.Create;
+  try
+    if FileExists(ConfigPath) then
+      Lines.LoadFromFile(ConfigPath);
+
+    for I := 0 to Lines.Count - 1 do
+    begin
+      Line := Trim(Lines[I]);
+      if Pos(Prefix, Line) = 1 then
+      begin
+        ConfiguredFolder := Copy(Line, Length(Prefix) + 1, MaxInt);
+        StringChangeEx(ConfiguredFolder, '\:', ':', True);
+        StringChangeEx(ConfiguredFolder, '\\', '\', True);
+        Break;
+      end;
+    end;
+
+    if (not DirExists(ConfiguredFolder)) and
+       (CompareText(ExtractFileName(RemoveBackslashUnlessRoot(SourceFolder)), 'actualizaciones') = 0) and
+       DirExists(StorageFolder) then
+    begin
+      StringChangeEx(StorageFolder, '\', '/', True);
+      SetConfigProperty(Lines, 'storage.folder', StorageFolder);
+      Lines.SaveToFile(ConfigPath);
+    end;
+  finally
+    Lines.Free;
+  end;
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
-  if (CurStep = ssPostInstall) and WizardIsTaskSelected('websync') then
-    ConfigureWebSync;
+  if CurStep = ssPostInstall then
+  begin
+    EnsureStorageConfig;
+    if WizardIsTaskSelected('websync') then
+      ConfigureWebSync;
+  end;
 end;
 
 

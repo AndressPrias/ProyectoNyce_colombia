@@ -18,6 +18,7 @@ import javafx.stage.FileChooser;
 import service.MuestraService;
 import utilities.ImageStorage;
 import utilities.Navegacion;
+import utilities.DymoLabelPrinter;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Locale;
+import java.util.Optional;
 
 public class RegistrarMuestraController {
 
@@ -44,6 +46,7 @@ public class RegistrarMuestraController {
     @FXML private DatePicker fechaRecepcionPicker;
     @FXML private Label txtInformativos;
     @FXML private Button btnSubirImagen;
+    @FXML private Button btnImprimirEtiqueta;
     @FXML private ImageView imgProducto;
     @FXML private StackPane zonaImagen;
     @FXML private Label lblIndicacionArrastre;
@@ -400,6 +403,49 @@ public class RegistrarMuestraController {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+        boolean permitido = usuario != null && usuario.puedeControlarMuestras();
+        btnImprimirEtiqueta.setVisible(permitido);
+        btnImprimirEtiqueta.setManaged(permitido);
+    }
+
+    @FXML
+    private void imprimirEtiqueta() {
+        if (usuario == null || !usuario.puedeControlarMuestras()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Permiso requerido",
+                    "No tiene permiso para imprimir etiquetas de muestras");
+            return;
+        }
+        String codigo = txtCodigoInterno.getText() == null ? "" : txtCodigoInterno.getText().trim();
+        if (codigo.isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Imprimir etiqueta", "No hay un ID para imprimir");
+            return;
+        }
+
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Imprimir etiqueta");
+        confirmacion.setHeaderText(null);
+        confirmacion.setContentText("¿Desea imprimir la etiqueta de la muestra " + codigo
+                + " en la impresora DYMO?");
+        Optional<ButtonType> resultado = confirmacion.showAndWait();
+        if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
+
+        try {
+            String impresora = DymoLabelPrinter.imprimir(codigo);
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Imprimir etiqueta",
+                    "Etiqueta enviada a " + impresora);
+        } catch (Exception e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo imprimir la etiqueta",
+                    e.getMessage() == null || e.getMessage().isBlank()
+                            ? "Ocurrió un error inesperado" : e.getMessage());
+        }
+    }
+
+    private void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
     }
 
     private void actualizarCodigoVisualizado() {

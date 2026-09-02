@@ -4,6 +4,7 @@
     const title = document.querySelector('#dialog-title');
     if (!dialog || !content || !title) return;
     const photoUploadEnabled = dialog.dataset.photoUploadEnabled === 'true';
+    const editEnabled = dialog.dataset.editEnabled === 'true';
 
     const escapeHtml = (value) => String(value ?? '')
         .replaceAll('&', '&amp;')
@@ -92,6 +93,84 @@
         });
     };
 
+    const documentRows = (documents, kind) => {
+        const rows = documents?.length ? documents : [];
+        return rows.map(item => `
+            <div class="document-edit-row">
+                <input name="${kind}-numero" value="${escapeHtml(item.numero)}"
+                       aria-label="Número" ${kind.startsWith('cotizaciones') ? 'inputmode="numeric" pattern="[0-9]{4}" maxlength="4"' : 'maxlength="120"'} required>
+                <input name="${kind}-anio" type="number" min="2000" max="9999"
+                       value="${escapeHtml(item.anio)}" aria-label="Año" required>
+                <button type="button" class="remove-document" aria-label="Eliminar documento">×</button>
+            </div>`).join('');
+    };
+
+    const addDocumentRow = (container, kind, year = new Date().getFullYear()) => {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = documentRows([{numero: '', anio: year}], kind);
+        container.append(wrapper.firstElementChild);
+    };
+
+    const bindEditForm = (payload) => {
+        const form = content.querySelector('#sample-edit-form');
+        const toggle = content.querySelector('#sample-edit-toggle');
+        if (!form || !toggle) return;
+        toggle.addEventListener('click', () => {
+            form.hidden = !form.hidden;
+            toggle.textContent = form.hidden ? 'Editar muestra' : 'Ocultar edición';
+        });
+        form.addEventListener('click', event => {
+            const remove = event.target.closest('.remove-document');
+            if (remove) remove.closest('.document-edit-row').remove();
+            const add = event.target.closest('[data-add-document]');
+            if (add) addDocumentRow(form.querySelector(`#${add.dataset.addDocument}`), add.dataset.kind);
+        });
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const submit = form.querySelector('[type="submit"]');
+            const status = form.querySelector('.edit-status');
+            const values = new FormData(form);
+            const collect = kind => [...form.querySelectorAll(`#${kind} .document-edit-row`)].map(row => ({
+                numero: row.querySelector(`[name="${kind}-numero"]`).value,
+                anio: Number(row.querySelector(`[name="${kind}-anio"]`).value)
+            }));
+            const data = {
+                id: Number(payload.muestra.id),
+                rotuloCliente: values.get('rotuloCliente'),
+                nombreCliente: values.get('nombreCliente'),
+                descripcion: values.get('descripcion'),
+                cantidad: Number(values.get('cantidad')),
+                marca: values.get('marca'),
+                referencia: values.get('referencia'),
+                fechaRecepcion: values.get('fechaRecepcion'),
+                estado: values.get('estado'),
+                ubicacion: values.get('ubicacion'),
+                observacionAlmacenamiento: values.get('observacionAlmacenamiento'),
+                informes: collect('informes-edicion'),
+                cotizaciones: collect('cotizaciones-edicion')
+            };
+            submit.disabled = true;
+            status.className = 'edit-status';
+            status.textContent = 'Enviando cambio…';
+            try {
+                const response = await fetch('/api/muestra-editar.php', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: {'Content-Type': 'application/json', 'X-CSRF-Token': dialog.dataset.csrfToken || ''},
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'No fue posible guardar el cambio');
+                status.classList.add('edit-success');
+                status.textContent = result.message;
+            } catch (error) {
+                status.classList.add('edit-error');
+                status.textContent = error.message;
+            } finally {
+                submit.disabled = false;
+            }
+        });
+    };
+
     const render = (payload) => {
         const sample = payload.muestra;
         title.textContent = text(sample.codigoInterno);
@@ -119,6 +198,31 @@
                     JPG, PNG o WEBP · máximo 8 MB
                 </p>
             </section>` : '';
+        const editSection = editEnabled ? `
+            <section class="sample-edit">
+                <button id="sample-edit-toggle" class="primary-button" type="button">Ocultar edición</button>
+                <form id="sample-edit-form">
+                    <div class="edit-grid">
+                        <label>Referencia externa<input name="rotuloCliente" maxlength="500" value="${escapeHtml(sample.rotuloCliente || '')}"></label>
+                        <label>Nombre del cliente<input name="nombreCliente" maxlength="500" value="${escapeHtml(sample.nombreCliente || '')}"></label>
+                        <label class="edit-wide">Descripción<textarea name="descripcion" maxlength="2000">${escapeHtml(sample.descripcion || '')}</textarea></label>
+                        <label>Cantidad<input name="cantidad" type="number" min="1" max="1000000" value="${escapeHtml(sample.cantidad)}" required></label>
+                        <label>Fecha de ingreso<input name="fechaRecepcion" type="date" value="${escapeHtml(String(sample.fechaRecepcion || '').slice(0, 10))}" required></label>
+                        <label>Marca<input name="marca" maxlength="500" value="${escapeHtml(sample.marca || '')}"></label>
+                        <label>Referencia<input name="referencia" maxlength="500" value="${escapeHtml(sample.referencia || '')}"></label>
+                        <label>Estado<select name="estado" required>
+                            ${['EN_CUSTODIA','ALMACENADO','EN_CURSO','LISTA_PARA_ALMACENAR','LABORATORIO_EXTERNO','REALIZAR_DISPOSICION_FINAL','ENVIADO','DESTRUCCION'].map(value => `<option value="${value}" ${sample.estado === value ? 'selected' : ''}>${escapeHtml(state(value))}</option>`).join('')}
+                        </select></label>
+                        <label>Ubicación<input name="ubicacion" maxlength="500" value="${escapeHtml(sample.ubicacion || '')}"></label>
+                        <label class="edit-wide">Observaciones<textarea name="observacionAlmacenamiento" maxlength="4000">${escapeHtml(sample.observacionAlmacenamiento || '')}</textarea></label>
+                    </div>
+                    <div class="documents-edit">
+                        <section><header><h4>Informes</h4><button type="button" data-add-document="informes-edicion" data-kind="informes-edicion">Agregar</button></header><div id="informes-edicion">${documentRows(payload.informesReferencias, 'informes-edicion')}</div></section>
+                        <section><header><h4>Cotizaciones</h4><button type="button" data-add-document="cotizaciones-edicion" data-kind="cotizaciones-edicion">Agregar</button></header><div id="cotizaciones-edicion">${documentRows(payload.cotizacionesReferencias, 'cotizaciones-edicion')}</div></section>
+                    </div>
+                    <div class="edit-actions"><button class="primary-button" type="submit">Guardar cambios</button><p class="edit-status" role="status"></p></div>
+                </form>
+            </section>` : '';
 
         content.innerHTML = `
             <section class="detail-grid">
@@ -139,6 +243,7 @@
                 ${field('Remisión', sample.remision)}
                 ${field('Observaciones', sample.observacionAlmacenamiento)}
             </section>
+            ${editSection}
             ${photoUpload}
             <section class="history">
                 <h3>Historial reciente</h3>
@@ -146,6 +251,9 @@
             </section>`;
         if (photoUploadEnabled) {
             bindPhotoUpload(sample);
+        }
+        if (editEnabled) {
+            bindEditForm(payload);
         }
     };
 

@@ -30,6 +30,7 @@ public final class PdfRemisionWriter {
     private static final float MARGEN = 18;
     private static final float ESPACIO_ENTRE_COPIAS = 12;
     private static final double ANCHO_DOCUMENTO = 850;
+    private static final String NUMERO_FORMATO = "F9T09-03";
 
     private static final int[] VERDE = {0, 148, 134};
     private static final int[] GRIS = {138, 139, 139};
@@ -167,6 +168,7 @@ public final class PdfRemisionWriter {
             Renderizador r, Datos datos, double altoFila, String tipoCopia) throws IOException {
         r.imagen(16, 10, 120, 51);
         r.celda(145, 15, 689, 36, VERDE, VERDE, "REMISIÓN DE MUESTRAS", BLANCO, 17, true);
+        r.texto(748, 52, 86, 12, NUMERO_FORMATO, NEGRO, 8, true, false);
         r.celda(16, 76, 120, 27, BLANCO, VERDE, tipoCopia, VERDE, 10, true);
         r.celda(348, 66, 110, 42, VERDE, VERDE, "FECHA DE\nELABORACIÓN", BLANCO, 10, true);
         r.celda(458, 66, 160, 42, BLANCO, VERDE, datos.fechaElaboracion(), NEGRO, 13, false);

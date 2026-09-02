@@ -137,6 +137,14 @@ public final class AppConfig {
     }
 
     private static Path getAppFolder() {
+        String packagedAppPath = System.getProperty("jpackage.app-path");
+        if (packagedAppPath != null && !packagedAppPath.isBlank()) {
+            Path executable = Paths.get(packagedAppPath).toAbsolutePath().normalize();
+            Path executableFolder = executable.getParent();
+            if (executableFolder != null) {
+                return executableFolder;
+            }
+        }
         return Paths.get(System.getProperty("user.dir")).toAbsolutePath().normalize();
     }
 

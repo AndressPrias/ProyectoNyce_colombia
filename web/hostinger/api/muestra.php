@@ -44,9 +44,20 @@ try {
     );
     $movementsStatement->execute(['id' => $id]);
 
+    $reportsStatement = $pdo->prepare(
+        'SELECT numero, anio FROM muestra_informes WHERE muestraId = :id ORDER BY anio, numero'
+    );
+    $reportsStatement->execute(['id' => $id]);
+    $quotationsStatement = $pdo->prepare(
+        'SELECT numero, anio FROM muestra_cotizaciones WHERE muestraId = :id ORDER BY anio, numero'
+    );
+    $quotationsStatement->execute(['id' => $id]);
+
     echo json_encode([
         'muestra' => $sample,
         'movimientos' => $movementsStatement->fetchAll(),
+        'informesReferencias' => $reportsStatement->fetchAll(),
+        'cotizacionesReferencias' => $quotationsStatement->fetchAll(),
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Throwable $error) {
     http_response_code(500);

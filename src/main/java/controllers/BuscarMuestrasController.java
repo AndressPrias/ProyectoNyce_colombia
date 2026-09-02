@@ -59,6 +59,7 @@ import javafx.stage.Screen;
 import service.MuestraService;
 import service.RemisionService;
 import utilities.AppWindow;
+import utilities.DymoLabelPrinter;
 import utilities.ImageStorage;
 import utilities.UsuarioSesion;
 
@@ -122,6 +123,7 @@ public class BuscarMuestrasController {
     @FXML private Button btnAsignarTecnico;
     @FXML private Button btnAlmacenarMuestra;
     @FXML private Button btnEliminarMuestra;
+    @FXML private Button btnImprimirEtiqueta;
 
 
     private ObservableList<Muestra> listaMuestras = FXCollections.observableArrayList();
@@ -640,6 +642,32 @@ public class BuscarMuestrasController {
             boton.setVisible(permitido);
             boton.setManaged(permitido);
         }
+        btnImprimirEtiqueta.setVisible(permitido);
+        btnImprimirEtiqueta.setManaged(permitido);
+        btnImprimirEtiqueta.setDisable(!permitido || tblResultados.getSelectionModel().getSelectedItem() == null);
+    }
+
+    @FXML
+    void imprimirEtiqueta() {
+        if (!verificarControlMuestras()) return;
+        Muestra muestra = obtenerMuestraSeleccionada();
+        if (muestra == null) return;
+
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Imprimir etiqueta");
+        confirmacion.setHeaderText(null);
+        confirmacion.setContentText("¿Desea imprimir la etiqueta de la muestra "
+                + textoSeguro(muestra.getCodigoInterno()) + " en la impresora DYMO?");
+        Optional<ButtonType> resultado = confirmacion.showAndWait();
+        if (resultado.isEmpty() || resultado.get() != ButtonType.OK) return;
+
+        try {
+            String impresora = DymoLabelPrinter.imprimir(muestra.getCodigoInterno());
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Imprimir etiqueta",
+                    "Etiqueta enviada a " + impresora);
+        } catch (Exception e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo imprimir la etiqueta", mensajeRaiz(e));
+        }
     }
 
     private void cargarImagenDetalle(String rutaFoto) {
@@ -978,13 +1006,13 @@ public class BuscarMuestrasController {
         boolean seleccionMultiple = muestras.size() > 1;
         List<ReferenciaDocumento> informesActuales = seleccionMultiple ? List.of() : muestras.get(0).getInformes();
         List<ReferenciaDocumento> cotizacionesActuales = seleccionMultiple ? List.of() : muestras.get(0).getCotizaciones();
-        CamposDocumentos camposInformes = crearCamposDocumentos("Informes", "Informe", informesActuales);
-        CamposDocumentos camposCotizaciones = crearCamposDocumentos("Cotizaciones", "Cotización", cotizacionesActuales);
+        CamposDocumentos camposInformes = crearCamposDocumentos("Informes", "Informe", informesActuales, true);
+        CamposDocumentos camposCotizaciones = crearCamposDocumentos("Cotizaciones", "Cotización", cotizacionesActuales, false);
 
         Dialog<ButtonType> dialogo = crearDialogo("Asignar informe y/o cotización");
         Label ayuda = new Label(seleccionMultiple
                 ? "Se aplicará a " + muestras.size() + " muestras. Ingrese una cantidad mayor que cero en los datos que desea asignar."
-                : "Seleccione cuántos registros desea asociar. Cada número debe tener exactamente 4 dígitos.");
+                : "Seleccione cuántos registros desea asociar. Los informes aceptan cualquier carácter; las cotizaciones deben tener exactamente 4 dígitos.");
         ayuda.setWrapText(true);
         VBox contenido = new VBox(14);
         contenido.setPadding(new Insets(8, 4, 4, 4));
@@ -1032,8 +1060,8 @@ public class BuscarMuestrasController {
         List<String> informes;
         List<String> cotizaciones;
         try {
-            informes = actualizarInforme ? leerCamposDocumentos(camposInformes, "informe") : List.of();
-            cotizaciones = actualizarCotizacion ? leerCamposDocumentos(camposCotizaciones, "cotización") : List.of();
+            informes = actualizarInforme ? leerCamposDocumentos(camposInformes, "informe", true) : List.of();
+            cotizaciones = actualizarCotizacion ? leerCamposDocumentos(camposCotizaciones, "cotización", false) : List.of();
         } catch (IllegalArgumentException e) {
             mostrarAlerta(Alert.AlertType.WARNING, "Formato no válido", e.getMessage());
             return;
@@ -1069,7 +1097,8 @@ public class BuscarMuestrasController {
     }
 
     private CamposDocumentos crearCamposDocumentos(String titulo, String etiqueta,
-                                                     List<ReferenciaDocumento> actuales) {
+                                                     List<ReferenciaDocumento> actuales,
+                                                     boolean aceptarCualquierCaracter) {
         Spinner<Integer> cantidad = new Spinner<>(0, 20, actuales.size());
         cantidad.setEditable(true);
         cantidad.setPrefWidth(80);
@@ -1087,14 +1116,16 @@ public class BuscarMuestrasController {
         contenedor.setStyle("-fx-background-color: #f7faf9; -fx-border-color: #b8ceca; " +
                 "-fx-border-radius: 6px; -fx-background-radius: 6px;");
         List<String> valoresIniciales = actuales.stream().map(ReferenciaDocumento::numero).toList();
-        Runnable reconstruir = () -> reconstruirCamposDocumentos(campos, etiqueta, cantidad.getValue(), valoresIniciales);
+        Runnable reconstruir = () -> reconstruirCamposDocumentos(campos, etiqueta, cantidad.getValue(),
+                valoresIniciales, aceptarCualquierCaracter);
         cantidad.valueProperty().addListener((obs, anterior, nuevo) -> reconstruir.run());
         reconstruir.run();
         return new CamposDocumentos(cantidad, campos, contenedor);
     }
 
     private void reconstruirCamposDocumentos(GridPane contenedor, String etiqueta, int cantidad,
-                                              List<String> valoresIniciales) {
+                                              List<String> valoresIniciales,
+                                              boolean aceptarCualquierCaracter) {
         List<String> valoresActuales = contenedor.getChildren().stream()
                 .filter(TextField.class::isInstance).map(TextField.class::cast)
                 .map(TextField::getText).toList();
@@ -1104,19 +1135,25 @@ public class BuscarMuestrasController {
             campo.setPromptText(etiqueta + " " + (i + 1));
             campo.setPrefWidth(145);
             campo.setMaxWidth(145);
-            campo.setTextFormatter(new TextFormatter<String>(cambio ->
-                    cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null));
+            if (!aceptarCualquierCaracter) {
+                campo.setTextFormatter(new TextFormatter<String>(cambio ->
+                        cambio.getControlNewText().matches("\\d{0,4}") ? cambio : null));
+            }
             if (i < valoresActuales.size()) campo.setText(valoresActuales.get(i));
             else if (i < valoresIniciales.size()) campo.setText(valoresIniciales.get(i));
             contenedor.add(campo, i % 4, i / 4);
         }
     }
 
-    private List<String> leerCamposDocumentos(CamposDocumentos campos, String etiqueta) {
+    private List<String> leerCamposDocumentos(CamposDocumentos campos, String etiqueta,
+                                               boolean aceptarCualquierCaracter) {
         List<String> referencias = new ArrayList<>();
         for (javafx.scene.Node nodo : campos.campos().getChildren()) {
             String numero = ((TextField) nodo).getText().trim();
-            if (!numero.matches("\\d{4}")) {
+            if (numero.isEmpty()) {
+                throw new IllegalArgumentException("Cada " + etiqueta + " debe tener un valor.");
+            }
+            if (!aceptarCualquierCaracter && !numero.matches("\\d{4}")) {
                 throw new IllegalArgumentException("Cada " + etiqueta + " debe contener exactamente 4 dígitos.");
             }
             if (referencias.contains(numero)) {
@@ -1211,25 +1248,49 @@ public class BuscarMuestrasController {
     @FXML
     void eliminarMuestra() {
         if (!verificarControlMuestras()) return;
-        Muestra muestra = obtenerMuestraSeleccionada();
-        if (muestra == null) return;
+        List<Muestra> muestras = obtenerMuestrasSeleccionadas();
+        if (muestras.isEmpty()) return;
 
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.setTitle("Eliminar muestra");
+        confirmacion.setTitle(muestras.size() == 1 ? "Eliminar muestra" : "Eliminar muestras");
         confirmacion.setHeaderText(null);
-        confirmacion.setContentText("¿Desea eliminar la muestra " + textoSeguro(muestra.getCodigoInterno()) + "?");
+        confirmacion.setContentText(muestras.size() == 1
+                ? "¿Desea eliminar la muestra " + textoSeguro(muestras.get(0).getCodigoInterno()) + "?"
+                : "¿Desea eliminar las " + muestras.size() + " muestras seleccionadas?");
 
         Optional<ButtonType> resultado = confirmacion.showAndWait();
         if (resultado.isEmpty() || resultado.get() != ButtonType.OK) {
             return;
         }
 
-        if (new MuestraService().eliminarMuestra(muestra.getId(), usuarioActual())) {
+        MuestraService service = new MuestraService();
+        int eliminadas = 0;
+        for (Muestra muestra : muestras) {
+            if (service.eliminarMuestra(muestra.getId(), usuarioActual())) {
+                eliminadas++;
+            }
+        }
+
+        if (eliminadas > 0) {
             limpiarDetalle();
             buscarMuestras();
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Eliminar muestra", "Muestra eliminada correctamente");
+        }
+
+        if (eliminadas == muestras.size()) {
+            mostrarAlerta(Alert.AlertType.INFORMATION,
+                    muestras.size() == 1 ? "Eliminar muestra" : "Eliminar muestras",
+                    muestras.size() == 1
+                            ? "Muestra eliminada correctamente"
+                            : "Se eliminaron " + eliminadas + " muestras correctamente");
+        } else if (eliminadas > 0) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Eliminar muestras",
+                    "Se eliminaron " + eliminadas + " de " + muestras.size() + " muestras");
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Eliminar muestra", "No se pudo eliminar la muestra");
+            mostrarAlerta(Alert.AlertType.ERROR,
+                    muestras.size() == 1 ? "Eliminar muestra" : "Eliminar muestras",
+                    muestras.size() == 1
+                            ? "No se pudo eliminar la muestra"
+                            : "No se pudo eliminar ninguna de las muestras seleccionadas");
         }
     }
 
@@ -1386,6 +1447,9 @@ public class BuscarMuestrasController {
         btnFinalizarEnsayos.setVisible(false);
         btnFinalizarEnsayos.setManaged(false);
         btnFinalizarEnsayos.setTooltip(new Tooltip("Seleccione una muestra"));
+        btnImprimirEtiqueta.setDisable(true);
+        btnImprimirEtiqueta.setVisible(false);
+        btnImprimirEtiqueta.setManaged(false);
         for (Button boton : List.of(btnEditarInformacion, btnAsignarInformeCotizacion, btnAsignarTecnico, btnAlmacenarMuestra, btnEliminarMuestra)) {
             boton.setVisible(false);
             boton.setManaged(false);

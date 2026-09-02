@@ -351,6 +351,26 @@ tbody tr:hover { background: #f8fbfb; }
 .photo-upload-status { grid-column: 1 / -1; }
 .photo-upload-status.photo-upload-success { color: #17613d; font-weight: 750; }
 .photo-upload-status.photo-upload-error { color: var(--danger); font-weight: 750; }
+.sample-edit { margin-top: 1.2rem; padding: 1rem; border: 1px solid #bfe3df; border-radius: .8rem; background: #f5fbfa; }
+.sample-edit form { margin-top: 1rem; }
+.edit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+.edit-grid label { display: grid; gap: .35rem; color: #45666d; font-size: .72rem; font-weight: 800; }
+.edit-grid input, .edit-grid select, .edit-grid textarea,
+.document-edit-row input { width: 100%; padding: .68rem .72rem; border: 1px solid #bfd2d3; border-radius: .55rem; background: white; color: var(--ink); font: inherit; }
+.edit-grid textarea { min-height: 5.5rem; resize: vertical; }
+.edit-wide { grid-column: 1 / -1; }
+.documents-edit { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+.documents-edit section { padding: .8rem; border: 1px solid var(--line); border-radius: .7rem; background: white; }
+.documents-edit header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
+.documents-edit h4 { margin: 0; }
+.documents-edit header button, .remove-document { border: 0; border-radius: .45rem; background: #e5f4f2; color: var(--teal-dark); font-weight: 800; cursor: pointer; }
+.documents-edit header button { padding: .45rem .65rem; }
+.document-edit-row { display: grid; grid-template-columns: minmax(0, 1fr) 6rem 2rem; gap: .4rem; margin-top: .45rem; }
+.remove-document { font-size: 1.1rem; }
+.edit-actions { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
+.edit-status { margin: 0; color: var(--muted); font-size: .8rem; }
+.edit-status.edit-success { color: #17613d; font-weight: 750; }
+.edit-status.edit-error { color: var(--danger); font-weight: 750; }
 .history { margin-top: 1.6rem; }
 .history h3 { margin: 0 0 .8rem; }
 .history ol { list-style: none; margin: 0; padding: 0; border-left: 2px solid #bee1dd; }
@@ -389,6 +409,9 @@ tbody tr:hover { background: #f8fbfb; }
     .detail-grid { grid-template-columns: 1fr; }
     .photo-upload { grid-template-columns: 1fr; }
     .photo-upload-button { width: 100%; }
+    .edit-grid, .documents-edit { grid-template-columns: 1fr; }
+    .edit-wide { grid-column: auto; }
+    .edit-actions { align-items: stretch; flex-direction: column; }
 }
 
 @media (max-width: 460px) {

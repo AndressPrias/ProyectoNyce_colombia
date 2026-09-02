@@ -1,0 +1,12 @@
+CONTROL MUESTRAS LENC 1.3.9 - DISEÑO FINAL DE ETIQUETA DYMO
+
+CAMBIOS
+- Conserva el diseño ampliado sin margen exterior.
+- Mantiene visible la línea inferior del recuadro.
+- Desplaza el contenido 0,7 mm hacia la izquierda para evitar el recorte derecho.
+- Ajuste validado mediante una impresión real en DYMO LabelWriter 450.
+
+INSTALACIÓN
+1. Cierre Control Muestras LENC.
+2. Ejecute ControlMuestrasLENC-Setup-Usuario.exe una sola vez.
+3. Abra nuevamente la aplicación.

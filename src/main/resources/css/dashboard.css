@@ -263,6 +263,19 @@
     -fx-background-color: #eefaf8;
 }
 
+.btn-print-label {
+    -fx-background-color: #e5f4f2;
+    -fx-background-radius: 4;
+    -fx-border-color: #8cc9c2;
+    -fx-border-radius: 4;
+    -fx-padding: 4;
+    -fx-cursor: hand;
+}
+
+.btn-print-label:hover {
+    -fx-background-color: #cdebe7;
+}
+
 .samples-table {
     -fx-background-color: white;
     -fx-background-radius: 6;
